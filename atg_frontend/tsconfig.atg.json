@@ -1,0 +1,7 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.atg.json" },
+    { "path": "./tsconfig.node.atg.json" }
+  ]
+}
