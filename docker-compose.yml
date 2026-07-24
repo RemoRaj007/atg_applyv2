@@ -1,0 +1,54 @@
+# ATG Apply — production compose stack (backend + frontend + database).
+#
+# Usage on the VPS:
+#   1. Create atg_backend/.env and atg_frontend/.env (see their .env.example files).
+#   2. Create a root .env from .env.example with the DB_* values below.
+#   3. docker compose up -d --build
+#   4. docker compose exec backend npm run db:migrate
+#   5. docker compose exec backend npm run db:seed   (auto-skips if already seeded)
+
+services:
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./atg_backend
+    restart: unless-stopped
+    env_file: ./atg_backend/.env
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - backend_uploads:/app/uploads
+      - backend_logs:/app/logs
+    ports:
+      - "5000:5000"
+
+  frontend:
+    build: ./atg_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  db_data:
+  backend_uploads:
+  backend_logs:

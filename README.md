@@ -1,0 +1,91 @@
+# ATG Apply
+
+A job/scholarship application management platform. Candidates apply for jobs and
+scholarships; operators triage and process applications; admins manage the
+platform. Backend is a Node/Express API on MySQL/MariaDB via Prisma; frontend
+is a React + Vite SPA.
+
+## Tech stack
+
+| Layer    | Stack |
+|----------|-------|
+| Backend  | Node.js, Express 5, Prisma 7 (MariaDB adapter), Argon2, JWT, Winston |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS, React Router, Axios |
+| Database | MySQL / MariaDB |
+| Infra    | Docker, Docker Compose, GitHub Actions |
+
+## Project structure
+
+```
+atg_apply/
+├── atg_backend/     Express API, Prisma schema/migrations, seed script
+├── atg_frontend/    React + Vite SPA
+├── setup.ps1        One-shot setup for a fresh PC (Windows)
+├── setup.sh         One-shot setup for a fresh PC (macOS/Linux)
+├── docker-compose.yml
+└── .github/workflows/deploy.yml
+```
+
+## Getting started
+
+- **Setting this up on your own machine to develop or test?** → [SETUP.md](SETUP.md)
+- **Provisioning a server / configuring CI deploys?** → [DEVOPS.md](DEVOPS.md)
+
+Fastest path, once prerequisites are installed (see SETUP.md):
+
+```bash
+git clone <this-repo>
+cd atg_apply
+.\setup.ps1     # Windows
+./setup.sh      # macOS/Linux
+
+cd atg_backend && npm run dev     # http://localhost:5000
+cd atg_frontend && npm run dev    # http://localhost:5173
+```
+
+## Environment variables
+
+Never commit real `.env` files:
+
+- `atg_backend/.env` — server port, DB connection, JWT secrets, SMTP, Apify
+  key, Google client ID. No template is tracked for this one — create it by
+  hand (see [SETUP.md](SETUP.md#4-manual-setup-if-you-skip-the-script-or-it-fails-partway)
+  for the full list of keys).
+- [atg_frontend/.env.example](atg_frontend/.env.example) — API base URL,
+  feature flags, Google client ID
+- [.env.example](.env.example) — Docker Compose's MariaDB provisioning
+  variables (used only when deploying with `docker-compose.yml`)
+
+## Available scripts
+
+**Backend** (`atg_backend/`)
+
+| Script | Description |
+|--------|--------------|
+| `npm run dev` / `npm start` | Run the API server |
+| `npm run db:generate` | Generate the Prisma client |
+| `npm run db:migrate` | Apply Prisma migrations |
+| `npm run db:seed` | Seed demo data (skips if DB already has users) |
+| `npm run db:seed:force` | Wipe all tables and reseed |
+| `npm run setup` | generate + migrate + seed in one go |
+
+**Frontend** (`atg_frontend/`)
+
+| Script | Description |
+|--------|--------------|
+| `npm run dev` | Vite dev server |
+| `npm run build` | Type-check and build for production |
+| `npm run preview` | Preview the production build locally |
+| `npm run lint` | Oxlint |
+
+## Seeded demo data
+
+Running `npm run db:seed` (on an empty database) creates 1 admin, 5
+operators, 10 candidates (each with a full profile), ~20 companies, 20 jobs,
+and 2 scholarships. All seeded accounts use the password **`Password123!`**.
+See [SETUP.md](SETUP.md#6-log-in-and-test) for the full account list.
+
+## Deployment
+
+Docker Compose + GitHub Actions deploy to a VPS over SSH. Full instructions,
+required server setup, and GitHub secrets are in [DEVOPS.md](DEVOPS.md).

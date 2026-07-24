@@ -1,0 +1,65 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            atg_backend/package-lock.json
+            atg_frontend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: atg_backend
+        run: npm ci
+
+      - name: Generate Prisma client
+        working-directory: atg_backend
+        run: npx prisma generate
+
+      - name: Install frontend dependencies
+        working-directory: atg_frontend
+        run: npm ci
+
+      - name: Lint frontend
+        working-directory: atg_frontend
+        run: npm run lint
+
+      - name: Build frontend
+        working-directory: atg_frontend
+        env:
+          VITE_API_URL: https://placeholder.invalid/api
+        run: npm run build
+
+  deploy:
+    name: Deploy to VPS
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH (git pull + docker compose up)
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            set -e
+            cd "${{ secrets.DEPLOY_PATH }}"
+            git pull --ff-only
+            docker compose up -d --build
+            docker compose exec -T backend npm run db:migrate
+            docker compose exec -T backend npm run db:seed
