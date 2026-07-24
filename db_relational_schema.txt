@@ -1,0 +1,635 @@
+Database Relational Schema - ATG Apply
+====================================
+(Regenerated from atg_backend/prisma/schema.prisma — 34 models)
+
+1. User
+----------------
+id (Int, PK)
+email (String, Unique)
+name (String)
+password (String)
+phone (String, nullable)
+country (String, nullable)
+city (String, nullable)
+role (String) - admin, operator, candidate, visitor, company
+pkg (String) - Trial, Premium, Professional
+appsUsed (Int)
+appsTotal (Int)
+capacity (Int) - operators only: max concurrent applications they can staff
+createdAt (DateTime)
+d_status (String)
+isLegendary (Boolean)
+profilePhoto (String, nullable)
+bio (String, nullable)
+department (String, nullable)
+resetPasswordToken (String, nullable)
+resetPasswordExpires (DateTime, nullable)
+companyId (Int, nullable, FK to Company.id)
+
+Relations:
+- 1:M with CandidateApplication (as applicant "CandidateApps" and as staff "StaffedApps")
+- M:1 with Company
+- 1:M with ChangeRequest (as creator)
+- 1:M with ProfileValue
+- 1:M with UserSkill
+- 1:M with UserJobRole
+- 1:1 with UserProfile
+- 1:M with UserPhone
+- 1:M with UserAddress
+- 1:M with UserAcademicQualification
+- 1:M with UserLanguage
+- 1:M with UserItSkill
+- 1:M with UserDocument
+- 1:M with UserOtherQualification
+- 1:M with UserExperience
+- 1:M with UserReference
+- 1:M with ApplicationComment
+- 1:1 with AnonymousDiscoveryProfile
+
+
+2. Company
+----------------
+id (Int, PK)
+name (String)
+email (String, Unique)
+website (String, nullable)
+description (String, nullable)
+status (String) - pending, approved, rejected
+d_status (String)
+createdAt (DateTime)
+updatedAt (DateTime)
+
+Relations:
+- 1:M with User
+- 1:M with Job
+
+
+3. Job
+----------------
+id (Int, PK)
+company (String) - backward-compatibility text field
+companyId (Int, nullable, FK to Company.id)
+title (String)
+location (String, nullable)
+source (String, nullable)
+deadline (DateTime, nullable)
+status (String) - pending_payment, pending, approved, rejected
+createdAt (DateTime)
+updatedAt (DateTime)
+d_status (String)
+jobUrl (Text, nullable)
+fitReason (Text, nullable)
+experience (String, nullable)
+locationType (String, nullable)
+description (Text, nullable)
+jobRoleId (Int, nullable, FK to JobRole.id)
+
+Relations:
+- M:1 with Company
+- M:1 with JobRole
+- 1:M with CandidateApplication
+- 1:M with Payment
+- 1:M with JobFormColumn
+- 1:M with JobSkill
+
+
+4. JobRole
+----------------
+id (Int, PK)
+name (String, Unique)
+status (String) - pending, active, rejected
+createdAt (DateTime)
+d_status (String)
+
+Relations:
+- 1:M with JobRoleSkill
+- 1:M with Job
+- 1:M with UserJobRole
+
+
+5. CandidateApplication
+----------------
+id (Int, PK)
+userId (Int, FK to User.id)
+jobId (Int, nullable, FK to Job.id)
+scholarshipId (Int, nullable, FK to Scholarship.id)
+staffId (Int, nullable, FK to User.id)
+fitScore (Float, nullable)
+successRate (Float, nullable)
+reason (String, nullable)
+status (String)
+candidateApproval (Boolean)
+qcApproval (Boolean)
+proof (String, nullable)
+proofRef (String, nullable)
+internalNotes (String, nullable)
+appliedAt (DateTime, nullable)
+createdAt (DateTime)
+updatedAt (DateTime)
+candidateComment (Text, nullable)
+operatorDocNotes (Text, nullable)
+candidateFeedback (Text, nullable)
+candidateFeedbackRating (Int, nullable)
+jobLinkRequest (Text, nullable) - candidate-submitted external job URL for link-review flow
+operatorFitNote (Text, nullable) - operator's written fit assessment for link requests
+d_status (String)
+
+Relations:
+- M:1 with User (applicant)
+- M:1 with Job (nullable — a job or a scholarship application)
+- M:1 with Scholarship (nullable)
+- M:1 with User (staff/operator)
+- 1:M with JobFormValue
+- 1:M with ApplicationComment
+
+
+6. Payment
+----------------
+id (Int, PK)
+userId (Int)
+pkg (String, nullable)
+amount (Float)
+paid (Boolean)
+currency (String)
+method (String, nullable)
+status (String)
+ref (String, nullable)
+slipUrl (String, nullable)
+operatorComment (String, nullable)
+appsCount (Int)
+details (Text, nullable)
+createdAt (DateTime)
+d_status (String)
+jobId (Int, nullable, FK to Job.id)
+
+Relations:
+- M:1 with Job
+
+
+7. PaymentOption
+----------------
+id (Int, PK)
+name (String)
+price (Float)
+currency (String)
+appsCount (Int)
+features (Text, nullable)
+description (Text, nullable)
+isPopular (Boolean)
+status (String) - active, inactive
+createdAt (DateTime)
+updatedAt (DateTime)
+d_status (String)
+
+
+8. Notification
+----------------
+id (Int, PK)
+userId (Int)
+type (String)
+title (String)
+body (String)
+unread (Boolean)
+createdAt (DateTime)
+d_status (String)
+
+
+9. Scholarship
+----------------
+id (Int, PK)
+title (String)
+provider (String)
+amount (Float, nullable)
+deadline (DateTime, nullable)
+description (String, nullable)
+createdAt (DateTime)
+d_status (String)
+
+Relations:
+- 1:M with CandidateApplication
+
+
+10. LogEntry
+----------------
+id (Int, PK)
+category (String) - system, activity, security
+level (String) - error, warn, info, security, activity
+message (Text)
+meta (Json, nullable)
+userId (Int, nullable)
+createdAt (DateTime)
+d_status (String)
+
+Indexes:
+- (category, createdAt)
+
+
+11. ChangeRequest
+----------------
+id (Int, PK)
+type (String) - edit_user, delete_user
+targetId (Int) - target User ID
+reason (String)
+details (String, nullable) - stringified JSON payload of changes
+status (String) - pending, approved, rejected
+createdAt (DateTime)
+createdById (Int, FK to User.id)
+d_status (String)
+
+Relations:
+- M:1 with User (createdBy)
+
+
+12. ProfileColumn (Candidate Profile Schema)
+----------------
+id (Int, PK)
+name (String, Unique)
+label (String)
+inputType (String) - text, number, file
+isRequired (Boolean)
+options (Text, nullable)
+status (String)
+createdAt (DateTime)
+updatedAt (DateTime)
+d_status (String)
+
+Relations:
+- 1:M with ProfileValue
+
+
+13. ProfileValue (Candidate Profile Data)
+----------------
+id (Int, PK)
+userId (Int, FK to User.id)
+columnId (Int, FK to ProfileColumn.id)
+value (Text)
+createdAt (DateTime)
+updatedAt (DateTime)
+d_status (String)
+
+Relations:
+- M:1 with User
+- M:1 with ProfileColumn
+
+Constraints:
+- Unique (userId, columnId)
+
+
+14. JobFormColumn (Dynamic Job Applications)
+----------------
+id (Int, PK)
+jobId (Int, FK to Job.id)
+name (String)
+label (String)
+inputType (String) - text, number, file
+isRequired (Boolean)
+options (Text, nullable)
+status (String)
+createdAt (DateTime)
+updatedAt (DateTime)
+d_status (String)
+
+Relations:
+- M:1 with Job
+- 1:M with JobFormValue
+
+
+15. JobFormValue (Dynamic Job Application Data)
+----------------
+id (Int, PK)
+applicationId (Int, FK to CandidateApplication.id)
+columnId (Int, FK to JobFormColumn.id)
+value (Text)
+createdAt (DateTime)
+updatedAt (DateTime)
+d_status (String)
+
+Relations:
+- M:1 with CandidateApplication
+- M:1 with JobFormColumn
+
+Constraints:
+- Unique (applicationId, columnId)
+
+
+16. Skill
+----------------
+id (Int, PK)
+name (String, Unique)
+category (String, nullable) - e.g. technical, soft, language
+status (String)
+createdAt (DateTime)
+d_status (String)
+
+Relations:
+- 1:M with UserSkill
+- 1:M with JobSkill
+- 1:M with JobRoleSkill
+
+
+17. UserSkill
+----------------
+id (Int, PK)
+userId (Int, FK to User.id)
+skillId (Int, FK to Skill.id)
+proficiency (Int, nullable) - e.g. 1 to 5
+createdAt (DateTime)
+d_status (String)
+
+Relations:
+- M:1 with User
+- M:1 with Skill
+
+Constraints:
+- Unique (userId, skillId)
+
+
+18. JobSkill
+----------------
+id (Int, PK)
+jobId (Int, FK to Job.id)
+skillId (Int, FK to Skill.id)
+weight (Int, nullable) - e.g. 1 to 5
+createdAt (DateTime)
+d_status (String)
+
+Relations:
+- M:1 with Job
+- M:1 with Skill
+
+Constraints:
+- Unique (jobId, skillId)
+
+
+19. JobRoleSkill
+----------------
+id (Int, PK)
+jobRoleId (Int, FK to JobRole.id)
+skillId (Int, FK to Skill.id)
+createdAt (DateTime)
+d_status (String)
+
+Relations:
+- M:1 with JobRole
+- M:1 with Skill
+
+Constraints:
+- Unique (jobRoleId, skillId)
+
+
+20. UserJobRole
+----------------
+id (Int, PK)
+userId (Int, FK to User.id)
+jobRoleId (Int, FK to JobRole.id)
+createdAt (DateTime)
+d_status (String)
+
+Relations:
+- M:1 with User
+- M:1 with JobRole
+
+Constraints:
+- Unique (userId, jobRoleId)
+
+
+21. ApplicationComment
+----------------
+id (Int, PK)
+applicationId (Int, FK to CandidateApplication.id)
+senderId (Int, FK to User.id)
+text (Text)
+type (String) - "public" or "internal"
+createdAt (DateTime)
+d_status (String)
+
+Relations:
+- M:1 with CandidateApplication (onDelete: Cascade)
+- M:1 with User (sender, onDelete: Cascade)
+
+
+22. UserProfile
+----------------
+id (Int, PK)
+userId (Int, Unique, FK to User.id)
+firstName (String, nullable)
+lastName (String, nullable)
+gender (String, nullable)
+dob (DateTime, nullable)
+correspondenceLanguage (String, nullable)
+nationalityAtBirth (String, nullable)
+currentNationality (String, nullable)
+legalResidency (String, nullable)
+maritalStatus (String, nullable)
+volunteerInterest (String, nullable)
+disability (Boolean)
+refugeeStatus (Boolean)
+closestCity (String, nullable)
+createdAt (DateTime)
+updatedAt (DateTime)
+d_status (String)
+
+Relations:
+- 1:1 with User (onDelete: Cascade)
+
+
+23. UserPhone
+----------------
+id (Int, PK)
+userId (Int, FK to User.id)
+phoneType (String) - e.g. Mobile, Home, Work
+phoneNumber (String)
+createdAt (DateTime)
+updatedAt (DateTime)
+d_status (String)
+
+Relations:
+- M:1 with User (onDelete: Cascade)
+
+
+24. UserAddress
+----------------
+id (Int, PK)
+userId (Int, FK to User.id)
+address (String)
+address2 (String, nullable)
+city (String)
+postalCode (String)
+state (String)
+country (String)
+createdAt (DateTime)
+updatedAt (DateTime)
+d_status (String)
+
+Relations:
+- M:1 with User (onDelete: Cascade)
+
+
+25. UserAcademicQualification
+----------------
+id (Int, PK)
+userId (Int, FK to User.id)
+degreeLevel (String)
+diplomaObtained (String)
+fromDate (DateTime)
+toDate (DateTime)
+mainField (String)
+university (String)
+createdAt (DateTime)
+updatedAt (DateTime)
+d_status (String)
+
+Relations:
+- M:1 with User (onDelete: Cascade)
+
+
+26. UserLanguage
+----------------
+id (Int, PK)
+userId (Int, FK to User.id)
+language (String)
+level (String) - e.g. Native, Fluent, Basic
+createdAt (DateTime)
+updatedAt (DateTime)
+d_status (String)
+
+Relations:
+- M:1 with User (onDelete: Cascade)
+
+
+27. UserItSkill
+----------------
+id (Int, PK)
+userId (Int, FK to User.id)
+description (Text)
+createdAt (DateTime)
+updatedAt (DateTime)
+d_status (String)
+
+Relations:
+- M:1 with User (onDelete: Cascade)
+
+
+28. UserDocument
+----------------
+id (Int, PK)
+userId (Int, FK to User.id)
+docType (String) - e.g. passport, certification
+fileUrl (String)
+fileName (String)
+fileSize (Int, nullable) - in bytes
+createdAt (DateTime)
+updatedAt (DateTime)
+d_status (String)
+
+Relations:
+- M:1 with User (onDelete: Cascade)
+
+
+29. UserOtherQualification
+----------------
+id (Int, PK)
+userId (Int, FK to User.id)
+description (Text)
+createdAt (DateTime)
+updatedAt (DateTime)
+d_status (String)
+
+Relations:
+- M:1 with User (onDelete: Cascade)
+
+
+30. UserExperience
+----------------
+id (Int, PK)
+userId (Int, FK to User.id)
+jobTitle (String)
+employer (String)
+location (String, nullable)
+employmentType (String, nullable) - Full-time, Part-time, Contract, Internship, Freelance
+startDate (DateTime)
+endDate (DateTime, nullable)
+isCurrent (Boolean)
+responsibilities (Text, nullable)
+achievements (Text, nullable)
+createdAt (DateTime)
+updatedAt (DateTime)
+d_status (String)
+
+Relations:
+- M:1 with User (onDelete: Cascade)
+
+
+31. UserReference
+----------------
+id (Int, PK)
+userId (Int, FK to User.id)
+refName (String)
+relationship (String) - e.g. Manager, Colleague, Professor
+organization (String, nullable)
+position (String, nullable)
+email (String, nullable)
+phone (String, nullable)
+createdAt (DateTime)
+updatedAt (DateTime)
+d_status (String)
+
+Relations:
+- M:1 with User (onDelete: Cascade)
+
+
+32. AnonymousDiscoveryProfile
+----------------
+id (Int, PK)
+userId (Int, Unique, FK to User.id)
+industry (String, nullable)
+targetRole (String, nullable)
+remotePreference (String, nullable) - remote, hybrid, onsite, any
+salaryMin (Float, nullable)
+salaryMax (Float, nullable)
+skillsKeywords (Text, nullable) - e.g. "React, Node.js, AWS"
+experienceYears (Int, nullable)
+createdAt (DateTime)
+updatedAt (DateTime)
+d_status (String)
+
+Relations:
+- 1:1 with User (onDelete: Cascade)
+- 1:M with AIOperator
+- 1:M with AnonymousJobMatch
+
+
+33. AIOperator
+----------------
+id (Int, PK)
+profileId (Int, FK to AnonymousDiscoveryProfile.id)
+name (String)
+isActive (Boolean)
+runFrequency (String) - hourly, daily, weekly, manual
+lastRunAt (DateTime, nullable)
+createdAt (DateTime)
+updatedAt (DateTime)
+d_status (String)
+
+Relations:
+- M:1 with AnonymousDiscoveryProfile (onDelete: Cascade)
+
+
+34. AnonymousJobMatch
+----------------
+id (Int, PK)
+profileId (Int, FK to AnonymousDiscoveryProfile.id)
+jobTitle (String)
+companyName (String, nullable)
+location (String, nullable)
+jobUrl (Text, nullable)
+description (Text, nullable)
+fitScore (Float)
+fitReason (Text, nullable)
+status (String) - new, bookmarked, applied, ignored
+createdAt (DateTime)
+updatedAt (DateTime)
+d_status (String)
+
+Relations:
+- M:1 with AnonymousDiscoveryProfile (onDelete: Cascade)

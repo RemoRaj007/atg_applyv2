@@ -1,0 +1,578 @@
+datasource db {
+  provider = "mysql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  email       String   @unique
+  name        String
+  password    String
+  phone       String?
+  country     String?
+  city        String?
+  role        String   @default("candidate") // admin, operator, candidate, visitor, company
+  pkg         String   @default("Trial") // Trial, Premium, Professional
+  appsUsed    Int      @default(0)
+  appsTotal   Int      @default(2)
+  capacity    Int      @default(10) // operators only: max concurrent applications they can staff
+  createdAt   DateTime @default(now())
+  d_status    String   @default("active")
+  isLegendary Boolean  @default(false)
+  profilePhoto String?
+  bio          String?  @db.Text
+  department   String?
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
+
+  // Relations
+  applications CandidateApplication[] @relation("CandidateApps")
+  staffedApps  CandidateApplication[] @relation("StaffedApps")
+
+  companyId Int?
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  requests      ChangeRequest[] @relation("CreatedRequests")
+  profileValues ProfileValue[]
+  skills        UserSkill[]
+  userJobRoles  UserJobRole[]
+
+  profile                UserProfile?
+  phones                 UserPhone[]
+  addresses              UserAddress[]
+  academicQualifications UserAcademicQualification[]
+  languages              UserLanguage[]
+  itSkills               UserItSkill[]
+  documents              UserDocument[]
+  otherQualifications    UserOtherQualification[]
+  experiences            UserExperience[]
+  references             UserReference[]
+  comments               ApplicationComment[]
+  discoveryProfile       AnonymousDiscoveryProfile?
+}
+
+model Company {
+  id          Int      @id @default(autoincrement())
+  name        String
+  email       String   @unique
+  website     String?
+  description String?
+  status      String   @default("pending") // pending, approved, rejected
+  d_status    String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users User[]
+  jobs  Job[]
+}
+
+model Job {
+  id         Int       @id @default(autoincrement())
+  company    String // backward compatibility text field
+  companyId  Int?
+  companyRel Company?  @relation(fields: [companyId], references: [id])
+  title      String
+  location   String?
+  source     String?
+  deadline   DateTime?
+  status     String    @default("approved") // pending_payment, pending, approved, rejected
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  d_status   String    @default("active")
+
+  jobUrl       String? @db.Text
+  fitReason    String? @db.Text
+  experience   String?
+  locationType String?
+  description  String? @db.Text
+
+  jobRoleId Int?
+  jobRole   JobRole? @relation(fields: [jobRoleId], references: [id])
+
+  applications CandidateApplication[]
+  payments     Payment[]              @relation("JobPayments")
+  formColumns  JobFormColumn[]
+  skills       JobSkill[]
+}
+
+model JobRole {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  status    String   @default("active") // pending, active, rejected
+  createdAt DateTime @default(now())
+  d_status  String   @default("active")
+
+  jobRoleSkills JobRoleSkill[]
+  jobs          Job[]
+  userJobRoles  UserJobRole[]
+}
+
+model CandidateApplication {
+  id                Int       @id @default(autoincrement())
+  userId            Int
+  jobId             Int?
+  scholarshipId     Int?
+  staffId           Int?
+  fitScore          Float?
+  successRate       Float?
+  reason            String?
+  status            String    @default("pending_approval")
+  candidateApproval Boolean   @default(false)
+  qcApproval        Boolean   @default(false)
+  proof             String?
+  proofRef          String?
+  internalNotes     String?
+  appliedAt         DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  candidateComment        String?   @db.Text
+  operatorDocNotes        String?   @db.Text
+  candidateFeedback       String?   @db.Text
+  candidateFeedbackRating Int?
+  jobLinkRequest          String?   @db.Text  // candidate-submitted external job URL for link-review flow
+  operatorFitNote         String?   @db.Text  // operator's written fit assessment for link requests
+  d_status                String    @default("active")
+
+  user        User                 @relation("CandidateApps", fields: [userId], references: [id])
+  job         Job?                 @relation(fields: [jobId], references: [id])
+  scholarship Scholarship?         @relation(fields: [scholarshipId], references: [id])
+  staff       User?                @relation("StaffedApps", fields: [staffId], references: [id])
+  formValues  JobFormValue[]
+  comments    ApplicationComment[]
+}
+
+model Payment {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  pkg             String?  @default("Trial")
+  amount          Float
+  paid            Boolean  @default(false)
+  currency        String   @default("USD")
+  method          String?
+  status          String   @default("pending")
+  ref             String?
+  slipUrl         String?
+  operatorComment String?
+  appsCount       Int      @default(0)
+  details         String?  @db.Text
+  createdAt       DateTime @default(now())
+  d_status        String   @default("active")
+
+  jobId Int?
+  job   Job? @relation("JobPayments", fields: [jobId], references: [id])
+}
+
+model PaymentOption {
+  id          Int      @id @default(autoincrement())
+  name        String
+  price       Float
+  currency    String   @default("USD")
+  appsCount   Int      @default(0)
+  features    String?  @db.Text
+  description String?  @db.Text
+  isPopular   Boolean  @default(false)
+  status      String   @default("active") // active, inactive
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  d_status    String   @default("active")
+}
+
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  type      String
+  title     String
+  body      String
+  unread    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  d_status  String   @default("active")
+}
+
+model Scholarship {
+  id           Int                  @id @default(autoincrement())
+  title        String
+  provider     String
+  amount       Float?
+  deadline     DateTime?
+  description  String?
+  createdAt    DateTime             @default(now())
+  d_status     String               @default("active")
+  applications CandidateApplication[]
+}
+
+model LogEntry {
+  id        Int      @id @default(autoincrement())
+  category  String // system, activity, security
+  level     String // e.g. error, warn, info, security, activity
+  message   String   @db.Text
+  meta      Json?
+  userId    Int?
+  createdAt DateTime @default(now())
+  d_status  String   @default("active")
+
+  @@index([category, createdAt])
+}
+
+model ChangeRequest {
+  id          Int      @id @default(autoincrement())
+  type        String // edit_user, delete_user
+  targetId    Int // target User ID
+  reason      String
+  details     String? // stringified JSON payload of changes
+  status      String   @default("pending") // pending, approved, rejected
+  createdAt   DateTime @default(now())
+  createdById Int
+  d_status    String   @default("active")
+
+  createdBy User @relation("CreatedRequests", fields: [createdById], references: [id])
+}
+
+model ProfileColumn {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique
+  label      String
+  inputType  String // "text", "number", "file"
+  isRequired Boolean  @default(false)
+  options    String?  @db.Text
+  status     String   @default("active")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  d_status   String   @default("active")
+
+  values ProfileValue[]
+}
+
+model ProfileValue {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  columnId  Int
+  value     String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  d_status  String   @default("active")
+
+  user   User          @relation(fields: [userId], references: [id])
+  column ProfileColumn @relation(fields: [columnId], references: [id])
+
+  @@unique([userId, columnId])
+}
+
+model JobFormColumn {
+  id         Int      @id @default(autoincrement())
+  jobId      Int
+  name       String
+  label      String
+  inputType  String // "text", "number", "file"
+  isRequired Boolean  @default(false)
+  options    String?  @db.Text
+  status     String   @default("active")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  d_status   String   @default("active")
+
+  job    Job            @relation(fields: [jobId], references: [id])
+  values JobFormValue[]
+}
+
+model JobFormValue {
+  id            Int      @id @default(autoincrement())
+  applicationId Int
+  columnId      Int
+  value         String   @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  d_status      String   @default("active")
+
+  application CandidateApplication @relation(fields: [applicationId], references: [id])
+  column      JobFormColumn        @relation(fields: [columnId], references: [id])
+
+  @@unique([applicationId, columnId])
+}
+
+model Skill {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  category  String? // e.g., "technical", "soft", "language"
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  d_status  String   @default("active")
+
+  userSkills    UserSkill[]
+  jobSkills     JobSkill[]
+  jobRoleSkills JobRoleSkill[]
+}
+
+model UserSkill {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  skillId     Int
+  proficiency Int? // e.g., 1 to 5
+  createdAt   DateTime @default(now())
+  d_status    String   @default("active")
+
+  user  User  @relation(fields: [userId], references: [id])
+  skill Skill @relation(fields: [skillId], references: [id])
+
+  @@unique([userId, skillId])
+}
+
+model JobSkill {
+  id        Int      @id @default(autoincrement())
+  jobId     Int
+  skillId   Int
+  weight    Int? // e.g., 1 to 5
+  createdAt DateTime @default(now())
+  d_status  String   @default("active")
+
+  job   Job   @relation(fields: [jobId], references: [id])
+  skill Skill @relation(fields: [skillId], references: [id])
+
+  @@unique([jobId, skillId])
+}
+
+model JobRoleSkill {
+  id        Int      @id @default(autoincrement())
+  jobRoleId Int
+  skillId   Int
+  createdAt DateTime @default(now())
+  d_status  String   @default("active")
+
+  jobRole JobRole @relation(fields: [jobRoleId], references: [id])
+  skill   Skill   @relation(fields: [skillId], references: [id])
+
+  @@unique([jobRoleId, skillId])
+}
+
+model UserJobRole {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  jobRoleId Int
+  createdAt DateTime @default(now())
+  d_status  String   @default("active")
+
+  user    User    @relation(fields: [userId], references: [id])
+  jobRole JobRole @relation(fields: [jobRoleId], references: [id])
+
+  @@unique([userId, jobRoleId])
+}
+
+model ApplicationComment {
+  id            Int                  @id @default(autoincrement())
+  applicationId Int
+  senderId      Int
+  text          String               @db.Text
+  type          String               @default("public") // "public" or "internal"
+  createdAt     DateTime             @default(now())
+  d_status      String               @default("active")
+
+  application   CandidateApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  sender        User                 @relation(fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+
+model UserProfile {
+  id                     Int       @id @default(autoincrement())
+  userId                 Int       @unique
+  firstName              String?
+  lastName               String?
+  gender                 String?
+  dob                    DateTime?
+  correspondenceLanguage String?
+  nationalityAtBirth     String?
+  currentNationality     String?
+  legalResidency         String?
+  maritalStatus          String?
+  volunteerInterest      String?
+  disability             Boolean   @default(false)
+  refugeeStatus          Boolean   @default(false)
+  closestCity            String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  d_status  String   @default("active")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserPhone {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  phoneType   String // e.g. "Mobile", "Home", "Work"
+  phoneNumber String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  d_status    String   @default("active")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserAddress {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  address    String
+  address2   String?
+  city       String
+  postalCode String
+  state      String
+  country    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  d_status   String   @default("active")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserAcademicQualification {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  degreeLevel     String
+  diplomaObtained String
+  fromDate        DateTime
+  toDate          DateTime
+  mainField       String
+  university      String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  d_status        String   @default("active")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserLanguage {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  language  String
+  level     String // e.g., Native, Fluent, Basic
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  d_status  String   @default("active")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserItSkill {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  description String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  d_status    String   @default("active")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserDocument {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  docType   String // e.g., "passport", "certification"
+  fileUrl   String
+  fileName  String
+  fileSize  Int? // in bytes
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  d_status  String   @default("active")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserOtherQualification {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  description String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  d_status    String   @default("active")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserExperience {
+  id               Int       @id @default(autoincrement())
+  userId           Int
+  jobTitle         String
+  employer         String
+  location         String?
+  employmentType   String?   // Full-time, Part-time, Contract, Internship, Freelance
+  startDate        DateTime
+  endDate          DateTime?
+  isCurrent        Boolean   @default(false)
+  responsibilities String?   @db.Text
+  achievements     String?   @db.Text
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  d_status         String    @default("active")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserReference {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  refName      String
+  relationship String   // e.g., Manager, Colleague, Professor
+  organization String?
+  position     String?
+  email        String?
+  phone        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  d_status     String   @default("active")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AnonymousDiscoveryProfile {
+  id               Int                 @id @default(autoincrement())
+  userId           Int                 @unique
+  industry         String?
+  targetRole       String?
+  remotePreference String?             // remote, hybrid, onsite, any
+  salaryMin        Float?
+  salaryMax        Float?
+  skillsKeywords   String?             @db.Text // e.g. "React, Node.js, AWS"
+  experienceYears  Int?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  d_status         String              @default("active")
+
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  operators        AIOperator[]
+  matches          AnonymousJobMatch[]
+}
+
+model AIOperator {
+  id           Int                       @id @default(autoincrement())
+  profileId    Int
+  name         String
+  isActive     Boolean                   @default(true)
+  runFrequency String                    @default("daily") // hourly, daily, weekly, manual
+  lastRunAt    DateTime?
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+  d_status     String                    @default("active")
+
+  profile      AnonymousDiscoveryProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model AnonymousJobMatch {
+  id           Int                       @id @default(autoincrement())
+  profileId    Int
+  jobTitle     String
+  companyName  String?
+  location     String?
+  jobUrl       String?                   @db.Text
+  description  String?                   @db.Text
+  fitScore     Float
+  fitReason    String?                   @db.Text
+  status       String                    @default("new") // new, bookmarked, applied, ignored
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+  d_status     String                    @default("active")
+
+  profile      AnonymousDiscoveryProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
