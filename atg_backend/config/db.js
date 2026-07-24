@@ -1,33 +1,21 @@
 const { PrismaClient } = require("@prisma/client");
-const { PrismaMariaDb } = require("@prisma/adapter-mariadb");
+const { PrismaPg } = require("@prisma/adapter-pg");
 
-// Discrete connection settings, mirroring the reference backend's app/config/db.config.js
-// convention, instead of a single opaque DATABASE_URL connection string.
-const dbConfig = {
-  HOST: process.env.DB_HOST,
-  PORT: parseInt(process.env.DB_PORT, 10) || 3306,
-  USER: process.env.DB_USER,
-  PASSWORD: process.env.DB_PASSWORD,
-  DB: process.env.DB_NAME,
-};
+// Supabase Postgres. Use the pooled connection string (port 6543, pgbouncer) for
+// DATABASE_URL in serverless/Vercel deployments to avoid exhausting Postgres'
+// connection limit across concurrently invoked function instances.
+const connectionString = process.env.DATABASE_URL;
 
-// PrismaMariaDb expects a plain connection-config object (it builds and manages its own
-// internal pool from it) — NOT a pre-built `mariadb.createPool()` instance. Passing a Pool
-// here is silently misinterpreted and the adapter falls back to its own pool defaults.
-const adapter = new PrismaMariaDb({
-  host: dbConfig.HOST,
-  port: dbConfig.PORT,
-  user: dbConfig.USER,
-  password: dbConfig.PASSWORD,
-  database: dbConfig.DB,
-  connectionLimit: 5,
-  // MySQL 8's default caching_sha2_password auth plugin needs the server's RSA
-  // public key to exchange the password over a non-SSL connection; without this,
-  // the driver hangs until the pool-acquire timeout instead of failing fast.
-  allowPublicKeyRetrieval: true,
-  connectTimeout: 10000,
-});
+const adapter = new PrismaPg({ connectionString });
 
-const prisma = new PrismaClient({ adapter });
+const globalForPrisma = globalThis;
 
-module.exports = { prisma, dbConfig };
+// Reuse a single PrismaClient across invocations in serverless environments
+// (module scope is cached between warm invocations on Vercel).
+const prisma = globalForPrisma.__atgPrisma || new PrismaClient({ adapter });
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.__atgPrisma = prisma;
+}
+
+module.exports = { prisma };
