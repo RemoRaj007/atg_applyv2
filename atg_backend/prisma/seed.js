@@ -17,7 +17,6 @@
 require('dotenv').config();
 const argon2 = require('argon2');
 const { prisma } = require('../config/db');
-const createDatabaseIfNotExists = require('../config/atg_createDatabase');
 
 const FORCE = process.argv.includes('--force');
 const SEED_PASSWORD = 'Password123!';
@@ -132,8 +131,6 @@ const OPERATORS = [
 const APP_STATUSES = ['pending_approval', 'requested', 'approved', 'rejected'];
 
 async function main() {
-  await createDatabaseIfNotExists();
-
   let existingUsers;
   try {
     existingUsers = await prisma.user.count();
