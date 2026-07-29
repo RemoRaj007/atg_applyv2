@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --config vite.atg.config.ts",
-    "build": "tsc -p tsconfig.app.atg.json && vite build --config vite.atg.config.ts",
+    "build": "tsc -p tsconfig.app.atg.json && vite build --config vite.atg.config.ts && node -e \"require('fs').copyFileSync('dist/atg_index.html','dist/index.html')\"",
     "lint": "oxlint src",
     "preview": "vite preview --config vite.atg.config.ts"
   },
