@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node atg_server.js",
     "dev": "node atg_server.js",
+    "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:seed": "node prisma/seed.js",
