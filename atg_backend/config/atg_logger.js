@@ -5,6 +5,10 @@ const PrismaLogTransport = require("../utils/PrismaLogTransport");
 
 const logsDir = path.join(__dirname, "..", "logs");
 const isProduction = process.env.NODE_ENV === "production";
+// Vercel's filesystem is read-only outside /tmp, so file-rotated logs
+// aren't available there; console output (captured by Vercel's log viewer)
+// and the DB transport below still work.
+const isServerless = Boolean(process.env.VERCEL);
 
 const consoleFormat = winston.format.combine(
   winston.format.colorize({ all: true }),
@@ -20,17 +24,20 @@ const consoleFormat = winston.format.combine(
 const buildLogger = (category, levels, colors) => {
   winston.addColors(colors);
 
-  const transports = [
-    new winston.transports.DailyRotateFile({
-      dirname: path.join(logsDir, `${category}_log`),
-      filename: "%DATE%.log",
-      datePattern: "DD_MM_YYYY",
-      format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
-    }),
-    new PrismaLogTransport({ category }),
-  ];
+  const transports = [new PrismaLogTransport({ category })];
 
-  if (!isProduction) {
+  if (!isServerless) {
+    transports.push(
+      new winston.transports.DailyRotateFile({
+        dirname: path.join(logsDir, `${category}_log`),
+        filename: "%DATE%.log",
+        datePattern: "DD_MM_YYYY",
+        format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+      })
+    );
+  }
+
+  if (!isProduction || isServerless) {
     transports.push(new winston.transports.Console({ format: consoleFormat }));
   }
 
