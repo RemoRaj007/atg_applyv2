@@ -1,6 +1,7 @@
 const { prisma } = require("../../config/db");
 const { systemLogger } = require("../../config/atg_logger");
 const { validateNIC, isValidPhone } = require("../../utils/validators");
+const resolveFileUrl = require("../../utils/fileUrl");
 
 const getEntityModel = (entity) => {
   const map = {
@@ -245,7 +246,7 @@ exports.uploadDocument = async (req, res, next) => {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const fileUrl = `/uploads/${req.file.filename}`;
+    const fileUrl = resolveFileUrl(req.file);
     const fileName = req.file.originalname;
     const fileSize = req.file.size;
 

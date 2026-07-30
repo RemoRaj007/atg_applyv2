@@ -2,6 +2,7 @@ const asyncHandler = require("../../utils/asyncHandler");
 const { sendSuccess } = require("../../utils/apiResponse");
 const userService = require("./user.service");
 const { toCsv } = require("../../utils/csv");
+const resolveFileUrl = require("../../utils/fileUrl");
 
 const list = asyncHandler(async (req, res) => {
   const users = await userService.list();
@@ -55,7 +56,7 @@ const uploadProfilePhoto = asyncHandler(async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ status: false, message: "No file uploaded" });
   }
-  const fileUrl = `/uploads/${req.file.filename}`;
+  const fileUrl = resolveFileUrl(req.file);
   sendSuccess(res, { message: "Profile photo uploaded", data: { fileUrl } });
 });
 
