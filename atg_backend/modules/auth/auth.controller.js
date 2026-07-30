@@ -8,7 +8,9 @@ const REFRESH_COOKIE_NAME = "refreshToken";
 // different sites, so the refresh cookie is sent cross-site. SameSite=Lax would
 // make the browser withhold it, breaking session restore on reload and every
 // token refresh. SameSite=None permits that, and requires Secure.
-const isCrossSite = process.env.NODE_ENV === "production";
+// Keyed off VERCEL as well as NODE_ENV: the deployed API always runs on Vercel,
+// so the cookie stays correct even if NODE_ENV is not set there.
+const isCrossSite = process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL);
 const refreshCookieOptions = () => ({
   httpOnly: true,
   secure: isCrossSite,
