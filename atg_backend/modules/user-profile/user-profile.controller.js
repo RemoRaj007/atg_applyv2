@@ -1,7 +1,8 @@
 const { prisma } = require("../../config/db");
-const { systemLogger } = require("../../config/atg_logger");
+const { systemLogger, securityLogger } = require("../../config/atg_logger");
 const { validateNIC, isValidPhone } = require("../../utils/validators");
 const resolveFileUrl = require("../../utils/fileUrl");
+const sanitizeUser = require("../../utils/sanitizeUser");
 
 const getEntityModel = (entity) => {
   const map = {
@@ -32,7 +33,23 @@ exports.getJobRoles = async (req, res, next) => {
 
 exports.getProfile = async (req, res, next) => {
   try {
-    const userId = parseInt(req.params.userId);
+    const userId = parseInt(req.params.userId, 10);
+
+    if (Number.isNaN(userId)) {
+      return res.status(400).json({ status: false, message: "Invalid user id" });
+    }
+
+    // Candidates may only read their own profile; staff read any. Without this
+    // check any authenticated user could dump another user's identity documents.
+    const isSelf = req.user.id === userId;
+    const isStaff = ["admin", "operator"].includes(req.user.role);
+    if (!isSelf && !isStaff) {
+      securityLogger.security("Blocked cross-user profile read", {
+        requesterId: req.user.id,
+        targetUserId: userId,
+      });
+      return res.status(403).json({ status: false, message: "Forbidden" });
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -53,9 +70,9 @@ exports.getProfile = async (req, res, next) => {
       }
     });
 
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) return res.status(404).json({ status: false, message: "User not found" });
 
-    res.json(user);
+    res.json(sanitizeUser(user));
   } catch (error) {
     next(error);
   }
@@ -144,11 +161,8 @@ exports.addEntity = async (req, res, next) => {
       skillName = data.language;
     }
 
-    require('fs').appendFileSync('addEntity.log', `[${new Date().toISOString()}] model=${model}, data.description=${data.description}, skillName=${skillName}\n`);
-
     if (skillName && skillCategory) {
       const existingSkill = await prisma.skill.findUnique({ where: { name: skillName } });
-      console.log(`[addEntity] existingSkill:`, existingSkill);
       if (!existingSkill) {
         await prisma.skill.create({
           data: {
