@@ -20,7 +20,15 @@ const list = async (requester) => {
   const jobs = await prisma.job.findMany({
     where,
     orderBy: { createdAt: "desc" },
-    include: { jobRole: true },
+    // skills are included so the operator edit modal can prefill them
+    // (OperatorJobs.tsx reads job.skills[].skill.name off the list response).
+    include: {
+      jobRole: true,
+      skills: {
+        where: { d_status: "active" },
+        include: { skill: true },
+      },
+    },
   });
 
   // If candidate requesting, compute and attach comprehensive fitScore
@@ -59,8 +67,36 @@ const getById = async (id, requester) => {
   return job;
 };
 
+// The job form sends skills as names; JobSkill needs ids. Reuse existing Skill
+// rows where the name already matches so the catalog does not sprout duplicates.
+const resolveSkillIds = async (names) => {
+  const ids = [];
+  for (const raw of names) {
+    const name = String(raw).trim();
+    if (!name) continue;
+    const existing = await prisma.skill.findUnique({ where: { name } });
+    const skill = existing || (await prisma.skill.create({ data: { name } }));
+    ids.push(skill.id);
+  }
+  return ids;
+};
+
+// Flattens the nested jobRequirements the UI posts onto the columns Job actually
+// has, and returns the skill names separately since they live in a relation.
+const splitJobRequirements = (data) => {
+  const { jobRequirements, ...rest } = data;
+  if (!jobRequirements) return { jobData: rest, skillNames: null };
+
+  const { experience, locationType, skills } = jobRequirements;
+  return {
+    jobData: { ...rest, experience, locationType },
+    skillNames: Array.isArray(skills) ? skills : null,
+  };
+};
+
 const create = async (data, requester) => {
-  const jobData = { ...data };
+  const { jobData: incoming, skillNames } = splitJobRequirements(data);
+  const jobData = { ...incoming };
   if (requester.role === "company") {
     jobData.companyId = requester.companyId;
     jobData.status = "pending_payment";
@@ -70,6 +106,11 @@ const create = async (data, requester) => {
     jobData.company = company ? company.name : "Company";
   } else {
     jobData.status = "approved";
+  }
+
+  if (skillNames && skillNames.length) {
+    const skillIds = await resolveSkillIds(skillNames);
+    jobData.skills = { create: skillIds.map((skillId) => ({ skillId })) };
   }
 
   const job = await prisma.job.create({ data: jobData });
@@ -107,8 +148,20 @@ const update = async (id, data, requester) => {
     throw ApiError.forbidden("You can only edit your own company's job posts");
   }
 
-  const updatedJob = await prisma.job.update({ where: { id }, data });
-  activityLogger.activity("Job updated", { jobId: updatedJob.id, fields: Object.keys(data) });
+  const { jobData, skillNames } = splitJobRequirements(data);
+
+  // Only touch the skill links when the caller actually sent a skills array —
+  // an update that omits jobRequirements must leave existing links alone.
+  if (skillNames) {
+    const skillIds = await resolveSkillIds(skillNames);
+    jobData.skills = {
+      deleteMany: {}, // replace-all, matching jobRole.service.js's semantics
+      create: skillIds.map((skillId) => ({ skillId })),
+    };
+  }
+
+  const updatedJob = await prisma.job.update({ where: { id }, data: jobData });
+  activityLogger.activity("Job updated", { jobId: updatedJob.id, fields: Object.keys(jobData) });
   return updatedJob;
 };
 
