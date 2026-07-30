@@ -4,10 +4,17 @@ const authService = require("./auth.service");
 const parseDurationToMs = require("../../utils/parseDuration");
 
 const REFRESH_COOKIE_NAME = "refreshToken";
+// In production the frontend (Cloudflare Pages) and this API (Vercel) are on
+// different sites, so the refresh cookie is sent cross-site. SameSite=Lax would
+// make the browser withhold it, breaking session restore on reload and every
+// token refresh. SameSite=None permits that, and requires Secure.
+// Keyed off VERCEL as well as NODE_ENV: the deployed API always runs on Vercel,
+// so the cookie stays correct even if NODE_ENV is not set there.
+const isCrossSite = process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL);
 const refreshCookieOptions = () => ({
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "lax",
+  secure: isCrossSite,
+  sameSite: isCrossSite ? "none" : "lax",
   maxAge: parseDurationToMs(process.env.JWT_REFRESH_EXPIRES_IN, 7 * 24 * 60 * 60 * 1000),
 });
 

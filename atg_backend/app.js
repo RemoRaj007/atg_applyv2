@@ -33,9 +33,17 @@ app.use(helmet({
 }));
 app.use(cookieParser());
 app.use(express.json());
-const allowedOrigins = process.env.FRONTEND_URL
-  ? process.env.FRONTEND_URL.split(",").map((o) => o.trim())
-  : [];
+// The deployed frontend origin. Kept as a default so the app still works if
+// FRONTEND_URL is missing from the environment; FRONTEND_URL (comma-separated)
+// extends this list for custom domains and preview deployments.
+const DEFAULT_ALLOWED_ORIGINS = ["https://atgapplyv2.pages.dev"];
+
+const allowedOrigins = [
+  ...DEFAULT_ALLOWED_ORIGINS,
+  ...(process.env.FRONTEND_URL
+    ? process.env.FRONTEND_URL.split(",").map((o) => o.trim()).filter(Boolean)
+    : []),
+].map((o) => o.replace(/\/$/, ""));
 
 app.use(
   cors({
@@ -44,10 +52,14 @@ app.use(
       const isLocalhost = origin.startsWith("http://localhost:") ||
                           origin.startsWith("https://localhost:") ||
                           origin.startsWith("http://127.0.0.1:");
-      if (isLocalhost || allowedOrigins.includes(origin)) {
+      // Cloudflare gives each deploy its own <hash>.<project>.pages.dev subdomain.
+      const isPagesPreview = /^https:\/\/[a-z0-9-]+\.atgapplyv2\.pages\.dev$/.test(origin);
+      if (isLocalhost || isPagesPreview || allowedOrigins.includes(origin.replace(/\/$/, ""))) {
         return callback(null, true);
       }
-      return callback(new Error("Not allowed by CORS"), false);
+      // Signal "no CORS headers" rather than throwing: throwing reaches the error
+      // handler and returns a 500, which masks the real reason in the browser.
+      return callback(null, false);
     },
     credentials: true,
   })

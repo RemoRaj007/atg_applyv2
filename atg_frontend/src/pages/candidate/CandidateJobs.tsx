@@ -12,6 +12,7 @@ import {
   Building2, Tag, FileText, Globe, Target, Calendar, MessageSquare, GraduationCap,
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
+import { getFileUrl } from '../../utils/fileUrl';
 
 // ─── Types ────────────────────────────────────────────────────────
 export interface JobWithFit extends Job {
@@ -314,7 +315,7 @@ export function JobDetailsModal({ job, scholarship, onClose, onRequestApply, app
                     return (
                       <div key={idx} className="flex items-center gap-2 text-xs">
                         <FileText className="w-4 h-4 text-indigo-400" />
-                        <a href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${filePath}`}
+                        <a href={getFileUrl(filePath)}
                           target="_blank" rel="noreferrer" className="text-blue-400 font-bold underline hover:text-blue-300">
                           {fileName}
                         </a>
