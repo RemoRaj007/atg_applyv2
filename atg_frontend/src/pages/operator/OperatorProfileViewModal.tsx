@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { userProfileApi } from '../../api/userProfileApi';
 import type { FullUserProfile } from '../../api/userProfileApi';
 import { X, FileText, Download, Briefcase, Clock, Users, TrendingUp } from 'lucide-react';
+import { getFileUrl } from '../../utils/fileUrl';
 
 // ─── Experience Time Calculator Helpers ─────────────────────────────────────
 function calcMonths(startDate: string, endDate?: string, isCurrent?: boolean): number {
@@ -75,8 +76,7 @@ export default function OperatorProfileViewModal({
   if (!profile) return null;
 
   const viewFile = (url: string) => {
-    const backendUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
-    window.open(`${backendUrl}${url}`, '_blank');
+    window.open(getFileUrl(url), '_blank');
   };
 
   const expSummary = profile.experiences ? calcExperienceSummary(profile.experiences) : null;

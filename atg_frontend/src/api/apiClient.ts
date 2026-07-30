@@ -19,6 +19,11 @@ const resolveBaseURL = () => {
 
 const baseURL = resolveBaseURL();
 
+// Exported so utils/fileUrl.ts derives file URLs from the same resolved API
+// origin, rather than each call site re-deriving it (and defaulting to
+// localhost) on its own.
+export const apiBaseUrl = baseURL;
+
 export const apiClient = axios.create({
   baseURL,
   // Vercel cold starts plus a first Supabase connection can take well over 10s;

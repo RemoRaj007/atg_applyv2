@@ -7,6 +7,7 @@ import Button from '../../components/ui/AtgButton';
 import ReusableTable from '../../components/ui/AtgReusableTable';
 import getIconComponent from '../../components/ui/AtgIconMapper';
 import { FileText, XCircle, CheckCircle } from 'lucide-react';
+import { getFileUrl } from '../../utils/fileUrl';
 
 const statusClass: Record<string, string> = {
   completed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
@@ -68,13 +69,6 @@ export default function OperatorPayments() {
     } finally {
       setSubmittingReject(false);
     }
-  };
-
-  const getFileUrl = (path: string) => {
-    const base = import.meta.env.VITE_API_URL
-      ? import.meta.env.VITE_API_URL.replace('/api', '')
-      : 'http://localhost:5000';
-    return `${base}${path}`;
   };
 
   const columns = [

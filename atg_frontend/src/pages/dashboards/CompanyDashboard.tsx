@@ -13,6 +13,7 @@ import ReusableTable from '../../components/ui/AtgReusableTable';
 import getIconComponent from '../../components/ui/AtgIconMapper';
 import FitBadge from '../../components/ui/FitBadge';
 import StatusBadge from '../../components/ui/StatusBadge';
+import { getFileUrl } from '../../utils/fileUrl';
 
 export default function CompanyDashboard() {
   const { t } = useTranslation();
@@ -797,7 +798,7 @@ export default function CompanyDashboard() {
                         <span className="font-bold text-gray-700 block">{fv.column?.label}</span>
                         {fv.column?.inputType === 'file' ? (
                           <a 
-                            href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${fv.value}`} 
+                            href={getFileUrl(fv.value)} 
                             target="_blank" 
                             rel="noreferrer" 
                             className="text-gray-800 underline font-semibold hover:text-black inline-block mt-1"
