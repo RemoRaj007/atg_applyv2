@@ -56,4 +56,10 @@ const googleLogin = asyncHandler(async (req, res) => {
   sendSuccess(res, { message: "Authenticated with Google", data: { user, accessToken } });
 });
 
-module.exports = { register, login, refresh, logout, googleLogin, forgotPassword, resetPassword };
+const microsoftLogin = asyncHandler(async (req, res) => {
+  const { user, accessToken, refreshToken } = await authService.microsoftLogin(req.body);
+  res.cookie(REFRESH_COOKIE_NAME, refreshToken, refreshCookieOptions());
+  sendSuccess(res, { message: "Authenticated with Microsoft", data: { user, accessToken } });
+});
+
+module.exports = { register, login, refresh, logout, googleLogin, microsoftLogin, forgotPassword, resetPassword };

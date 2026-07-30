@@ -12,6 +12,7 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
   googleLogin: (idToken: string) => Promise<void>;
+  microsoftLogin: (idToken: string) => Promise<void>;
   logout: () => Promise<void>;
   setUser: (user: User | null) => void;
 }
@@ -55,6 +56,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(user);
   };
 
+  const microsoftLogin = async (idToken: string) => {
+    const { user, accessToken } = await authApi.microsoftLogin(idToken);
+    setAccessToken(accessToken);
+    setUser(user);
+  };
+
   const logout = async () => {
     try {
       await authApi.logout();
@@ -65,7 +72,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, register, googleLogin, logout, setUser }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, register, googleLogin, microsoftLogin, logout, setUser }}>
       {children}
     </AuthContext.Provider>
   );

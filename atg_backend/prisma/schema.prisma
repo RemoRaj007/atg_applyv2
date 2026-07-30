@@ -10,7 +10,10 @@ model User {
   id          Int      @id @default(autoincrement())
   email       String   @unique
   name        String
-  password    String
+  // Optional: users who only ever sign in through Google or Microsoft have no
+  // password. Previously required, which forced the social-login path to
+  // fabricate and hash a random password for every SSO user.
+  password    String?
   phone       String?
   country     String?
   city        String?
@@ -27,6 +30,17 @@ model User {
   department   String?
   resetPasswordToken   String?
   resetPasswordExpires DateTime?
+
+  // Federated identity. provider is "google" | "microsoft" (null for local
+  // password accounts); externalId is the IdP's stable subject — Google's `sub`
+  // or Entra's `oid` — which survives the user changing their email address.
+  // emailVerified records whether the address was verified by the IdP; accounts
+  // are only auto-linked by email when it was.
+  provider      String?
+  externalId    String?
+  emailVerified Boolean @default(false)
+
+  @@unique([provider, externalId])
 
   // Relations
   applications CandidateApplication[] @relation("CandidateApps")

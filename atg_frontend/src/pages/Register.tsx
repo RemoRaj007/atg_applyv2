@@ -8,6 +8,7 @@ import logfImg from '../assets/logf.png';
 import { validateEmail, validatePasswordStrength } from '../utils/validation';
 import PasswordStrengthMeter from '../components/ui/PasswordStrengthMeter';
 import PhoneInput from '../components/ui/PhoneInput';
+import SocialSignInButtons, { hasSocialSignIn } from '../components/ui/SocialSignInButtons';
 
 const RISING_PARTICLES = Array.from({ length: 48 }).map((_, i) => ({
   id: i,
@@ -348,6 +349,17 @@ export default function Register() {
               </button>
             </div>
           </form>
+
+          {hasSocialSignIn && (
+            <>
+              <div className="flex items-center gap-4 my-6">
+                <div className="h-px flex-1 bg-white/10" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">or</span>
+                <div className="h-px flex-1 bg-white/10" />
+              </div>
+              <SocialSignInButtons onError={setError} disabled={loading} />
+            </>
+          )}
 
           <p className="text-center text-sm text-slate-400 mt-6 font-medium">
             Already have an account?{' '}

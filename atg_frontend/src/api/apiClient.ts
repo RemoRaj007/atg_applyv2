@@ -48,7 +48,7 @@ apiClient.interceptors.request.use((config) => {
 
 // Endpoints that never carry (or are themselves establishing) an access token —
 // a 401 from these is a real auth failure, not an expired-token signal to retry
-const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/logout', '/auth/forgot-password', '/auth/reset-password'];
+const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/logout', '/auth/forgot-password', '/auth/reset-password', '/auth/google', '/auth/microsoft'];
 
 apiClient.interceptors.response.use(
   (response) => response,

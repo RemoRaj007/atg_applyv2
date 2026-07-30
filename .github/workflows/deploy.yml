@@ -41,6 +41,11 @@ jobs:
         working-directory: atg_frontend
         env:
           VITE_API_URL: https://placeholder.invalid/api
+          # Vite inlines these at build time, so a build without them ships a
+          # frontend whose social sign-in buttons never appear.
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+          VITE_MICROSOFT_CLIENT_ID: ${{ secrets.VITE_MICROSOFT_CLIENT_ID }}
+          VITE_MICROSOFT_TENANT_ID: ${{ secrets.VITE_MICROSOFT_TENANT_ID }}
         run: npm run build
 
   deploy:
