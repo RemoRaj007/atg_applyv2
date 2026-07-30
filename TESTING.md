@@ -56,8 +56,10 @@ How well the system does it.
 
 **Project-specific hot spots:** CORS origin handling and `helmet` config in
 `atg_backend/app.js`; JWT/refresh-cookie lifetimes; Argon2 password hashing
-cost; file uploads (type/size limits, path traversal, and the documented fact
-that local disk storage does not persist on serverless deploys).
+cost; file uploads (type/size limits, path traversal, and the two storage
+backends in `middlewares/upload.middleware.js` — local disk for development,
+Supabase Storage in production, since local disk does not persist across
+serverless invocations). Both backends need coverage, not just the local one.
 
 ## 3. Architecture & structural testing
 
