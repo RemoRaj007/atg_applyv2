@@ -2,6 +2,7 @@ const asyncHandler = require("../../utils/asyncHandler");
 const { sendSuccess } = require("../../utils/apiResponse");
 const profileValueService = require("./profile-value.service");
 const profileColumnService = require("../profile-columns/profile-column.service");
+const resolveFileUrl = require("../../utils/fileUrl");
 
 const getByUserId = asyncHandler(async (req, res) => {
   const userId = Number(req.params.userId || req.user.id);
@@ -25,7 +26,7 @@ const saveValues = asyncHandler(async (req, res) => {
   const filesMap = {};
   if (req.files && Array.isArray(req.files)) {
     req.files.forEach(file => {
-      filesMap[file.fieldname] = `/uploads/${file.filename}`;
+      filesMap[file.fieldname] = resolveFileUrl(file);
     });
   }
 

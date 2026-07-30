@@ -1,11 +1,34 @@
 import axios from 'axios';
 import type { AxiosResponse } from 'axios';
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Vite inlines import.meta.env at build time, so VITE_API_URL must be present in the
+// build environment — it cannot be injected at runtime by the host. When it's absent
+// (e.g. a deploy that forgot to set it) fall back on the origin rather than on
+// localhost, which would otherwise point every visitor at their own machine.
+const PRODUCTION_API_URL = 'https://atg-applyv2.vercel.app/api';
+const LOCAL_API_URL = 'http://localhost:5000/api';
+
+const resolveBaseURL = () => {
+  const configured = import.meta.env.VITE_API_URL?.trim();
+  if (configured) return configured;
+
+  const hostname = typeof window === 'undefined' ? '' : window.location.hostname;
+  const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+  return isLocal ? LOCAL_API_URL : PRODUCTION_API_URL;
+};
+
+const baseURL = resolveBaseURL();
+
+// Exported so utils/fileUrl.ts derives file URLs from the same resolved API
+// origin, rather than each call site re-deriving it (and defaulting to
+// localhost) on its own.
+export const apiBaseUrl = baseURL;
 
 export const apiClient = axios.create({
   baseURL,
-  timeout: 10000,
+  // Vercel cold starts plus a first Supabase connection can take well over 10s;
+  // a tighter timeout surfaces as a spurious "unexpected error" on the first request.
+  timeout: 30000,
   withCredentials: true, // sends/receives the httpOnly refresh-token cookie
 });
 

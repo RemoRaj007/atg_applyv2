@@ -10,6 +10,7 @@ import getIconComponent from '../../components/ui/AtgIconMapper';
 import OperatorProfileViewModal from './OperatorProfileViewModal';
 import { MessageSquare, Send, CheckCircle, MapPin, Calendar, DollarSign, Briefcase, Globe, Award, Info, ExternalLink, Link2, Star } from 'lucide-react';
 import { useSession } from '../../hooks/useSession';
+import { getFileUrl } from '../../utils/fileUrl';
 
 interface OperatorApplicationsProps {
   onlyBooked?: boolean;
@@ -523,7 +524,7 @@ export default function OperatorApplications({ onlyBooked = false }: OperatorApp
                             const refs = selectedApp.proofRef ? selectedApp.proofRef.split(',') : [];
                             const fileName = refs[idx] || `Document ${idx + 1}`;
                             return (
-                              <a key={idx} href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${filePath}`}
+                              <a key={idx} href={getFileUrl(filePath)}
                                 target="_blank" rel="noreferrer" className="text-blue-600 underline font-bold hover:text-blue-800 block font-sans">
                                 {fileName}
                               </a>

@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import PhoneInput from '../../components/ui/PhoneInput';
 import PasswordStrengthMeter from '../../components/ui/PasswordStrengthMeter';
 import { validatePasswordStrength } from '../../utils/validation';
+import { getFileUrl } from '../../utils/fileUrl';
 
 export default function SystemUserProfile() {
   const { user, setUser } = useSession();
@@ -33,13 +34,7 @@ export default function SystemUserProfile() {
 
   if (!user) return <div className="p-8 text-center text-gray-500">Loading profile...</div>;
 
-  const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-  const getProfilePhotoUrl = (path?: string) => {
-    if (!path) return '';
-    if (path.startsWith('http')) return path;
-    const rootURL = baseURL.replace(/\/api$/, '');
-    return `${rootURL}${path}`;
-  };
+  const getProfilePhotoUrl = getFileUrl;
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
