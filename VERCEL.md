@@ -45,7 +45,12 @@ Compose + VPS setup for production.
     fail without them. Note the name is `JWT_SECRET`, not `JWT_ACCESS_SECRET`
     (see `utils/token.util.js`). Optional: `JWT_ACCESS_EXPIRES_IN` (default
     `15m`), `JWT_REFRESH_EXPIRES_IN` (default `7d`).
-  - See `.env.example`/SETUP.md for the full list: email, SMS, Google auth, Apify, etc.
+  - `GOOGLE_CLIENT_ID` / `MICROSOFT_CLIENT_ID` — required only for the social
+    sign-in providers you enable. `MICROSOFT_TENANT_ID` is optional and
+    restricts sign-in to a single organisation when set.
+  - See the env block in [SETUP.md](SETUP.md#4-manual-setup-if-you-skip-the-script-or-it-fails-partway)
+    for the full list: email, SMS, social sign-in, Apify, etc. (The root
+    `.env.example` covers only the legacy Docker Compose database variables.)
 - Build command: not required — `prisma generate` runs from the `postinstall`
   script in `atg_backend/package.json`.
 

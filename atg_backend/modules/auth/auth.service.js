@@ -7,6 +7,7 @@ const { issueTokenPair, verifyRefreshToken } = require("../../utils/token.util")
 const { activityLogger, securityLogger } = require("../../config/atg_logger");
 const { sendEmail } = require("../notifications/email.service");
 const { isValidEmail, validatePasswordStrength, isValidPhone } = require("../../utils/validators");
+const { verifyIdentityToken } = require("./federated-identity.service");
 
 const register = async (data) => {
   const { email, name, password, phone, country, city, isCompany, companyName, companyWebsite, companyDescription } = data;
@@ -79,6 +80,17 @@ const login = async ({ email, password }) => {
   });
   if (!user) {
     securityLogger.security("Login failed: unknown email or inactive", { email });
+    throw ApiError.unauthorized("Invalid email or password");
+  }
+
+  // SSO-only accounts have no password. argon2.verify throws on a null hash, so
+  // reject before that and keep the same opaque message — telling the caller
+  // "this address uses Google" would confirm the account exists.
+  if (!user.password) {
+    securityLogger.security("Login failed: password login on an SSO-only account", {
+      userId: user.id,
+      provider: user.provider,
+    });
     throw ApiError.unauthorized("Invalid email or password");
   }
 
@@ -188,62 +200,89 @@ const resetPassword = async (token, password) => {
   activityLogger.activity("Password reset successful", { userId: user.id, email: user.email });
 };
 
-const googleLogin = async ({ idToken, credential }) => {
-  const token = idToken || credential;
-  if (!token) {
-    throw ApiError.badRequest("Google ID token is required");
-  }
-
-  let googleUser;
-  try {
-    const clientId = process.env.GOOGLE_CLIENT_ID;
-    if (clientId && clientId.trim()) {
-      const { OAuth2Client } = require("google-auth-library");
-      const client = new OAuth2Client(clientId);
-      const ticket = await client.verifyIdToken({
-        idToken: token,
-        audience: clientId,
-      });
-      googleUser = ticket.getPayload();
-    } else {
-      const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(token)}`);
-      if (!response.ok) {
-        throw new Error("Invalid Google token");
-      }
-      googleUser = await response.json();
-    }
-  } catch (err) {
-    securityLogger.security("Google login failed: token verification failed", { error: err.message });
-    throw ApiError.unauthorized("Google authentication failed. Invalid token.");
-  }
-
-  const { email, name, picture } = googleUser;
-
-  if (!email) {
-    throw ApiError.badRequest("Google account must have an email address");
-  }
+// Signs a user in from an already-verified federated identity. Shared by every
+// provider — only the token verification differs between them.
+//
+// Resolution order matters:
+//   1. (provider, externalId) — the IdP's stable subject. Survives the user
+//      changing their email address at the IdP.
+//   2. verified email — links a first-time social sign-in to the existing
+//      password account for that address. Only ever attempted when the IdP
+//      says the address is verified, otherwise anyone able to assert an
+//      arbitrary address at an IdP could take over a local account.
+const socialLogin = async (provider, { idToken, credential }) => {
+  const identity = await verifyIdentityToken(provider, idToken || credential);
+  const { externalId, email, emailVerified, name, picture } = identity;
 
   let user = await prisma.user.findFirst({
-    where: { email, d_status: "active" },
+    where: { provider, externalId, d_status: "active" },
     include: { company: true },
   });
 
+  if (!user && emailVerified) {
+    user = await prisma.user.findFirst({
+      where: { email, d_status: "active" },
+      include: { company: true },
+    });
+
+    if (user) {
+      // First social sign-in for an existing account — record the link so
+      // subsequent logins resolve by externalId.
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          provider,
+          externalId,
+          emailVerified: true,
+          ...(user.profilePhoto || !picture ? {} : { profilePhoto: picture }),
+        },
+        include: { company: true },
+      });
+      securityLogger.security(`Linked ${provider} identity to existing account`, {
+        userId: user.id,
+        email,
+      });
+    }
+  }
+
   if (!user) {
-    const randomPassword = crypto.randomBytes(16).toString("hex");
-    const hashed = await argon2.hash(randomPassword);
+    if (!emailVerified) {
+      // No account to link and no verified address: refusing is the only safe
+      // option, since we would otherwise create an account for an address the
+      // signer has not proven they control.
+      securityLogger.security(`${provider} login rejected: unverified email`, { email });
+      throw ApiError.unauthorized(
+        `Your ${provider} account's email address is not verified. Verify it with ${provider}, or sign up with a password.`
+      );
+    }
+
+    // A soft-deleted user still holds the address (email is globally unique but
+    // every lookup filters d_status), so creating would hit the constraint.
+    const conflicting = await prisma.user.findUnique({ where: { email } });
+    if (conflicting) {
+      securityLogger.security(`${provider} login blocked by a deactivated account`, { email });
+      throw ApiError.forbidden(
+        "An account for this email address has been deactivated. Contact support to restore it."
+      );
+    }
 
     user = await prisma.user.create({
       data: {
         email,
         name: name || email.split("@")[0],
-        password: hashed,
+        // No password: this account signs in through the provider only. It can
+        // still gain one later via the password-reset flow.
+        password: null,
         role: "candidate",
         pkg: "Trial",
         profilePhoto: picture || null,
+        provider,
+        externalId,
+        emailVerified: true,
       },
       include: { company: true },
     });
-    activityLogger.activity("User registered via Google", { userId: user.id, email: user.email });
+    activityLogger.activity(`User registered via ${provider}`, { userId: user.id, email: user.email });
   } else if (!user.profilePhoto && picture) {
     user = await prisma.user.update({
       where: { id: user.id },
@@ -252,9 +291,12 @@ const googleLogin = async ({ idToken, credential }) => {
     });
   }
 
-  securityLogger.security("Google login succeeded", { userId: user.id, email });
+  securityLogger.security(`${provider} login succeeded`, { userId: user.id, email });
   const tokens = issueTokenPair(user);
   return { user: sanitizeUser(user), ...tokens };
 };
 
-module.exports = { register, login, refresh, googleLogin, forgotPassword, resetPassword };
+const googleLogin = (payload) => socialLogin("google", payload);
+const microsoftLogin = (payload) => socialLogin("microsoft", payload);
+
+module.exports = { register, login, refresh, googleLogin, microsoftLogin, forgotPassword, resetPassword };
