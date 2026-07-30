@@ -33,22 +33,36 @@ Compose + VPS setup for production.
 - Required environment variables:
   - `DATABASE_URL` — Supabase **pooled** connection string
   - `FRONTEND_URL` — your deployed frontend origin(s), comma-separated
+  - `SUPABASE_URL` — e.g. `https://<project-ref>.supabase.co`
+  - `SUPABASE_SERVICE_ROLE_KEY` — from Project Settings → API. Required for file
+    uploads; keep it server-side only, it bypasses row-level security.
+  - `SUPABASE_STORAGE_BUCKET` — optional, defaults to `uploads`
   - `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET` (see `.env.example`/SETUP.md for the full list: email, SMS, Google auth, Apify, etc.)
-- Build command: `npm run db:generate` (runs `prisma generate`) — set this as
-  the Vercel "Build Command" so the Prisma client is generated for the
-  serverless bundle.
+- Build command: not required — `prisma generate` runs from the `postinstall`
+  script in `atg_backend/package.json`.
+
+### Cross-site auth
+
+The frontend and API are on different sites (Pages and Vercel), so the
+refresh-token cookie is set with `SameSite=None; Secure` in production —
+`SameSite=Lax` would make browsers withhold it, which breaks session restore on
+reload and silently breaks every access-token refresh. This means production
+auth requires HTTPS on both sides. Locally it stays `Lax`.
+
+### File uploads
+
+`middlewares/upload.middleware.js` streams uploads to Supabase Storage (bucket
+`uploads`) via `config/storage.js`, because Vercel's filesystem is read-only
+outside `/tmp` and is discarded between invocations. Read the resulting URL
+through `utils/fileUrl.js` rather than building an `/uploads/...` path by hand.
+
+When `SUPABASE_URL`/`SUPABASE_SERVICE_ROLE_KEY` are absent the middleware falls
+back to local disk, so local development needs no cloud setup. Rows written
+before this migration hold relative `/uploads/...` paths and are still served by
+the static mount in `app.js`.
 
 ### Known gaps not yet migrated
 
-- **File uploads**: `middlewares/upload.middleware.js` still writes to local
-  disk (`atg_backend/uploads/`), which does not persist across Vercel
-  invocations/deploys. Move this to Supabase Storage before relying on
-  uploads in production.
-- **Logging**: `config/atg_logger.js` still uses `winston-daily-rotate-file`,
-  which writes to `atg_backend/logs/` — also non-persistent on Vercel. Logs
-  will still show up via `console.log` output in Vercel's function logs, but
-  file-based log retention/rotation won't work until this is swapped to
-  console-only transports in production.
 - **Long-running requests**: `apify-client` scrape calls in
   `modules/anonymous-discovery/` should be checked against Vercel's function
   execution time limit (10s Hobby / 60s+ Pro) if scrapes can run long.

@@ -3,6 +3,7 @@ const { sendSuccess } = require("../../utils/apiResponse");
 const jobFormService = require("./job-form.service");
 const jobService = require("../jobs/job.service");
 const applicationService = require("../applications/application.service");
+const resolveFileUrl = require("../../utils/fileUrl");
 
 const getColumns = asyncHandler(async (req, res) => {
   const jobId = Number(req.params.jobId);
@@ -49,7 +50,7 @@ const saveValues = asyncHandler(async (req, res) => {
   const filesMap = {};
   if (req.files && Array.isArray(req.files)) {
     req.files.forEach(file => {
-      filesMap[file.fieldname] = `/uploads/${file.filename}`;
+      filesMap[file.fieldname] = resolveFileUrl(file);
     });
   }
 
