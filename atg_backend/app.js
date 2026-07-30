@@ -33,17 +33,25 @@ app.use(helmet({
 }));
 app.use(cookieParser());
 app.use(express.json());
-// The deployed frontend origin. Kept as a default so the app still works if
-// FRONTEND_URL is missing from the environment; FRONTEND_URL (comma-separated)
-// extends this list for custom domains and preview deployments.
-const DEFAULT_ALLOWED_ORIGINS = ["https://atgapplyv2.pages.dev"];
+// Set FRONTEND_URL (comma-separated) to pin the exact deployed origin(s) — that is
+// the authoritative list. The Cloudflare patterns below are a fallback so the API
+// still answers the frontend when FRONTEND_URL is missing, since the project is
+// served on a generated hostname that differs by deploy target:
+//   Workers: <worker>.<account-subdomain>.workers.dev
+//   Pages:   [<deploy-hash>.]<project>.pages.dev
+const CLOUDFLARE_PROJECT = "atgapplyv2";
+const CLOUDFLARE_ORIGIN_PATTERNS = [
+  new RegExp(`^https://(?:[a-z0-9-]+\\.)?${CLOUDFLARE_PROJECT}\\.pages\\.dev$`),
+  new RegExp(`^https://${CLOUDFLARE_PROJECT}\\.[a-z0-9-]+\\.workers\\.dev$`),
+];
 
-const allowedOrigins = [
-  ...DEFAULT_ALLOWED_ORIGINS,
-  ...(process.env.FRONTEND_URL
-    ? process.env.FRONTEND_URL.split(",").map((o) => o.trim()).filter(Boolean)
-    : []),
-].map((o) => o.replace(/\/$/, ""));
+const stripTrailingSlash = (value) => value.replace(/\/$/, "");
+
+const allowedOrigins = (process.env.FRONTEND_URL || "")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean)
+  .map(stripTrailingSlash);
 
 app.use(
   cors({
@@ -52,13 +60,14 @@ app.use(
       const isLocalhost = origin.startsWith("http://localhost:") ||
                           origin.startsWith("https://localhost:") ||
                           origin.startsWith("http://127.0.0.1:");
-      // Cloudflare gives each deploy its own <hash>.<project>.pages.dev subdomain.
-      const isPagesPreview = /^https:\/\/[a-z0-9-]+\.atgapplyv2\.pages\.dev$/.test(origin);
-      if (isLocalhost || isPagesPreview || allowedOrigins.includes(origin.replace(/\/$/, ""))) {
+      const isCloudflare = CLOUDFLARE_ORIGIN_PATTERNS.some((re) => re.test(origin));
+      if (isLocalhost || isCloudflare || allowedOrigins.includes(stripTrailingSlash(origin))) {
         return callback(null, true);
       }
       // Signal "no CORS headers" rather than throwing: throwing reaches the error
       // handler and returns a 500, which masks the real reason in the browser.
+      // Note the preflight still returns 2xx — it just carries no CORS headers, so
+      // the browser drops the follow-up request without ever sending it.
       return callback(null, false);
     },
     credentials: true,

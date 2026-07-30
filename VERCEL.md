@@ -32,7 +32,11 @@ Compose + VPS setup for production.
   on Vercel.
 - Required environment variables:
   - `DATABASE_URL` — Supabase **pooled** connection string
-  - `FRONTEND_URL` — your deployed frontend origin(s), comma-separated
+  - `FRONTEND_URL` — your deployed frontend origin(s), comma-separated. This is
+    the authoritative CORS allowlist; set it to the exact origin the browser
+    shows. `app.js` also matches this project's generated Cloudflare hostnames
+    (`<worker>.<subdomain>.workers.dev`, `<project>.pages.dev`) as a fallback, so
+    a missing value degrades rather than blocking every request.
   - `SUPABASE_URL` — e.g. `https://<project-ref>.supabase.co`
   - `SUPABASE_SERVICE_ROLE_KEY` — from Project Settings → API. Required for file
     uploads; keep it server-side only, it bypasses row-level security.
@@ -43,7 +47,7 @@ Compose + VPS setup for production.
 
 ### Cross-site auth
 
-The frontend and API are on different sites (Pages and Vercel), so the
+The frontend and API are on different sites (Cloudflare and Vercel), so the
 refresh-token cookie is set with `SameSite=None; Secure` in production —
 `SameSite=Lax` would make browsers withhold it, which breaks session restore on
 reload and silently breaks every access-token refresh. This means production
