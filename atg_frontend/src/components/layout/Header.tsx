@@ -6,6 +6,7 @@ import { Bell } from 'lucide-react';
 
 import { useTranslation } from 'react-i18next';
 import LanguageSelector from '../ui/LanguageSelector';
+import { getFileUrl } from '../../utils/fileUrl';
 
 interface HeaderProps {
   title: string;
@@ -58,11 +59,7 @@ export default function Header({ title }: HeaderProps) {
             </div>
             {user.profilePhoto ? (
               <img
-                src={(() => {
-                  const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-                  const rootURL = baseURL.replace(/\/api$/, '');
-                  return user.profilePhoto.startsWith('http') ? user.profilePhoto : `${rootURL}${user.profilePhoto}`;
-                })()}
+                src={getFileUrl(user.profilePhoto)}
                 alt={user.name}
                 className="h-9 w-9 rounded-full object-cover border border-slate-700 shadow-sm"
               />

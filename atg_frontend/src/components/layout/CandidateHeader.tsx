@@ -6,6 +6,7 @@ import { useUnreadNotifications } from '../../hooks/useUnreadNotifications';
 import { useTranslation } from 'react-i18next';
 import atgLogo from '../../assets/atg_apply.png';
 import LanguageSelector from '../ui/LanguageSelector';
+import { getFileUrl } from '../../utils/fileUrl';
 
 export default function CandidateHeader() {
   const { t } = useTranslation();
@@ -108,7 +109,7 @@ export default function CandidateHeader() {
             >
               {user.profilePhoto ? (
                 <img
-                  src={user.profilePhoto.startsWith('http') ? user.profilePhoto : `${import.meta.env.VITE_API_URL?.replace(/\/api$/, '') || 'http://localhost:5000'}${user.profilePhoto}`}
+                  src={getFileUrl(user.profilePhoto)}
                   alt={user.name}
                   className="h-10 w-10 rounded-full object-cover border border-slate-700 shadow-sm"
                 />

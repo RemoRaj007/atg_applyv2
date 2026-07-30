@@ -17,6 +17,7 @@ import { jobRoleApi, type JobRole } from '../../api/jobRoleApi';
 import FormMultiSelect from '../../components/ui/FormMultiSelect';
 import PhoneInput from '../../components/ui/PhoneInput';
 import NicInput from '../../components/ui/NicInput';
+import { getFileUrl, getFileUrlFresh } from '../../utils/fileUrl';
 
 // ─── Experience Time Calculator Helpers ─────────────────────────────────────
 
@@ -419,7 +420,7 @@ export default function CandidateProfile() {
       if (profileData?.documents) {
         for (const doc of profileData.documents) {
           try {
-            const response = await fetch(`http://localhost:5000${doc.fileUrl}?t=${new Date().getTime()}`);
+            const response = await fetch(getFileUrlFresh(doc.fileUrl));
             const blob = await response.blob();
             const ext = doc.fileUrl.split('.').pop();
             const safeName = doc.docType.replace(/[^a-z0-9]/gi, '_');
@@ -530,7 +531,7 @@ export default function CandidateProfile() {
                 <div className="flex flex-col items-center mb-6">
                   <div className="relative w-28 h-28 rounded-full bg-gray-50 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden mb-3 group cursor-pointer hover:border-blue-400 transition-colors">
                     {profileData?.documents?.find(d => d.docType === 'Profile Picture') ? (
-                      <img src={`http://localhost:5000${profileData.documents.find(d => d.docType === 'Profile Picture')?.fileUrl}`} alt="Profile" className="w-full h-full object-cover" />
+                      <img src={getFileUrl(profileData.documents.find(d => d.docType === 'Profile Picture')?.fileUrl)} alt="Profile" className="w-full h-full object-cover" />
                     ) : (
                       <User className="w-10 h-10 text-gray-400 group-hover:text-blue-500 transition-colors" />
                     )}
@@ -939,7 +940,7 @@ export default function CandidateProfile() {
               <div className="border-b border-slate-800 pb-6 mb-6 flex gap-6 items-center">
                 {profileData?.documents?.find(d => d.docType === 'Profile Picture') && (
                   <div className="w-24 h-24 rounded-full overflow-hidden shrink-0 border-2 border-slate-700">
-                    <img src={`http://localhost:5000${profileData.documents.find(d => d.docType === 'Profile Picture')?.fileUrl}?t=${new Date().getTime()}`} alt="Profile" className="w-full h-full object-cover" crossOrigin="anonymous" />
+                    <img src={getFileUrlFresh(profileData.documents.find(d => d.docType === 'Profile Picture')?.fileUrl)} alt="Profile" className="w-full h-full object-cover" crossOrigin="anonymous" />
                   </div>
                 )}
                 <div>
@@ -1164,9 +1165,9 @@ export default function CandidateProfile() {
             </div>
             <div className="flex-1 overflow-auto bg-gray-100 p-4 flex justify-center items-center">
               {viewDoc.fileUrl.match(/\.(jpeg|jpg|gif|png)$/i) ? (
-                <img src={`http://localhost:5000${viewDoc.fileUrl}`} alt={viewDoc.docType} className="max-w-full max-h-full object-contain shadow-sm rounded-lg" />
+                <img src={getFileUrl(viewDoc.fileUrl)} alt={viewDoc.docType} className="max-w-full max-h-full object-contain shadow-sm rounded-lg" />
               ) : (
-                <iframe src={`http://localhost:5000${viewDoc.fileUrl}`} className="w-full h-full border-0 bg-white shadow-sm rounded-lg" title={viewDoc.docType} />
+                <iframe src={getFileUrl(viewDoc.fileUrl)} className="w-full h-full border-0 bg-white shadow-sm rounded-lg" title={viewDoc.docType} />
               )}
             </div>
             <div className="p-4 border-t bg-gray-50 flex justify-end">
