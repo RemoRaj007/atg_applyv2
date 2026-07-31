@@ -30,6 +30,9 @@ atg_apply/
 
 - **Setting this up on your own machine to develop or test?** → [SETUP.md](SETUP.md)
 - **Provisioning a server / configuring CI deploys?** → [DEVOPS.md](DEVOPS.md)
+- **Deploying the current Vercel + Supabase stack?** → [VERCEL.md](VERCEL.md)
+- **Writing or planning tests?** → [TESTING.md](TESTING.md)
+- **What's missing or broken, and what to build next?** → [ROADMAP.md](ROADMAP.md)
 
 Fastest path, once prerequisites are installed (see SETUP.md):
 

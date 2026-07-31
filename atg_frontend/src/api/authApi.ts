@@ -34,6 +34,15 @@ export const authApi = {
     }
   },
 
+  microsoftLogin: async (idToken: string): Promise<AuthResponse> => {
+    try {
+      const { data } = await apiClient.post('/auth/microsoft', { idToken });
+      return unwrapOrThrow<AuthResponse>(data);
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Microsoft authentication failed');
+    }
+  },
+
   refresh: async (): Promise<AuthResponse> => {
     const { data } = await apiClient.post('/auth/refresh');
     return unwrapOrThrow<AuthResponse>(data);

@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { useSession } from '../hooks/useSession';
 import { useTranslation } from 'react-i18next';
 import LanguageSelector from '../components/ui/LanguageSelector';
-import GoogleIcon from '../components/ui/GoogleIcon';
+import SocialSignInButtons from '../components/ui/SocialSignInButtons';
 import atgLogo from '../assets/atg_apply.png';
 import logfImg from '../assets/logf.png';
 import { validateEmail } from '../utils/validation';
@@ -23,7 +23,7 @@ const RISING_PARTICLES = Array.from({ length: 48 }).map((_, i) => ({
 
 export default function Login() {
   const { t } = useTranslation();
-  const { login, googleLogin } = useSession();
+  const { login } = useSession();
   const [email, setEmail] = useState(() => localStorage.getItem(REMEMBERED_EMAIL_KEY) || '');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -55,60 +55,6 @@ export default function Login() {
       const msg = err.message || 'Failed to log in';
       setError(msg);
       toast.error(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleClick = async () => {
-    const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    
-    if (googleClientId && googleClientId.trim()) {
-      if (typeof window !== 'undefined' && !(window as any).google) {
-        await new Promise((resolve) => {
-          const script = document.createElement('script');
-          script.src = 'https://accounts.google.com/gsi/client';
-          script.async = true;
-          script.onload = resolve;
-          document.body.appendChild(script);
-        });
-      }
-
-      if ((window as any).google) {
-        (window as any).google.accounts.id.initialize({
-          client_id: googleClientId,
-          callback: async (response: any) => {
-            try {
-              setLoading(true);
-              setError(null);
-              await googleLogin(response.credential);
-            } catch (err: any) {
-              setError(err.message || 'Google login failed');
-            } finally {
-              setLoading(false);
-            }
-          },
-        });
-        (window as any).google.accounts.id.prompt();
-        return;
-      }
-    }
-
-    const dummyEmail = prompt(
-      "Google Client ID is not set in environment (VITE_GOOGLE_CLIENT_ID).\n\nEnter a Google account email to simulate Google Auth:",
-      "google.user@example.com"
-    );
-    if (!dummyEmail) return;
-
-    try {
-      setLoading(true);
-      setError(null);
-      const header = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }));
-      const payload = btoa(JSON.stringify({ email: dummyEmail, name: dummyEmail.split('@')[0], picture: "https://lh3.googleusercontent.com/a/default-user" }));
-      const mockToken = `${header}.${payload}.mockSignature`;
-      await googleLogin(mockToken);
-    } catch (err: any) {
-      setError(err.message || 'Google login failed');
     } finally {
       setLoading(false);
     }
@@ -297,15 +243,7 @@ export default function Login() {
             <div className="h-px bg-slate-800 flex-1" />
           </div>
 
-          <button
-            type="button"
-            onClick={handleGoogleClick}
-            disabled={loading}
-            className="w-full flex items-center justify-center gap-3 border border-white/15 rounded-2xl py-3.5 text-sm font-bold text-slate-200 bg-white/5 backdrop-blur-md hover:bg-white/10 active:bg-white/5 transition-colors shadow-sm cursor-pointer disabled:opacity-50"
-          >
-            <GoogleIcon className="h-5 w-5" />
-            Continue with Google
-          </button>
+          <SocialSignInButtons onError={setError} disabled={loading} />
 
           <p className="text-center text-sm text-slate-400 mt-8 font-medium">
             Don't have an account?{' '}
