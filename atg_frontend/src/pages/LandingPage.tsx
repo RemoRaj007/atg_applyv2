@@ -135,10 +135,10 @@ const LandingPage = () => {
             <div className="w-full lg:w-[480px] xl:w-[520px] shrink-0 relative animate-fade-in-up animation-delay-200">
               <div className="bg-slate-800/90 backdrop-blur-md rounded-2xl p-6 border border-slate-700 shadow-2xl relative z-10">
                 <div className="flex justify-between items-center mb-6 text-sm text-slate-400">
-                  <span>Your dashboard · this week</span>
-                  <span className="font-medium text-white">Nandini R.</span>
+                  <span>Example dashboard</span>
+                  <span className="font-medium text-white text-xs uppercase tracking-wide">Illustrative only</span>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="bg-[#0f172a]/90 p-4 rounded-xl shadow-sm border border-slate-700/80 flex items-center justify-between hover:bg-[#0f172a] transition-colors duration-300">
                     <div className="flex items-center gap-4">
@@ -146,21 +146,21 @@ const LandingPage = () => {
                         88%
                       </div>
                       <div>
-                        <h4 className="font-semibold text-white text-sm sm:text-base">Senior UX Designer · MAS Holdings</h4>
+                        <h4 className="font-semibold text-white text-sm sm:text-base">Senior UX Designer</h4>
                         <p className="text-xs text-slate-400">High fit · Applied · proof saved</p>
                       </div>
                     </div>
                     <span className="px-3 py-1 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-semibold rounded-full">Applied</span>
                   </div>
-                  
+
                   <div className="bg-[#0f172a]/90 p-4 rounded-xl shadow-sm border border-slate-700/80 flex items-center justify-between hover:bg-[#0f172a] transition-colors duration-300">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center justify-center font-bold text-lg">
                         82%
                       </div>
                       <div>
-                        <h4 className="font-semibold text-white text-sm sm:text-base">Product Designer · WSO2</h4>
-                        <p className="text-xs text-slate-400">Interview scheduled 29 Jun</p>
+                        <h4 className="font-semibold text-white text-sm sm:text-base">Product Designer</h4>
+                        <p className="text-xs text-slate-400">Interview scheduled</p>
                       </div>
                     </div>
                     <span className="px-3 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs font-semibold rounded-full font-sans">Interview</span>
@@ -172,7 +172,7 @@ const LandingPage = () => {
                         58%
                       </div>
                       <div>
-                        <h4 className="font-semibold text-slate-200 text-sm sm:text-base">UX Researcher · Dialog Axiata</h4>
+                        <h4 className="font-semibold text-slate-200 text-sm sm:text-base">UX Researcher</h4>
                         <p className="text-xs text-slate-400">Nothing is submitted until you approve it.</p>
                       </div>
                     </div>
@@ -291,16 +291,14 @@ const LandingPage = () => {
             
             <div className="bg-[#0f172a] text-white p-12 rounded-3xl border border-slate-700 shadow-2xl relative overflow-hidden group hover:border-blue-500/40 transition-all duration-500">
               <div className="absolute -right-16 -top-16 w-48 h-48 rounded-full bg-blue-500/10 blur-3xl pointer-events-none group-hover:scale-110 transition-transform duration-500"></div>
-              <p className="text-2xl font-serif mb-10 leading-relaxed text-slate-200 relative z-10">
-                "I had two interviews in three weeks. They handled the applications I never had time to finish — and showed me proof of every single one."
-              </p>
-              <div className="flex items-center gap-4 relative z-10">
-                <div className="w-14 h-14 rounded-full bg-blue-600 flex items-center justify-center font-bold text-xl shadow-inner border border-white/10 text-white">
-                  ND
+              <div className="relative z-10 space-y-6">
+                <div className="flex items-start gap-4">
+                  <CheckCircle className="w-6 h-6 text-emerald-400 flex-shrink-0 mt-1" />
+                  <p className="text-slate-200">Confirmation email, application ID, or screenshot uploaded for every submission — nothing sent without your approval first.</p>
                 </div>
-                <div>
-                  <div className="font-bold text-white text-lg">Nandini R.</div>
-                  <div className="text-blue-400 text-sm mt-1">Senior UX Designer · Colombo</div>
+                <div className="flex items-start gap-4">
+                  <CheckCircle className="w-6 h-6 text-emerald-400 flex-shrink-0 mt-1" />
+                  <p className="text-slate-200">Every application prepared and submitted by a trained team member, never a bot or scraper.</p>
                 </div>
               </div>
             </div>
