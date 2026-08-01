@@ -4,8 +4,7 @@ import { CheckCircle, HelpCircle, ChevronDown, Award, Shield, Clock, Eye } from 
 import atgLogo from '../assets/atg_apply.png';
 import atgBackPng from '../assets/atg back.png';
 
-import { useTranslation } from 'react-i18next';
-import LanguageSelector from '../components/ui/LanguageSelector';
+import MarketingHeader from '../components/layout/MarketingHeader';
 
 const RISING_BLUE_PARTICLES = Array.from({ length: 48 }).map((_, i) => ({
   id: i,
@@ -17,35 +16,12 @@ const RISING_BLUE_PARTICLES = Array.from({ length: 48 }).map((_, i) => ({
 }));
 
 const LandingPage = () => {
-  const { t } = useTranslation();
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#0f172a] text-slate-100 font-sans overflow-x-hidden">
       {/* Header */}
-      <header className="flex justify-between items-center py-6 px-8 border-b border-slate-800 bg-[#0f172a]/95 backdrop-blur-md text-white sticky top-0 z-50 shadow-lg">
-        <div className="flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-3 font-extrabold text-2xl md:text-3xl text-white group">
-            <img src={atgLogo} alt="ATG Apply Logo" className="h-12 w-auto object-contain transition-transform duration-500 group-hover:scale-110" />
-            <span className="tracking-tight text-white transition-all duration-300 group-hover:opacity-90">ATG Apply</span>
-          </Link>
-          <nav className="hidden md:flex gap-6 text-sm text-slate-300 font-medium ml-12">
-            <Link to="/" className="text-white font-semibold border-b-2 border-blue-500 pb-1">{t('nav.home')}</Link>
-            <Link to="/how-it-works" className="hover:text-white transition-colors pb-1">{t('nav.howItWorks')}</Link>
-            <Link to="/pricing" className="hover:text-white transition-colors pb-1">{t('nav.pricing')}</Link>
-            <a href="mailto:support@atgconcordia.com" className="hover:text-white transition-colors pb-1">{t('nav.contact')}</a>
-            <Link to="/privacy" className="hover:text-white transition-colors pb-1">{t('nav.privacy')}</Link>
-            <Link to="/terms" className="hover:text-white transition-colors pb-1">{t('nav.terms')}</Link>
-          </nav>
-        </div>
-        <div className="flex items-center gap-4 text-sm font-medium">
-          <LanguageSelector />
-          <Link to="/login" className="px-5 py-2 border border-slate-700 rounded text-slate-200 hover:bg-slate-800 transition-colors">{t('nav.signIn')}</Link>
-          <Link to="/register" className="px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-500 transition-colors hidden md:block hover:shadow-md">
-            {t('nav.startFree')}
-          </Link>
-        </div>
-      </header>
+      <MarketingHeader />
 
       <main className="flex-grow">
         {/* Hero Section with atg back.png background */}
@@ -155,8 +131,8 @@ const LandingPage = () => {
               <p className="text-xs text-slate-400">No card required. Pay only when you are satisfied.</p>
             </div>
 
-            {/* Dashboard Preview Card - Original Scale, Pushed further Right */}
-            <div className="w-full lg:w-[480px] xl:w-[520px] shrink-0 relative animate-fade-in-up animation-delay-200 transform lg:translate-x-14 xl:translate-x-20">
+            {/* Dashboard Preview Card */}
+            <div className="w-full lg:w-[480px] xl:w-[520px] shrink-0 relative animate-fade-in-up animation-delay-200">
               <div className="bg-slate-800/90 backdrop-blur-md rounded-2xl p-6 border border-slate-700 shadow-2xl relative z-10">
                 <div className="flex justify-between items-center mb-6 text-sm text-slate-400">
                   <span>Your dashboard · this week</span>
@@ -430,7 +406,7 @@ const LandingPage = () => {
             <div>
               <h4 className="text-xs font-bold text-blue-400 uppercase tracking-wider mb-6">Company</h4>
               <ul className="space-y-4 text-sm text-slate-400">
-                <li><a href="mailto:support@atgconcordia.com" className="hover:text-white transition-colors">Contact</a></li>
+                <li><Link to="/contact" className="hover:text-white transition-colors">Contact</Link></li>
               </ul>
             </div>
 

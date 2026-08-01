@@ -245,5 +245,26 @@
     "sec7Text": "You confirm the information you provide is accurate and you authorise us to apply on your behalf.",
     "sec8Title": "8. Acceptable use",
     "sec8Text": "Fraudulent use may result in suspension of the service."
+  },
+  "contactPage": {
+    "title": "Get in touch",
+    "subtitle": "Questions about pricing, your application, or anything else — send us a message.",
+    "nameLabel": "Full name",
+    "namePlaceholder": "Your name",
+    "emailLabel": "Email address",
+    "emailPlaceholder": "you@example.com",
+    "subjectLabel": "Subject",
+    "subjectPlaceholder": "What's this about?",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Tell us how we can help...",
+    "sendBtn": "Send message",
+    "sending": "Sending...",
+    "successTitle": "Message sent",
+    "successDesc": "Thanks for reaching out — our team will reply by email soon.",
+    "errorName": "Please enter your name",
+    "errorEmail": "Please enter a valid email address",
+    "errorSubject": "Please enter a subject",
+    "errorMessage": "Please enter a message of at least 10 characters",
+    "errorGeneric": "Something went wrong. Please try again."
   }
 }

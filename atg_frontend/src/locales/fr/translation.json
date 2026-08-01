@@ -141,5 +141,26 @@
     "save": "Enregistrer",
     "cancel": "Annuler",
     "loading": "Chargement..."
+  },
+  "contactPage": {
+    "title": "Contactez-nous",
+    "subtitle": "Questions sur les tarifs, votre candidature ou autre chose — envoyez-nous un message.",
+    "nameLabel": "Nom complet",
+    "namePlaceholder": "Votre nom",
+    "emailLabel": "Adresse e-mail",
+    "emailPlaceholder": "vous@exemple.com",
+    "subjectLabel": "Sujet",
+    "subjectPlaceholder": "De quoi s'agit-il ?",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Dites-nous comment nous pouvons vous aider...",
+    "sendBtn": "Envoyer le message",
+    "sending": "Envoi en cours...",
+    "successTitle": "Message envoyé",
+    "successDesc": "Merci de nous avoir contactés — notre équipe répondra bientôt par e-mail.",
+    "errorName": "Veuillez saisir votre nom",
+    "errorEmail": "Veuillez saisir une adresse e-mail valide",
+    "errorSubject": "Veuillez saisir un sujet",
+    "errorMessage": "Veuillez saisir un message d'au moins 10 caractères",
+    "errorGeneric": "Une erreur s'est produite. Veuillez réessayer."
   }
 }
