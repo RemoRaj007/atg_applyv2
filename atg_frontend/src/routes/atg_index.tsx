@@ -7,6 +7,7 @@ import HowItWorksPage from '../pages/HowItWorksPage';
 import PricingPage from '../pages/PricingPage';
 import PrivacyPolicyPage from '../pages/PrivacyPolicyPage';
 import TermsOfServicePage from '../pages/TermsOfServicePage';
+import ContactPage from '../pages/ContactPage';
 import Login from '../pages/AtgLogin';
 import Register from '../pages/Register';
 import ForgotPassword from '../pages/AtgForgotPassword';
@@ -182,6 +183,7 @@ export default function AppRoutes() {
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/terms" element={<TermsOfServicePage />} />
+      <Route path="/contact" element={<ContactPage />} />
       
       <Route path="*" element={<Navigate to={homeForUser} replace />} />
     </Routes>
