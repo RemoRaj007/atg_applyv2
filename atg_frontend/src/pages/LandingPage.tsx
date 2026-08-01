@@ -131,8 +131,8 @@ const LandingPage = () => {
               <p className="text-xs text-slate-400">No card required. Pay only when you are satisfied.</p>
             </div>
 
-            {/* Dashboard Preview Card - Original Scale, Pushed further Right */}
-            <div className="w-full lg:w-[480px] xl:w-[520px] shrink-0 relative animate-fade-in-up animation-delay-200 transform lg:translate-x-14 xl:translate-x-20">
+            {/* Dashboard Preview Card */}
+            <div className="w-full lg:w-[480px] xl:w-[520px] shrink-0 relative animate-fade-in-up animation-delay-200">
               <div className="bg-slate-800/90 backdrop-blur-md rounded-2xl p-6 border border-slate-700 shadow-2xl relative z-10">
                 <div className="flex justify-between items-center mb-6 text-sm text-slate-400">
                   <span>Your dashboard · this week</span>
