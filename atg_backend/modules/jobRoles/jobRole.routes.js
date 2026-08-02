@@ -3,6 +3,7 @@ const router = express.Router();
 const jobRoleController = require("./jobRole.controller");
 const authenticate = require("../../middlewares/permissions/atg_authenticate.middleware");
 const authorize = require("../../middlewares/permissions/authorize.middleware");
+const numericParam = require("../../middlewares/validations/objectId.middleware");
 
 // Any authenticated user can list active job roles
 router.get("/", authenticate, jobRoleController.list);
@@ -11,8 +12,8 @@ router.get("/", authenticate, jobRoleController.list);
 router.post("/", authenticate, jobRoleController.create);
 
 // Only operators/admins can get details, update, or delete
-router.get("/:id", authenticate, authorize("operator", "admin"), jobRoleController.getById);
-router.put("/:id", authenticate, authorize("operator", "admin"), jobRoleController.update);
-router.delete("/:id", authenticate, authorize("operator", "admin"), jobRoleController.remove);
+router.get("/:id", authenticate, numericParam("id"), authorize("operator", "admin"), jobRoleController.getById);
+router.put("/:id", authenticate, numericParam("id"), authorize("operator", "admin"), jobRoleController.update);
+router.delete("/:id", authenticate, numericParam("id"), authorize("operator", "admin"), jobRoleController.remove);
 
 module.exports = router;

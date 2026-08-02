@@ -44,6 +44,10 @@ import NotificationsPage from '../pages/shared/NotificationsPage';
 import AnonymousJobDiscovery from '../pages/candidate/AnonymousJobDiscovery';
 import AnonymousJobDiscoveryAdmin from '../pages/operator/AnonymousJobDiscoveryAdmin';
 import AdminPaymentOptions from '../pages/admin/AdminPaymentOptions';
+import AdminSystemLogs from '../pages/admin/AdminSystemLogs';
+import AdminSiteSettings from '../pages/admin/AdminSiteSettings';
+import AdminSiteContent from '../pages/admin/AdminSiteContent';
+import AdminEmailTemplates from '../pages/admin/AdminEmailTemplates';
 import CandidateJobLinksPage from '../pages/candidate/CandidateJobLinksPage';
 import OperatorJobLinksPage from '../pages/operator/OperatorJobLinksPage';
 
@@ -93,6 +97,18 @@ export default function AppRoutes() {
         <Route index element={<AdminDashboard />} />
         <Route path="companies" element={<AdminCompanies />} />
         <Route path="jobs" element={<OperatorJobs />} />
+        <Route path="jobs/new" element={<OperatorAddJob />} />
+        {/* Applications, scholarships, payments and the job-link desk were
+            reachable only under /operator, even though several of their
+            endpoints (DELETE /applications/:id, DELETE /scholarships/:id) are
+            admin-only — so the one role allowed to call them had no way to.
+            The pages already branch on role, the way jobs and reports do. */}
+        <Route path="applications" element={<OperatorApplications />} />
+        <Route path="job-links" element={<OperatorJobLinksPage />} />
+        <Route path="scholarships" element={<OperatorScholarships />} />
+        <Route path="payments" element={<OperatorPayments />} />
+        <Route path="candidates" element={<OperatorUsers />} />
+        <Route path="anonymous-discovery" element={<AnonymousJobDiscoveryAdmin />} />
         <Route path="roles" element={<AdminRoles />} />
         <Route path="approvals" element={<AdminApprovals />} />
         <Route path="profile-columns" element={<AdminProfileColumns />} />
@@ -101,6 +117,10 @@ export default function AppRoutes() {
         <Route path="payment-options" element={<AdminPaymentOptions />} />
         <Route path="team-capacity" element={<OperatorTeamCapacity />} />
         <Route path="reports" element={<OperatorExport />} />
+        <Route path="site-content" element={<AdminSiteContent />} />
+        <Route path="site-settings" element={<AdminSiteSettings />} />
+        <Route path="email-templates" element={<AdminEmailTemplates />} />
+        <Route path="logs" element={<AdminSystemLogs />} />
         <Route path="notifications" element={<NotificationsPage />} />
         <Route path="profile" element={<SystemUserProfile />} />
       </Route>

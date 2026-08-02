@@ -4,6 +4,7 @@ const authenticate = require("../../middlewares/permissions/atg_authenticate.mid
 const authorize = require("../../middlewares/permissions/authorize.middleware");
 const validate = require("../../middlewares/validations/validate.middleware");
 const { createScholarshipSchema, updateScholarshipSchema } = require("./scholarship.schema");
+const numericParam = require("../../middlewares/validations/objectId.middleware");
 
 const router = express.Router();
 
@@ -11,9 +12,9 @@ router.use(authenticate);
 
 // Any authenticated user can browse scholarships; only staff curate the catalog
 router.get("/", scholarshipController.list);
-router.get("/:id", scholarshipController.getById);
+router.get("/:id", numericParam("id"), scholarshipController.getById);
 router.post("/", authorize("admin", "operator"), validate(createScholarshipSchema), scholarshipController.create);
-router.put("/:id", authorize("admin", "operator"), validate(updateScholarshipSchema), scholarshipController.update);
-router.delete("/:id", authorize("admin"), scholarshipController.remove);
+router.put("/:id", numericParam("id"), authorize("admin", "operator"), validate(updateScholarshipSchema), scholarshipController.update);
+router.delete("/:id", numericParam("id"), authorize("admin"), scholarshipController.remove);
 
 module.exports = router;

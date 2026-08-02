@@ -21,10 +21,17 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
+  // 4xx messages are written for the caller and safe to return. A 500 message is
+  // whatever the failing library said — Prisma, for instance, quotes the failing
+  // query and the host it could not reach — so it is replaced with a generic
+  // line outside development. The full detail is still in the logs above.
+  const isClientError = statusCode < 500;
+  const isDevelopment = process.env.NODE_ENV === "development";
+
   res.status(statusCode).json({
     status: false,
-    message,
-    error: process.env.NODE_ENV === "development" ? err.stack : undefined,
+    message: isClientError || isDevelopment ? message : "Internal server error",
+    error: isDevelopment ? err.stack : undefined,
   });
 };
 

@@ -45,8 +45,12 @@ function validatePasswordStrength(password) {
 function isValidPhone(phone) {
   if (!phone) return true; // optional unless specified
   const phoneClean = String(phone).replace(/[\s\-\(\)]/g, "");
-  // Must be between 7 and 16 characters, digits with optional leading +
-  const phoneRegex = /^\+?[1-9]\d{6,14}$/;
+  // 7–15 digits, optionally prefixed with a country code. The leading digit is
+  // allowed to be 0 so numbers written in national format ("0771234567", the
+  // way they are printed everywhere in Sri Lanka) are accepted — the frontend's
+  // validatePhone only checks the digit count, so rejecting them here made the
+  // form pass client-side and then fail with a 400 from the API.
+  const phoneRegex = /^\+?\d{7,15}$/;
   return phoneRegex.test(phoneClean);
 }
 

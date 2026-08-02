@@ -19,7 +19,12 @@
     "helpSupport": "Ayuda y Soporte",
     "logout": "Cerrar sesión",
     "applicationsLeft": "Postulaciones restantes",
-    "buyMore": "Comprar más"
+    "buyMore": "Comprar más",
+    "jobDiscovery": "Descubrimiento de empleo",
+    "systemLogs": "Registros del sistema",
+    "siteContent": "Contenido del sitio",
+    "siteSettings": "Ajustes del sitio",
+    "emailTemplates": "Plantillas de correo"
   },
   "footer": {
     "tagline": "Servicio de postulación laboral gestionado por personas. Selección basada en investigación y envío manual.",

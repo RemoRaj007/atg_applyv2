@@ -1,7 +1,7 @@
 const { prisma } = require("../../config/db");
 const ApiError = require("../../utils/ApiError");
 const { activityLogger } = require("../../config/atg_logger");
-const { sendEmail } = require("../notifications/email.service");
+const { sendEmail, sendTemplatedEmail } = require("../notifications/email.service");
 const { sendSms } = require("../notifications/sms.service");
 const { matchResumeToJob } = require("../../utils/apify.service");
 const { calculateFitScore, loadCandidateData } = require("../jobs/fitScore.service");
@@ -56,7 +56,10 @@ const getById = async (id, requester) => {
   if (requester.role === "candidate" && application.userId !== requester.id) {
     throw ApiError.forbidden("You do not have access to this application");
   }
-  if (requester.role === "company" && application.job && application.job.companyId !== requester.companyId) {
+  // A company is only ever entitled to applications against its own postings.
+  // Guarding on `application.job` being present let scholarship applications and
+  // job-link requests — which carry no job — through the check entirely.
+  if (requester.role === "company" && application.job?.companyId !== requester.companyId) {
     throw ApiError.forbidden("You do not have access to this application");
   }
   return application;
@@ -366,10 +369,11 @@ const sendStatusUpdateEmail = (application, previousStatus) => {
   const subject = `[ATG Apply] Application Status Updated: ${title}`;
   const body = `Hello ${application.user.name},\n\nYour application status for "${title}" has been updated to: ${application.status}.\n\nBest regards,\nATG Apply Team`;
 
-  sendEmail({
+  sendTemplatedEmail({
     to: application.user.email,
-    subject,
-    body,
+    templateKey: "application_status",
+    vars: { name: application.user.name, title, status: application.status },
+    fallback: { subject, body },
   }).catch(() => {});
 
   // System Notification for Candidate

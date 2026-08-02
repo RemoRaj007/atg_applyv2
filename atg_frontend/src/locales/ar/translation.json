@@ -37,7 +37,12 @@
     "paymentOptions": "خيارات الدفع",
     "teamCapacity": "سعة الفريق",
     "notifications": "الإشعارات",
-    "upgrade": "ترقية الباقة"
+    "upgrade": "ترقية الباقة",
+    "jobDiscovery": "اكتشاف الوظائف",
+    "systemLogs": "سجلات النظام",
+    "siteContent": "محتوى الموقع",
+    "siteSettings": "إعدادات الموقع",
+    "emailTemplates": "قوالب البريد"
   },
   "footer": {
     "tagline": "إدارة بشرية لطلبات التوظيف. مطابقة قائمة على البحث، يتم إعدادها وتقديمها بواسطة فريق مدرب.",

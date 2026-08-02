@@ -8,6 +8,7 @@ const path = require("path");
 const { prisma } = require("./config/db");
 const { systemLogger } = require("./config/atg_logger");
 const notFound = require("./middlewares/notFound.middleware");
+const rateLimit = require("./middlewares/rateLimit.middleware");
 const errorHandler = require("./middlewares/error.middleware");
 
 const authRoutes = require("./modules/auth/auth.routes");
@@ -32,7 +33,10 @@ app.use(helmet({
   crossOriginResourcePolicy: false
 }));
 app.use(cookieParser());
-app.use(express.json());
+// Bounded so a single request cannot force the process to buffer an arbitrary
+// payload. The largest legitimate JSON body is a job description plus its
+// requirements, which is well inside this; file uploads go through multer.
+app.use(express.json({ limit: "256kb" }));
 // Set FRONTEND_URL (comma-separated) to add further origins. The defaults below
 // are what production actually runs on, so the API answers the frontend even when
 // FRONTEND_URL is unset or incomplete.
@@ -91,8 +95,21 @@ app.use(
 // NOTE: local disk storage does not persist across Vercel invocations/deploys.
 // Kept for local development; production uploads should go through Supabase
 // Storage instead (see atg_backend/middlewares/upload.middleware.js).
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
+//
+// These files are user-supplied, so they are served as downloads and never
+// rendered inline on this origin: an uploaded document that the browser decided
+// to treat as HTML would otherwise run as script with the API's origin.
+const uploadStaticOptions = {
+  index: false,
+  dotfiles: "deny",
+  setHeaders: (res) => {
+    res.setHeader("Content-Disposition", "attachment");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("Content-Security-Policy", "default-src 'none'; sandbox");
+  },
+};
+app.use("/uploads", express.static(path.join(__dirname, "uploads"), uploadStaticOptions));
+app.use("/api/uploads", express.static(path.join(__dirname, "uploads"), uploadStaticOptions));
 
 app.get("/", async (req, res) => {
   try {
@@ -103,6 +120,11 @@ app.get("/", async (req, res) => {
     res.status(500).send("Database connection error");
   }
 });
+
+// Without this the contact form is an open relay into the team's inbox: no
+// account needed, one email sent per request. Per-endpoint auth limits live in
+// modules/auth/auth.routes.js.
+app.use("/api/contact", rateLimit({ name: "contact", windowMs: 60 * 60 * 1000, max: 10 }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
@@ -123,6 +145,8 @@ app.use("/api/job-roles", require("./modules/jobRoles/jobRole.routes"));
 app.use("/api/user-profile", userProfileRoutes);
 app.use("/api/anonymous-discovery", require("./modules/anonymous-discovery/anonymous-discovery.routes"));
 app.use("/api/contact", require("./modules/contact/contact.routes"));
+app.use("/api/logs", require("./modules/logs/log.routes"));
+app.use("/api/content", require("./modules/content/content.routes"));
 
 app.use(notFound);
 app.use(errorHandler);

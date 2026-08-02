@@ -4,6 +4,17 @@ const { validateNIC, isValidPhone } = require("../../utils/validators");
 const resolveFileUrl = require("../../utils/fileUrl");
 const sanitizeUser = require("../../utils/sanitizeUser");
 
+// These routes take req.body straight to Prisma. Ownership is decided by the
+// session, so the client must never be able to supply the keys that carry it —
+// or a primary key, which would let one user's write land on another's row.
+const OWNERSHIP_KEYS = ["id", "userId", "user", "createdAt", "updatedAt", "d_status"];
+
+const stripOwnershipKeys = (body) => {
+  const clean = { ...body };
+  for (const key of OWNERSHIP_KEYS) delete clean[key];
+  return clean;
+};
+
 const getEntityModel = (entity) => {
   const map = {
     phones: "userPhone",
@@ -81,7 +92,7 @@ exports.getProfile = async (req, res, next) => {
 exports.updatePersonal = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const data = { ...req.body };
+    const data = stripOwnershipKeys(req.body);
     if (data.dob) {
       data.dob = new Date(data.dob).toISOString();
     }
@@ -115,7 +126,7 @@ exports.addEntity = async (req, res, next) => {
 
     if (!model) return res.status(400).json({ error: "Invalid entity" });
 
-    let data = { ...req.body, userId };
+    let data = { ...stripOwnershipKeys(req.body), userId };
 
     if (model === "userPhone" && data.phoneNumber) {
       if (!isValidPhone(data.phoneNumber)) {
@@ -198,7 +209,7 @@ exports.updateEntity = async (req, res, next) => {
       return res.status(404).json({ error: "Record not found" });
     }
 
-    let data = { ...req.body };
+    let data = stripOwnershipKeys(req.body);
     if (model === "userAcademicQualification") {
       if (data.fromDate) data.fromDate = new Date(data.fromDate).toISOString();
       if (data.toDate) data.toDate = new Date(data.toDate).toISOString();

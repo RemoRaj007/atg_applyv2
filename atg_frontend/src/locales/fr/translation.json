@@ -19,7 +19,12 @@
     "helpSupport": "Aide & Support",
     "logout": "Déconnexion",
     "applicationsLeft": "Candidatures restantes",
-    "buyMore": "Acheter plus"
+    "buyMore": "Acheter plus",
+    "jobDiscovery": "Découverte d'emplois",
+    "systemLogs": "Journaux système",
+    "siteContent": "Contenu du site",
+    "siteSettings": "Paramètres du site",
+    "emailTemplates": "Modèles d'e-mail"
   },
   "footer": {
     "tagline": "Service de candidature géré par des humains. Recherche ciblée, CV préparé et soumis par une équipe qualifiée.",

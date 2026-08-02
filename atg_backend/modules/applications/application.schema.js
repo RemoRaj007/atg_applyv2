@@ -1,5 +1,10 @@
 const Joi = require("joi");
 
+// Job links are rendered as clickable anchors in the operator queue. Joi's
+// .uri() accepts any scheme, so an unrestricted rule let a candidate submit
+// `javascript:...` and have an operator's click execute it. Pin the schemes.
+const httpUrl = () => Joi.string().uri({ scheme: ["http", "https"] });
+
 const createApplicationSchema = Joi.object({
   userId: Joi.number().integer().optional(),
   jobId: Joi.number().integer().optional(),
@@ -7,11 +12,11 @@ const createApplicationSchema = Joi.object({
   fitScore: Joi.number().min(0).max(100).allow(null),
   reason: Joi.string().max(1000).allow(null, ""),
   comment: Joi.string().max(1000).allow(null, ""),
-  jobLinkRequest: Joi.string().uri().max(2000).allow(null, ""),
+  jobLinkRequest: httpUrl().max(2000).allow(null, ""),
 }).or("jobId", "scholarshipId", "jobLinkRequest");
 
 const linkRequestSchema = Joi.object({
-  jobLinkRequest: Joi.string().uri().max(2000).required(),
+  jobLinkRequest: httpUrl().max(2000).required(),
   comment: Joi.string().max(1000).allow(null, ""),
 });
 

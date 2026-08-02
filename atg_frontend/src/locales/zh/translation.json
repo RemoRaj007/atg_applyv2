@@ -37,7 +37,12 @@
     "paymentOptions": "支付选项",
     "teamCapacity": "团队容量",
     "notifications": "通知",
-    "upgrade": "升级套餐"
+    "upgrade": "升级套餐",
+    "jobDiscovery": "职位发现",
+    "systemLogs": "系统日志",
+    "siteContent": "站点内容",
+    "siteSettings": "站点设置",
+    "emailTemplates": "邮件模板"
   },
   "footer": {
     "tagline": "人工管理的求职申请服务。由专业团队研究匹配，精心准备并手动提交。",
