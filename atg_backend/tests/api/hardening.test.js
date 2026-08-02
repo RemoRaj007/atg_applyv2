@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import request from "supertest";
+import jwt from "jsonwebtoken";
 
 import { loadApp, authHeader, CANDIDATE, ADMIN } from "../helpers/app.js";
 import { prisma, resetPrismaMock } from "../helpers/prismaMock.js";
@@ -68,6 +69,120 @@ describe("CORS", () => {
   it("does not treat a hostname that merely starts with localhost as local", async () => {
     const res = await preflight("http://localhost.evil.net");
     expect(res.headers["access-control-allow-origin"]).toBeUndefined();
+  });
+
+  it("allows localhost outside production, for local development", async () => {
+    const res = await preflight("http://localhost:5173");
+    expect(res.headers["access-control-allow-origin"]).toBe("http://localhost:5173");
+  });
+
+  // With credentials:true, a blanket localhost allowance in production means a
+  // page on the victim's own machine can call the live API with their cookies.
+  it("refuses localhost in production", async () => {
+    vi.resetModules();
+    process.env.NODE_ENV = "production";
+    try {
+      const prodApp = (await import("../../app.js")).default;
+      const res = await request(prodApp)
+        .options("/api/auth/login")
+        .set("Origin", "http://localhost:5173")
+        .set("Access-Control-Request-Method", "POST");
+      expect(res.headers["access-control-allow-origin"]).toBeUndefined();
+    } finally {
+      process.env.NODE_ENV = "test";
+      vi.resetModules();
+    }
+  });
+});
+
+// The refresh cookie is SameSite=None in production — it has to be, since the
+// frontend and API are different sites — so a browser sends it cross-site.
+// /auth/refresh and /auth/logout act on that cookie with no other credential,
+// which makes them the only routes a cross-site page could drive. Everything
+// else authenticates with a Bearer token, which no browser attaches on an
+// attacker's behalf.
+describe("CSRF on the cookie-authenticated routes", () => {
+  const refreshCookie = () => {
+    const token = jwt.sign({ id: 4, role: "candidate" }, process.env.JWT_REFRESH_SECRET, {
+      expiresIn: "7d",
+    });
+    return `refreshToken=${token}`;
+  };
+
+  beforeEach(() => {
+    prisma.user.findFirst.mockResolvedValue({
+      id: 4,
+      email: "candidate@example.com",
+      role: "candidate",
+      d_status: "active",
+    });
+  });
+
+  it("refuses a refresh driven from an attacker's page", async () => {
+    const res = await request(app)
+      .post("/api/auth/refresh")
+      .set("Origin", "https://evil.example.net")
+      .set("Cookie", refreshCookie());
+
+    expect(res.status).toBe(403);
+  });
+
+  it("refuses a logout driven from an attacker's page", async () => {
+    const res = await request(app)
+      .post("/api/auth/logout")
+      .set("Origin", "https://evil.example.net")
+      .set("Cookie", refreshCookie());
+
+    expect(res.status).toBe(403);
+  });
+
+  it("allows the real frontend origin", async () => {
+    const res = await request(app)
+      .post("/api/auth/refresh")
+      .set("Origin", "https://app.example.com")
+      .set("Cookie", refreshCookie());
+
+    expect(res.status).toBe(200);
+  });
+
+  it("falls back to Referer when Origin is stripped", async () => {
+    const blocked = await request(app)
+      .post("/api/auth/logout")
+      .set("Referer", "https://evil.example.net/attack.html")
+      .set("Cookie", refreshCookie());
+    expect(blocked.status).toBe(403);
+
+    const allowed = await request(app)
+      .post("/api/auth/logout")
+      .set("Referer", "https://app.example.com/dashboard")
+      .set("Cookie", refreshCookie());
+    expect(allowed.status).toBe(200);
+  });
+
+  // curl, server-to-server and uptime probes send neither header, and they are
+  // not the threat model — CSRF leverage requires a browser holding the cookie,
+  // and browsers always send Origin here.
+  it("allows a request that carries neither Origin nor Referer", async () => {
+    const res = await request(app).post("/api/auth/logout").set("Cookie", refreshCookie());
+    expect(res.status).toBe(200);
+  });
+});
+
+describe("health endpoint", () => {
+  it("reports ok when the database answers", async () => {
+    const res = await request(app).get("/api/health");
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe("ok");
+    expect(res.body.checks.database.status).toBe("ok");
+  });
+
+  // 200-on-degraded is how an outage hides from an uptime probe.
+  it("answers 503 when the database is unreachable", async () => {
+    prisma.$queryRaw.mockRejectedValueOnce(new Error("connection refused"));
+    const res = await request(app).get("/api/health");
+    expect(res.status).toBe(503);
+    expect(res.body.status).toBe("degraded");
+    expect(res.body.checks.database.status).toBe("error");
   });
 });
 

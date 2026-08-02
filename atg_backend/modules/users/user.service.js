@@ -89,6 +89,16 @@ const update = async (id, data, requester) => {
     }
   }
 
+  // Admins carry the broader schema, which permits setting someone else's
+  // password. That must not become a way to reset your *own* password without
+  // proving you know the current one — PUT /me/password exists for that.
+  if (isSelf && data.password !== undefined) {
+    securityLogger.security("Password change attempted through the profile endpoint", {
+      userId: requester.id,
+    });
+    throw ApiError.forbidden("Use the change-password endpoint to change your own password");
+  }
+
   const updateData = { ...data };
   if (updateData.email && !isValidEmail(updateData.email)) {
     throw ApiError.badRequest("Invalid email address format (e.g. user@example.com)");

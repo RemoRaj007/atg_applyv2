@@ -32,9 +32,6 @@ const register = async (data) => {
 
   const hashed = await argon2.hash(password);
 
-  let companyId = null;
-  let role = "candidate";
-
   if (isCompany) {
     const existingCompany = await prisma.company.findFirst({
       where: { OR: [{ email }, { name: companyName }], d_status: "active" },
@@ -42,24 +39,46 @@ const register = async (data) => {
     if (existingCompany) {
       throw ApiError.conflict("A company with this name or email already exists");
     }
-
-    const company = await prisma.company.create({
-      data: {
-        name: companyName,
-        email: email,
-        website: companyWebsite,
-        description: companyDescription,
-        status: "pending",
-      },
-    });
-    companyId = company.id;
-    role = "company";
-    activityLogger.activity("Company registered", { companyId: company.id, name: companyName });
   }
 
-  const user = await prisma.user.create({
-    data: { email, name, password: hashed, phone, country, city, role, companyId },
+  // Both rows or neither. Creating the company and the user as separate writes
+  // meant a failure on the second left an orphan `pending` company behind — and
+  // the duplicate-company check above then rejected every retry, so the applicant
+  // could never register with that name or email again.
+  const { user, company } = await prisma.$transaction(async (tx) => {
+    let createdCompany = null;
+
+    if (isCompany) {
+      createdCompany = await tx.company.create({
+        data: {
+          name: companyName,
+          email: email,
+          website: companyWebsite,
+          description: companyDescription,
+          status: "pending",
+        },
+      });
+    }
+
+    const createdUser = await tx.user.create({
+      data: {
+        email,
+        name,
+        password: hashed,
+        phone,
+        country,
+        city,
+        role: isCompany ? "company" : "candidate",
+        companyId: createdCompany ? createdCompany.id : null,
+      },
+    });
+
+    return { user: createdUser, company: createdCompany };
   });
+
+  if (company) {
+    activityLogger.activity("Company registered", { companyId: company.id, name: companyName });
+  }
 
   activityLogger.activity("User registered", { userId: user.id, email: user.email, role: user.role });
 

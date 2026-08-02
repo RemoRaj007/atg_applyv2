@@ -71,6 +71,24 @@ describe("toCsv", () => {
   it("renders null and undefined as empty cells", () => {
     expect(toCsv([{ id: null, name: undefined }], columns)).toBe("ID,Name\n,");
   });
+
+  it.each([
+    ["=cmd|'/c calc'!A1", "'=cmd|'/c calc'!A1"],
+    ["+1+1", "'+1+1"],
+    ["-1+1", "'-1+1"],
+    ["@SUM(A1)", "'@SUM(A1)"],
+    ["\tHYPERLINK(1)", "'\tHYPERLINK(1)"],
+  ])("neutralizes the formula trigger in %j", (input, expected) => {
+    // A spreadsheet reads a cell starting with these as a formula, so an export
+    // of attacker-chosen names runs code on the reviewer's machine. The leading
+    // apostrophe forces it back to text and is not displayed.
+    const csv = toCsv([{ id: 1, name: input }], columns);
+    expect(csv.split("\n")[1]).toBe(`1,${expected.includes(",") ? `"${expected}"` : expected}`);
+  });
+
+  it("leaves an ordinary cell untouched", () => {
+    expect(toCsv([{ id: 1, name: "Ada Lovelace" }], columns)).toBe("ID,Name\n1,Ada Lovelace");
+  });
 });
 
 describe("fileUrl", () => {

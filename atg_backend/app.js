@@ -7,6 +7,7 @@ const path = require("path");
 
 const { prisma } = require("./config/db");
 const { systemLogger } = require("./config/atg_logger");
+const { isAllowedOrigin } = require("./config/origins");
 const notFound = require("./middlewares/notFound.middleware");
 const rateLimit = require("./middlewares/rateLimit.middleware");
 const errorHandler = require("./middlewares/error.middleware");
@@ -37,51 +38,13 @@ app.use(cookieParser());
 // payload. The largest legitimate JSON body is a job description plus its
 // requirements, which is well inside this; file uploads go through multer.
 app.use(express.json({ limit: "256kb" }));
-// Set FRONTEND_URL (comma-separated) to add further origins. The defaults below
-// are what production actually runs on, so the API answers the frontend even when
-// FRONTEND_URL is unset or incomplete.
-//
-// The custom domain must be listed explicitly: it matches neither Cloudflare
-// pattern, so before it was added here sign-up and sign-in were dead in
-// production. Those requests send Content-Type: application/json, which triggers
-// a CORS preflight; the preflight came back without CORS headers and the browser
-// dropped the real request, so nothing ever reached this server. (Token refresh
-// kept working and masked the breakage — it is a simple request, so it needs no
-// preflight.) Keep this list in sync with the domains bound in Cloudflare.
-const PRODUCTION_ORIGINS = ["https://atgapply.atgconcordia.com"];
-
-// The generated Cloudflare hostnames differ by deploy target:
-//   Workers: <worker>.<account-subdomain>.workers.dev
-//   Pages:   [<deploy-hash>.]<project>.pages.dev
-const CLOUDFLARE_PROJECT = "atgapplyv2";
-const CLOUDFLARE_ORIGIN_PATTERNS = [
-  new RegExp(`^https://(?:[a-z0-9-]+\\.)?${CLOUDFLARE_PROJECT}\\.pages\\.dev$`),
-  new RegExp(`^https://${CLOUDFLARE_PROJECT}\\.[a-z0-9-]+\\.workers\\.dev$`),
-];
-
-const stripTrailingSlash = (value) => value.replace(/\/$/, "");
-
-const allowedOrigins = new Set(
-  [
-    ...PRODUCTION_ORIGINS,
-    ...(process.env.FRONTEND_URL || "").split(","),
-  ]
-    .map((o) => o.trim())
-    .filter(Boolean)
-    .map(stripTrailingSlash)
-);
-
+// The allowlist itself lives in config/origins.js, shared with the CSRF origin
+// check so the two cannot drift apart.
 app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      const isLocalhost = origin.startsWith("http://localhost:") ||
-                          origin.startsWith("https://localhost:") ||
-                          origin.startsWith("http://127.0.0.1:");
-      const isCloudflare = CLOUDFLARE_ORIGIN_PATTERNS.some((re) => re.test(origin));
-      if (isLocalhost || isCloudflare || allowedOrigins.has(stripTrailingSlash(origin))) {
-        return callback(null, true);
-      }
+      if (isAllowedOrigin(origin)) return callback(null, true);
       // Signal "no CORS headers" rather than throwing: throwing reaches the error
       // handler and returns a 500, which masks the real reason in the browser.
       // Note the preflight still returns 2xx — it just carries no CORS headers, so
@@ -108,16 +71,60 @@ const uploadStaticOptions = {
     res.setHeader("Content-Security-Policy", "default-src 'none'; sandbox");
   },
 };
-app.use("/uploads", express.static(path.join(__dirname, "uploads"), uploadStaticOptions));
-app.use("/api/uploads", express.static(path.join(__dirname, "uploads"), uploadStaticOptions));
+// Serving files off disk, unauthenticated, and /uploads sits outside the
+// API-wide ceiling further down — so without this it is the one route that will
+// read from the filesystem as fast as it is asked to.
+const uploadsLimiter = rateLimit({ name: "uploads", windowMs: 15 * 60 * 1000, max: 300 });
 
-app.get("/", async (req, res) => {
+app.use("/uploads", uploadsLimiter, express.static(path.join(__dirname, "uploads"), uploadStaticOptions));
+app.use("/api/uploads", uploadsLimiter, express.static(path.join(__dirname, "uploads"), uploadStaticOptions));
+
+// Limited for the same reason as /api/health: unauthenticated, and it opens a
+// database connection per request. It sits outside /api, so the API-wide
+// ceiling below does not cover it.
+app.get("/", rateLimit({ name: "root", windowMs: 60 * 1000, max: 60 }), async (req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
     res.send("ATG Apply Backend API (Postgres/Supabase via Prisma) is running");
   } catch (err) {
     systemLogger.error("Database health check failed", { stack: err.stack });
     res.status(500).send("Database connection error");
+  }
+});
+
+// A ceiling for the whole API. Until now only the auth endpoints and the
+// contact form were limited, so every other router — applications, payments,
+// users, profile values — could be called as fast as the network allowed by
+// anyone holding a token. This is deliberately generous: it is a backstop
+// against scraping and hammering, not a per-feature quota. The tighter, purpose
+// -built budgets below and in the routers still apply on top of it.
+app.use("/api", rateLimit({ name: "api", windowMs: 15 * 60 * 1000, max: 1000 }));
+
+// Machine-readable health for uptime probes. `/` returns prose and is easy to
+// mistake for healthy when only the database is down, so probes should watch
+// this: it answers 503 when the database is unreachable, which is the condition
+// worth paging on.
+// Limited because it is unauthenticated and touches the database: without a cap
+// it is a free way to make the API open a Supabase connection per request.
+// Generous enough for a probe on a 30s interval, plus room for several probes.
+app.use("/api/health", rateLimit({ name: "health", windowMs: 60 * 1000, max: 60 }));
+
+app.get("/api/health", async (req, res) => {
+  const startedAt = Date.now();
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({
+      status: "ok",
+      uptime: Math.round(process.uptime()),
+      checks: { database: { status: "ok", latencyMs: Date.now() - startedAt } },
+    });
+  } catch (err) {
+    systemLogger.error("Health check failed", { stack: err.stack });
+    res.status(503).json({
+      status: "degraded",
+      uptime: Math.round(process.uptime()),
+      checks: { database: { status: "error" } },
+    });
   }
 });
 

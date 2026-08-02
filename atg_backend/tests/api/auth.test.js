@@ -118,6 +118,48 @@ describe("POST /api/auth/register", () => {
     expect(data.appsTotal).toBeUndefined();
     expect(data.isLegendary).toBeUndefined();
   });
+
+  const companySignup = {
+    email: "hr@acme.com",
+    name: "Hiring Manager",
+    password: "Password123!",
+    isCompany: true,
+    companyName: "Acme",
+  };
+
+  it("creates the company and the user together", async () => {
+    prisma.user.findFirst.mockResolvedValue(null);
+    prisma.company.findFirst.mockResolvedValue(null);
+    prisma.company.create.mockResolvedValue({ id: 11, name: "Acme" });
+    prisma.user.create.mockResolvedValue(await activeUser({ role: "company", companyId: 11 }));
+
+    const res = await request(app).post("/api/auth/register").send(companySignup);
+
+    expect(res.status).toBe(201);
+    expect(prisma.$transaction).toHaveBeenCalled();
+    const data = prisma.user.create.mock.calls[0][0].data;
+    expect(data.role).toBe("company");
+    expect(data.companyId).toBe(11);
+  });
+
+  // The two writes used to be independent, so a failure on the user left the
+  // company row behind — and the duplicate-company check then rejected every
+  // retry, locking that name and email out of the platform for good.
+  it("does not leave an orphan company behind when the user write fails", async () => {
+    prisma.user.findFirst.mockResolvedValue(null);
+    prisma.company.findFirst.mockResolvedValue(null);
+    prisma.company.create.mockResolvedValue({ id: 11, name: "Acme" });
+    prisma.user.create.mockRejectedValue(new Error("unique constraint"));
+
+    const res = await request(app).post("/api/auth/register").send(companySignup);
+
+    expect(res.status).toBe(500);
+    // Both writes are inside one interactive transaction, so the company insert
+    // is rolled back with it rather than being committed on its own.
+    expect(prisma.$transaction).toHaveBeenCalled();
+    const [transactionFn] = prisma.$transaction.mock.calls[0];
+    expect(typeof transactionFn).toBe("function");
+  });
 });
 
 describe("POST /api/auth/login", () => {

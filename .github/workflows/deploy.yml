@@ -125,23 +125,13 @@ jobs:
           VITE_MICROSOFT_TENANT_ID: ${{ secrets.VITE_MICROSOFT_TENANT_ID }}
         run: npm run build
 
-  deploy:
-    name: Deploy to VPS
-    needs: [test, build]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy over SSH (git pull + docker compose up)
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          port: ${{ secrets.DEPLOY_PORT || 22 }}
-          script: |
-            set -e
-            cd "${{ secrets.DEPLOY_PATH }}"
-            git pull --ff-only
-            docker compose up -d --build
-            docker compose exec -T backend npm run db:migrate
-            docker compose exec -T backend npm run db:seed
+# There is deliberately no deploy job here. Production deploys are driven by the
+# Vercel (backend) and Cloudflare (frontend) git integrations, so this workflow
+# only gates merges.
+#
+# A "Deploy to VPS" job used to live here: it SSHed into a MariaDB/docker-compose
+# host that was retired when the stack moved to Supabase + Vercel + Cloudflare,
+# and it ran `db:seed` on every push to main. `prisma/seed.js` creates accounts
+# with a password published in the repo, so that job was one live DEPLOY_HOST
+# secret away from seeding those accounts into a real database. It was removed
+# rather than fixed, because nothing it deployed to exists any more.
