@@ -121,7 +121,10 @@ const uploadStaticOptions = {
 app.use("/uploads", express.static(path.join(__dirname, "uploads"), uploadStaticOptions));
 app.use("/api/uploads", express.static(path.join(__dirname, "uploads"), uploadStaticOptions));
 
-app.get("/", async (req, res) => {
+// Limited for the same reason as /api/health: unauthenticated, and it opens a
+// database connection per request. It sits outside /api, so the API-wide
+// ceiling below does not cover it.
+app.get("/", rateLimit({ name: "root", windowMs: 60 * 1000, max: 60 }), async (req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
     res.send("ATG Apply Backend API (Postgres/Supabase via Prisma) is running");
