@@ -16,6 +16,7 @@ Compose + VPS setup for production.
 > | Project name | `atg_applyv2` |
 > | Project ref | `jlfyewnowimoetemzhlt` |
 > | Region | `ca-central-1` |
+> | API URL | `https://jlfyewnowimoetemzhlt.supabase.co` |
 > | Pooler host | `aws-0-ca-central-1.pooler.supabase.com` |
 >
 > This account also contains an older, empty project named **`atg-apply`**
@@ -121,7 +122,11 @@ already reflected in the schema, rather than editing the table by hand.
     or a new custom domain. If you bind a new domain in Cloudflare, prefer adding
     it to `PRODUCTION_ORIGINS` in `app.js` so the allowlist stays in version
     control rather than living only in the dashboard.
-  - `SUPABASE_URL` — e.g. `https://<project-ref>.supabase.co`
+  - `SUPABASE_URL` — `https://jlfyewnowimoetemzhlt.supabase.co` for production.
+    The URL is public (it pairs with the publishable key), so it is safe to keep
+    here; only the service-role key below is a secret. Check the ref matches the
+    one in `DATABASE_URL` — pointing storage and the database at different
+    projects is a failure that surfaces only once uploads are exercised.
   - `SUPABASE_SERVICE_ROLE_KEY` — from Project Settings → API. Required for file
     uploads; keep it server-side only, it bypasses row-level security.
   - `SUPABASE_STORAGE_BUCKET` — optional, defaults to `uploads`
