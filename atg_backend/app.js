@@ -7,6 +7,7 @@ const path = require("path");
 
 const { prisma } = require("./config/db");
 const { systemLogger } = require("./config/atg_logger");
+const { isAllowedOrigin } = require("./config/origins");
 const notFound = require("./middlewares/notFound.middleware");
 const rateLimit = require("./middlewares/rateLimit.middleware");
 const errorHandler = require("./middlewares/error.middleware");
@@ -37,61 +38,13 @@ app.use(cookieParser());
 // payload. The largest legitimate JSON body is a job description plus its
 // requirements, which is well inside this; file uploads go through multer.
 app.use(express.json({ limit: "256kb" }));
-// Set FRONTEND_URL (comma-separated) to add further origins. The defaults below
-// are what production actually runs on, so the API answers the frontend even when
-// FRONTEND_URL is unset or incomplete.
-//
-// The custom domain must be listed explicitly: it matches neither Cloudflare
-// pattern, so before it was added here sign-up and sign-in were dead in
-// production. Those requests send Content-Type: application/json, which triggers
-// a CORS preflight; the preflight came back without CORS headers and the browser
-// dropped the real request, so nothing ever reached this server. (Token refresh
-// kept working and masked the breakage — it is a simple request, so it needs no
-// preflight.) Keep this list in sync with the domains bound in Cloudflare.
-const PRODUCTION_ORIGINS = ["https://atgapply.atgconcordia.com"];
-
-// The generated Cloudflare hostnames differ by deploy target:
-//   Workers: <worker>.<account-subdomain>.workers.dev
-//   Pages:   [<deploy-hash>.]<project>.pages.dev
-const CLOUDFLARE_PROJECT = "atgapplyv2";
-const CLOUDFLARE_ORIGIN_PATTERNS = [
-  new RegExp(`^https://(?:[a-z0-9-]+\\.)?${CLOUDFLARE_PROJECT}\\.pages\\.dev$`),
-  new RegExp(`^https://${CLOUDFLARE_PROJECT}\\.[a-z0-9-]+\\.workers\\.dev$`),
-];
-
-// Keyed off VERCEL as well as NODE_ENV, matching modules/auth/auth.controller.js:
-// the deployed API always runs on Vercel, so this stays correct even where
-// NODE_ENV is not set.
-const isProduction = process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL);
-
-const stripTrailingSlash = (value) => value.replace(/\/$/, "");
-
-const allowedOrigins = new Set(
-  [
-    ...PRODUCTION_ORIGINS,
-    ...(process.env.FRONTEND_URL || "").split(","),
-  ]
-    .map((o) => o.trim())
-    .filter(Boolean)
-    .map(stripTrailingSlash)
-);
-
+// The allowlist itself lives in config/origins.js, shared with the CSRF origin
+// check so the two cannot drift apart.
 app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      // Only outside production. With credentials:true, allowing any localhost
-      // origin in production means a page served from a developer's — or a
-      // victim's — own machine can make authenticated calls against live data.
-      const isLocalhost = !isProduction && (
-        origin.startsWith("http://localhost:") ||
-        origin.startsWith("https://localhost:") ||
-        origin.startsWith("http://127.0.0.1:")
-      );
-      const isCloudflare = CLOUDFLARE_ORIGIN_PATTERNS.some((re) => re.test(origin));
-      if (isLocalhost || isCloudflare || allowedOrigins.has(stripTrailingSlash(origin))) {
-        return callback(null, true);
-      }
+      if (isAllowedOrigin(origin)) return callback(null, true);
       // Signal "no CORS headers" rather than throwing: throwing reaches the error
       // handler and returns a 500, which masks the real reason in the browser.
       // Note the preflight still returns 2xx — it just carries no CORS headers, so

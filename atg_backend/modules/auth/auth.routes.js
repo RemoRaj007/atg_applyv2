@@ -2,6 +2,7 @@ const express = require("express");
 const authController = require("./auth.controller");
 const validate = require("../../middlewares/validations/validate.middleware");
 const rateLimit = require("../../middlewares/rateLimit.middleware");
+const requireTrustedOrigin = require("../../middlewares/csrf.middleware");
 const { registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema, googleSchema, microsoftSchema } = require("./auth.schema");
 
 const router = express.Router();
@@ -21,8 +22,13 @@ router.post("/register", registerLimiter, validate(registerSchema), authControll
 router.post("/login", loginLimiter, validate(loginSchema), authController.login);
 router.post("/google", socialLimiter, validate(googleSchema), authController.googleLogin);
 router.post("/microsoft", socialLimiter, validate(microsoftSchema), authController.microsoftLogin);
-router.post("/refresh", refreshLimiter, authController.refresh);
-router.post("/logout", authController.logout);
+// These two are the only routes that act on the refresh cookie alone, with no
+// Authorization header — so they are the only ones a cross-site page could drive
+// using credentials the browser attaches by itself. Everything else on this API
+// authenticates with a Bearer token, which no browser sends on an attacker's
+// behalf. See middlewares/csrf.middleware.js.
+router.post("/refresh", refreshLimiter, requireTrustedOrigin, authController.refresh);
+router.post("/logout", requireTrustedOrigin, authController.logout);
 router.post("/forgot-password", resetLimiter, validate(forgotPasswordSchema), authController.forgotPassword);
 router.post("/reset-password", resetLimiter, validate(resetPasswordSchema), authController.resetPassword);
 
