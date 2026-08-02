@@ -28,7 +28,12 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: javascript-typescript
-          queries: security-and-quality
+          # security-extended, not security-and-quality. The quality suite adds
+          # style rules (unused variables, redundant expressions) that produced
+          # ~70 alerts on the first run and would bury real findings — a check
+          # that is always red gets ignored. Extended keeps the deeper security
+          # queries without the style noise.
+          queries: security-extended
 
       # No build step: CodeQL analyses JS/TS from source, and building here would
       # only duplicate the build job in deploy.yml.

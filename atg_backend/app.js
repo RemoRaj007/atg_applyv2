@@ -135,6 +135,11 @@ app.get("/", async (req, res) => {
 // mistake for healthy when only the database is down, so probes should watch
 // this: it answers 503 when the database is unreachable, which is the condition
 // worth paging on.
+// Limited because it is unauthenticated and touches the database: without a cap
+// it is a free way to make the API open a Supabase connection per request.
+// Generous enough for a probe on a 30s interval, plus room for several probes.
+app.use("/api/health", rateLimit({ name: "health", windowMs: 60 * 1000, max: 60 }));
+
 app.get("/api/health", async (req, res) => {
   const startedAt = Date.now();
   try {
