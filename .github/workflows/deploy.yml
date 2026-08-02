@@ -7,6 +7,54 @@ on:
     branches: [main]
 
 jobs:
+  # Production migrations are a manual step (see VERCEL.md): Vercel's build runs
+  # `prisma generate` only, so merging a migration ships code that expects
+  # columns the database does not have. This job reports whether production is
+  # actually up to date, so that gap is visible on the PR instead of surfacing
+  # later as `The column X does not exist in the current database`.
+  #
+  # Requires the MIGRATE_DATABASE_URL secret: the Supabase *session* pooler
+  # string (port 5432 — the transaction pooler on 6543 cannot run migrations).
+  # Without the secret the job reports how to set it and passes, so forks and
+  # outside contributors are not blocked.
+  migrations:
+    name: Migration status
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: atg_backend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: atg_backend
+        run: npm ci
+
+      - name: Check production migration status
+        working-directory: atg_backend
+        env:
+          DATABASE_URL: ${{ secrets.MIGRATE_DATABASE_URL }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::notice::MIGRATE_DATABASE_URL is not set, skipping the check."
+            echo "Set it to the Supabase session-pooler string (port 5432) to enable this."
+            exit 0
+          fi
+          # `migrate status` exits non-zero when migrations are pending, which
+          # is exactly the condition worth failing the PR on.
+          npx prisma migrate status
+
+      - name: Explain a failure
+        if: failure()
+        run: |
+          echo "::error::Production has unapplied migrations."
+          echo "Apply them before merging (see VERCEL.md):"
+          echo "  cd atg_backend"
+          echo "  DATABASE_URL=\"<session-pooler-string>\" npx prisma migrate deploy"
+
   build:
     name: Build & Lint
     runs-on: ubuntu-latest
