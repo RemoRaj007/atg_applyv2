@@ -118,8 +118,13 @@ const uploadStaticOptions = {
     res.setHeader("Content-Security-Policy", "default-src 'none'; sandbox");
   },
 };
-app.use("/uploads", express.static(path.join(__dirname, "uploads"), uploadStaticOptions));
-app.use("/api/uploads", express.static(path.join(__dirname, "uploads"), uploadStaticOptions));
+// Serving files off disk, unauthenticated, and /uploads sits outside the
+// API-wide ceiling further down — so without this it is the one route that will
+// read from the filesystem as fast as it is asked to.
+const uploadsLimiter = rateLimit({ name: "uploads", windowMs: 15 * 60 * 1000, max: 300 });
+
+app.use("/uploads", uploadsLimiter, express.static(path.join(__dirname, "uploads"), uploadStaticOptions));
+app.use("/api/uploads", uploadsLimiter, express.static(path.join(__dirname, "uploads"), uploadStaticOptions));
 
 // Limited for the same reason as /api/health: unauthenticated, and it opens a
 // database connection per request. It sits outside /api, so the API-wide
