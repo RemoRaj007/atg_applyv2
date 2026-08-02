@@ -252,6 +252,17 @@ export default function Login() {
             </Link>
           </p>
 
+          <div className="border-t border-slate-700/40 mt-8 pt-6">
+            <p className="text-center text-xs text-slate-500 font-medium mb-3">Administrator?</p>
+            <Link
+              to="/admin"
+              className="w-full flex items-center justify-center gap-2 bg-amber-600/20 hover:bg-amber-600/30 border border-amber-600/40 text-amber-400 hover:text-amber-300 font-semibold py-3 px-4 rounded-xl transition-all"
+            >
+              <ShieldCheck className="h-4 w-4" />
+              Access Admin Panel
+            </Link>
+          </div>
+
           <div className="flex items-center justify-center gap-2 text-[11px] text-slate-400 mt-10">
             <ShieldCheck className="h-4 w-4 text-emerald-400" />
             <span className="font-medium">Your data is secure with enterprise-grade encryption</span>
