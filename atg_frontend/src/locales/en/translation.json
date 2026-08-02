@@ -39,7 +39,10 @@
     "notifications": "Notifications",
     "upgrade": "Upgrade",
     "jobDiscovery": "Job Discovery",
-    "systemLogs": "System Logs"
+    "systemLogs": "System Logs",
+    "siteContent": "Site Content",
+    "siteSettings": "Site Settings",
+    "emailTemplates": "Email Templates"
   },
   "footer": {
     "tagline": "Human-managed job applications. Research-led matching, prepared and submitted by a trained team.",

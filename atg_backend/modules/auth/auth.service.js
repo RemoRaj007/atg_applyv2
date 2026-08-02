@@ -5,7 +5,7 @@ const ApiError = require("../../utils/ApiError");
 const sanitizeUser = require("../../utils/sanitizeUser");
 const { issueTokenPair, verifyRefreshToken } = require("../../utils/token.util");
 const { activityLogger, securityLogger } = require("../../config/atg_logger");
-const { sendEmail } = require("../notifications/email.service");
+const { sendTemplatedEmail } = require("../notifications/email.service");
 const { isValidEmail, validatePasswordStrength, isValidPhone } = require("../../utils/validators");
 const { verifyIdentityToken } = require("./federated-identity.service");
 
@@ -63,10 +63,14 @@ const register = async (data) => {
 
   activityLogger.activity("User registered", { userId: user.id, email: user.email, role: user.role });
 
-  sendEmail({
+  sendTemplatedEmail({
     to: user.email,
-    subject: "Welcome to ATG Apply",
-    body: `Hi ${user.name}, your account has been created on the ${user.pkg} plan.`,
+    templateKey: "welcome",
+    vars: { name: user.name, email: user.email, plan: user.pkg },
+    fallback: {
+      subject: "Welcome to ATG Apply",
+      body: `Hi ${user.name}, your account has been created on the ${user.pkg} plan.`,
+    },
   }).catch(() => {});
 
   const tokens = issueTokenPair(user);
@@ -137,10 +141,14 @@ const forgotPassword = async (email) => {
   if (!user) {
     // For security reasons, don't reveal that the user does not exist on the frontend,
     // but still send an email to notify them that a password reset was requested for an unregistered email.
-    await sendEmail({
+    await sendTemplatedEmail({
       to: email,
-      subject: "Attempted password reset on ATG Apply",
-      body: `Hello,\n\nYou (or someone else) requested a password reset for this email address. However, this email is not registered on ATG Apply.\n\nIf you do not have an account, please ignore this email.\n\nBest regards,\nATG Apply Team`,
+      templateKey: "password_reset_unknown",
+      vars: { email },
+      fallback: {
+        subject: "Attempted password reset on ATG Apply",
+        body: `Hello,\n\nYou (or someone else) requested a password reset for this email address. However, this email is not registered on ATG Apply.\n\nIf you do not have an account, please ignore this email.\n\nBest regards,\nATG Apply Team`,
+      },
     }).catch(() => {});
     return;
   }
@@ -159,10 +167,14 @@ const forgotPassword = async (email) => {
   const frontendUrl = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(",")[0] : "http://localhost:5173";
   const resetLink = `${frontendUrl}/reset-password?token=${token}`;
 
-  await sendEmail({
+  await sendTemplatedEmail({
     to: user.email,
-    subject: "Reset your ATG Apply password",
-    body: `Hello ${user.name},\n\nYou requested a password reset. Please click on the link below or copy and paste it into your browser to reset your password:\n\n${resetLink}\n\nIf you did not request this, please ignore this email.\n\nBest regards,\nATG Apply Team`,
+    templateKey: "password_reset",
+    vars: { name: user.name, email: user.email, resetLink },
+    fallback: {
+      subject: "Reset your ATG Apply password",
+      body: `Hello ${user.name},\n\nYou requested a password reset. Please click on the link below or copy and paste it into your browser to reset your password:\n\n${resetLink}\n\nIf you did not request this, please ignore this email.\n\nBest regards,\nATG Apply Team`,
+    },
   });
 };
 

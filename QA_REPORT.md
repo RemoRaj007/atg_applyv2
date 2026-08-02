@@ -9,7 +9,7 @@ authentication, file uploads, error handling, dependencies, and the build.
 | | |
 |---|---|
 | Automated tests before | 0 (`"test": "echo \"Error: no test specified\" && exit 1"`) |
-| Automated tests after | **196**, all passing (`cd atg_backend && npm test`) |
+| Automated tests after | **250**, all passing (`cd atg_backend && npm test`) |
 | Findings | 22 (5 high, 9 medium, 8 low/informational) |
 | Fixed in this branch | 18 |
 | Documented, not fixed | 4 — see [Known, not fixed](#known-not-fixed) |
@@ -277,3 +277,71 @@ filters, pagination ceiling, and CSV escaping.
 The other rows are routing: the pages already branch on role — the router was
 doing this for jobs, team capacity and reports, and simply had not been extended
 to the rest.
+
+---
+
+## Follow-up: content management (third pass)
+
+Four areas were requested; all four are in. One new backend module
+(`modules/content/`) with three tables, three admin pages, and a public read
+path the marketing site uses.
+
+### What an admin can now change without a deploy
+
+| Area | Where | Covers |
+|---|---|---|
+| **Site settings** | `/admin/site-settings` | Name, tagline, logo URL, accent colour, contact email/phone/address/hours, four social links, sign-up toggle, social-login toggle, site-wide banner, default quotas |
+| **Site content** | `/admin/site-content` | Every headline and paragraph on Landing, Pricing, How it works, Contact, plus the full Privacy and Terms bodies in Markdown |
+| **Email templates** | `/admin/email-templates` | Subject and body for welcome, password reset, reset-for-unknown-address, application status change, and the generic notification email — with a placeholder picker and a preview |
+| **In-app catalogs** | existing pages | Jobs, scholarships, skills, job roles, profile schema, payment options, companies — all already had admin pages; the second pass made the missing ones reachable |
+
+### Design decisions worth knowing
+
+- **Text, never HTML.** Content is stored and rendered as plain text or
+  Markdown, and no public page uses `dangerouslySetInnerHTML`. A compromised
+  admin account cannot turn a content field into stored XSS.
+- **URL settings are scheme-checked.** `javascript:` and `data:` are rejected at
+  save time, and the footer re-checks before rendering a link — a social URL
+  becomes an anchor the public clicks.
+- **Email placeholders are allow-listed per template.** Saving `{{frist_name}}`
+  fails with the typo named, rather than shipping it verbatim to a candidate.
+  Subjects have CR/LF stripped at save *and* at send: an editable subject line is
+  a header-injection primitive otherwise.
+- **Public reads only return rows flagged `isPublic`.** Operational settings
+  (quotas, capacities) stay admin-only, and the page name is validated against a
+  fixed list before it becomes a query.
+- **Shipped copy is always the fallback.** `usePageContent(page, defaults)` takes
+  the bundled strings as its initial state and overlays what the API returns, so
+  a failed request or an unseeded database renders the current copy rather than
+  a blank page. Same for email: `sendTemplatedEmail` falls back to the literal
+  copy each service already had.
+- **Defaults seed themselves.** `seedDefaults()` runs on boot and upserts with an
+  empty `update`, so it adds what is missing and never overwrites an edit. There
+  is also a button in the admin UI.
+
+### Wired vs. not
+
+The public pages are driven by `react-i18next` across **8 locales**. The CMS is
+layered *over* that as an override rather than replacing it, so translations are
+not lost. Currently reading from the CMS: the **landing hero**, the **footer**
+(site name, support email, social links), and the **site-wide banner** (new — it
+appears on every marketing page and both signed-in layouts). The remaining
+pages still render their i18n strings; their content rows exist and are editable,
+but the components have not been switched over. Finishing that is mechanical —
+swap `t('key')` for `content('key')` per page — but it needs a decision first on
+how an English-only CMS override should interact with the other seven locales.
+
+### Migration
+
+`prisma/migrations/20260802000000_add_content_management/` adds `SiteSetting`,
+`ContentBlock` and `EmailTemplate`. Production migrations are a manual step in
+this project (see VERCEL.md), so this must be applied before the branch is
+deployed:
+
+```bash
+cd atg_backend
+DATABASE_URL="<session-pooler-string>" npx prisma migrate deploy
+```
+
+Until it runs, the content endpoints error and every page falls back to its
+shipped copy — the app keeps working, it simply is not editable yet.

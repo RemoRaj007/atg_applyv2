@@ -45,6 +45,9 @@ import AnonymousJobDiscovery from '../pages/candidate/AnonymousJobDiscovery';
 import AnonymousJobDiscoveryAdmin from '../pages/operator/AnonymousJobDiscoveryAdmin';
 import AdminPaymentOptions from '../pages/admin/AdminPaymentOptions';
 import AdminSystemLogs from '../pages/admin/AdminSystemLogs';
+import AdminSiteSettings from '../pages/admin/AdminSiteSettings';
+import AdminSiteContent from '../pages/admin/AdminSiteContent';
+import AdminEmailTemplates from '../pages/admin/AdminEmailTemplates';
 import CandidateJobLinksPage from '../pages/candidate/CandidateJobLinksPage';
 import OperatorJobLinksPage from '../pages/operator/OperatorJobLinksPage';
 
@@ -114,6 +117,9 @@ export default function AppRoutes() {
         <Route path="payment-options" element={<AdminPaymentOptions />} />
         <Route path="team-capacity" element={<OperatorTeamCapacity />} />
         <Route path="reports" element={<OperatorExport />} />
+        <Route path="site-content" element={<AdminSiteContent />} />
+        <Route path="site-settings" element={<AdminSiteSettings />} />
+        <Route path="email-templates" element={<AdminEmailTemplates />} />
         <Route path="logs" element={<AdminSystemLogs />} />
         <Route path="notifications" element={<NotificationsPage />} />
         <Route path="profile" element={<SystemUserProfile />} />
