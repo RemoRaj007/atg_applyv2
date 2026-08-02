@@ -20,7 +20,7 @@ const getById = asyncHandler(async (req, res) => {
 });
 
 const create = asyncHandler(async (req, res) => {
-  const user = await userService.create(req.body);
+  const user = await userService.create(req.body, req.user);
   sendSuccess(res, { statusCode: 201, message: "User created", data: { user } });
 });
 
@@ -30,7 +30,7 @@ const update = asyncHandler(async (req, res) => {
 });
 
 const remove = asyncHandler(async (req, res) => {
-  await userService.remove(Number(req.params.id));
+  await userService.remove(Number(req.params.id), req.user);
   sendSuccess(res, { message: "User deleted" });
 });
 

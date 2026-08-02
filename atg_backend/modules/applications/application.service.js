@@ -56,7 +56,10 @@ const getById = async (id, requester) => {
   if (requester.role === "candidate" && application.userId !== requester.id) {
     throw ApiError.forbidden("You do not have access to this application");
   }
-  if (requester.role === "company" && application.job && application.job.companyId !== requester.companyId) {
+  // A company is only ever entitled to applications against its own postings.
+  // Guarding on `application.job` being present let scholarship applications and
+  // job-link requests — which carry no job — through the check entirely.
+  if (requester.role === "company" && application.job?.companyId !== requester.companyId) {
     throw ApiError.forbidden("You do not have access to this application");
   }
   return application;

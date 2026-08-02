@@ -55,6 +55,35 @@ jobs:
           echo "  cd atg_backend"
           echo "  DATABASE_URL=\"<session-pooler-string>\" npx prisma migrate deploy"
 
+  # Runs before build/deploy so a red suite blocks the deploy. Needs no database:
+  # the API suites drive Express through supertest with the Prisma client mocked.
+  test:
+    name: Backend tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: atg_backend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: atg_backend
+        run: npm ci
+
+      - name: Run tests
+        working-directory: atg_backend
+        run: npm test
+
+      - name: Audit backend dependencies
+        working-directory: atg_backend
+        # Advisory: reports known vulnerabilities without failing the build on a
+        # transitive advisory nobody can act on today.
+        continue-on-error: true
+        run: npm audit --audit-level=high
+
   build:
     name: Build & Lint
     runs-on: ubuntu-latest
@@ -98,7 +127,7 @@ jobs:
 
   deploy:
     name: Deploy to VPS
-    needs: build
+    needs: [test, build]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:

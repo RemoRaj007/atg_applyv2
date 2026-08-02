@@ -4,14 +4,17 @@ A reference for the testing types, methodologies, and tooling that apply to this
 project, mapped onto the actual codebase (Express/Prisma API in `atg_backend/`,
 React + Vite SPA in `atg_frontend/`).
 
-> **Current state:** the repo has no automated test suite yet.
-> `atg_backend/package.json` still ships the default
-> `"test": "echo \"Error: no test specified\" && exit 1"`, and
-> `atg_frontend` has `lint` and `build` but no `test` script. CI
-> (`.github/workflows/deploy.yml`) runs install → `prisma generate` → lint →
-> build, then deploys on `main`. Everything below marked *Not yet in place*
-> describes the target, not what exists today. See
-> [Adoption roadmap](#adoption-roadmap) for the suggested order.
+> **Current state:** the backend has a Vitest + Supertest suite —
+> **196 tests** under `atg_backend/tests/`, run with
+> `cd atg_backend && npm test`. It needs no database: the Prisma client is
+> mocked, so the suite drives the real Express app, middleware, and services.
+> CI (`.github/workflows/deploy.yml`) runs it as a `test` job that `deploy`
+> depends on, so a red suite blocks the deploy.
+>
+> `atg_frontend` still has only `lint` and `build` — no component or E2E tests
+> yet. Items below marked *Not yet in place* describe the target. See
+> [Adoption roadmap](#adoption-roadmap) for what remains, and
+> [QA_REPORT.md](QA_REPORT.md) for the findings this suite was written against.
 
 ---
 
@@ -133,15 +136,46 @@ Industry-standard options, with the recommendation for this stack in bold.
 
 ## Adoption roadmap
 
-Ordered by value-per-effort against the current codebase:
+Ordered by value-per-effort against the current codebase.
 
-1. **Smoke + API tests** on auth and applications (Vitest + Supertest) — the
-   endpoints where a regression is most expensive.
-2. **Unit tests** for `utils/` and `middlewares/permissions/` — pure functions
-   and the authorization branches.
-3. **CI gate** — add a `test` job to `.github/workflows/deploy.yml` that the
-   `deploy` job depends on, so failures block the deploy.
-4. **Component tests** for the application form and profile screens.
-5. **E2E happy path** (Playwright): candidate applies → operator triages.
-6. **Non-functional passes** — accessibility, then a k6 load profile for the
+Done:
+
+1. ~~**Smoke + API tests** on auth and applications (Vitest + Supertest).~~
+   `tests/api/auth.test.js`, `access-control.test.js`, `workflow.test.js`.
+2. ~~**Unit tests** for `utils/` and `middlewares/permissions/`.~~
+   `tests/unit/`.
+3. ~~**CI gate** — a `test` job the `deploy` job depends on.~~
+
+Remaining:
+
+4. **Integration tests against a real Postgres** — the current API suite mocks
+   Prisma, so it verifies the code's own logic but not the schema, constraints,
+   or migrations. A throwaway database in CI would cover those.
+5. **Component tests** for the application form and profile screens
+   (Vitest + React Testing Library + jsdom).
+6. **E2E happy path** (Playwright): candidate applies → operator triages.
+7. **Non-functional passes** — accessibility, then a k6 load profile for the
    submission-deadline spike.
+
+### Writing a new backend test
+
+`tests/helpers/app.js` seeds `globalThis.__atgPrisma` with the mock client
+before `app.js` is imported, so any suite can do:
+
+```js
+import { loadApp, authHeader, OPERATOR } from "../helpers/app.js";
+import { prisma, resetPrismaMock } from "../helpers/prismaMock.js";
+
+const app = await loadApp();
+beforeEach(() => resetPrismaMock());
+
+it("scopes the export to the operator", async () => {
+  prisma.candidateApplication.findMany.mockResolvedValue([]);
+  await request(app).get("/api/applications/export").set(authHeader(OPERATOR));
+  expect(prisma.candidateApplication.findMany.mock.calls[0][0].where)
+    .toMatchObject({ staffId: OPERATOR.id });
+});
+```
+
+Every Prisma model and method resolves to a sensible default, so a test only
+programs the calls it cares about.

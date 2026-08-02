@@ -3,6 +3,7 @@ const ApiError = require("../../utils/ApiError");
 const { activityLogger } = require("../../config/atg_logger");
 const userService = require("../users/user.service");
 const notificationService = require("../notifications/notification.service");
+const { editUserDetailsSchema } = require("./request.schema");
 
 const list = async () => {
   const requests = await prisma.changeRequest.findMany({
@@ -71,11 +72,19 @@ const approve = async (id, requester) => {
   if (request.status !== "pending") throw ApiError.badRequest("Request is already processed");
 
   if (request.type === "edit_user") {
-    const details = JSON.parse(request.details || "{}");
+    // Re-validated at approval time, not only at submission: the row may predate
+    // the schema, and this is the point where the fields actually reach Prisma.
+    const { error, value: details } = editUserDetailsSchema.validate(JSON.parse(request.details || "{}"), {
+      abortEarly: false,
+      stripUnknown: true,
+    });
+    if (error) {
+      throw ApiError.badRequest(`This request carries fields that cannot be applied: ${error.message}`);
+    }
     await userService.update(request.targetId, details, requester);
     activityLogger.activity("User edit change request executed", { targetId: request.targetId, executedBy: requester.id });
   } else if (request.type === "delete_user") {
-    await userService.remove(request.targetId);
+    await userService.remove(request.targetId, requester);
     activityLogger.activity("User soft-delete change request executed", { targetId: request.targetId, executedBy: requester.id });
   }
 
