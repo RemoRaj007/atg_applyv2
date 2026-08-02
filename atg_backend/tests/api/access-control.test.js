@@ -294,6 +294,9 @@ describe("candidate application quota", () => {
 
   it("forces a candidate's own id onto the record even when another is posted", async () => {
     prisma.user.findUnique.mockResolvedValue(user());
+    // The quota slot is claimed with a conditional updateMany; count 1 means this
+    // request won it.
+    prisma.user.updateMany.mockResolvedValue({ count: 1 });
     prisma.candidateApplication.create.mockResolvedValue(application());
     prisma.candidateApplication.findFirst.mockResolvedValue(application());
 

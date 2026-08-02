@@ -25,6 +25,14 @@ const buildModel = () => {
   for (const method of METHODS) {
     model[method] = vi.fn(async () => defaultFor(method));
   }
+  // Prisma field references — `prisma.user.fields.appsTotal` — let a where clause
+  // compare two columns of the same row, which is how the quota claim stays a
+  // single atomic UPDATE. The real client exposes a descriptor object here; a
+  // test only needs it to be a stable, inspectable value.
+  model.fields = new Proxy(
+    {},
+    { get: (_t, name) => (typeof name === "string" ? { _fieldRef: name } : undefined) }
+  );
   return model;
 };
 

@@ -66,6 +66,9 @@ model User {
   discoveryProfile       AnonymousDiscoveryProfile?
 
   @@unique([provider, externalId])
+  @@index([companyId])
+  @@index([role, d_status])
+  @@index([d_status])
 }
 
 model Company {
@@ -81,6 +84,8 @@ model Company {
 
   users User[]
   jobs  Job[]
+
+  @@index([d_status])
 }
 
 model Job {
@@ -110,6 +115,10 @@ model Job {
   payments     Payment[]              @relation("JobPayments")
   formColumns  JobFormColumn[]
   skills       JobSkill[]
+
+  @@index([companyId])
+  @@index([jobRoleId])
+  @@index([d_status, createdAt])
 }
 
 model JobRole {
@@ -122,6 +131,9 @@ model JobRole {
   jobRoleSkills JobRoleSkill[]
   jobs          Job[]
   userJobRoles  UserJobRole[]
+
+  @@index([d_status])
+  @@index([status])
 }
 
 model CandidateApplication {
@@ -156,6 +168,12 @@ model CandidateApplication {
   staff       User?                @relation("StaffedApps", fields: [staffId], references: [id])
   formValues  JobFormValue[]
   comments    ApplicationComment[]
+
+  @@index([userId, d_status])
+  @@index([jobId])
+  @@index([scholarshipId])
+  @@index([staffId])
+  @@index([status])
 }
 
 model Payment {
@@ -177,6 +195,10 @@ model Payment {
 
   jobId Int?
   job   Job? @relation("JobPayments", fields: [jobId], references: [id])
+
+  @@index([userId, d_status])
+  @@index([jobId])
+  @@index([status])
 }
 
 model PaymentOption {
@@ -203,6 +225,9 @@ model Notification {
   unread    Boolean  @default(true)
   createdAt DateTime @default(now())
   d_status  String   @default("active")
+
+  @@index([userId, unread])
+  @@index([userId, createdAt])
 }
 
 model Scholarship {
@@ -215,6 +240,8 @@ model Scholarship {
   createdAt    DateTime               @default(now())
   d_status     String                 @default("active")
   applications CandidateApplication[]
+
+  @@index([d_status])
 }
 
 model LogEntry {
@@ -228,6 +255,7 @@ model LogEntry {
   d_status  String   @default("active")
 
   @@index([category, createdAt])
+  @@index([userId])
 }
 
 model ChangeRequest {
@@ -242,6 +270,10 @@ model ChangeRequest {
   d_status    String   @default("active")
 
   createdBy User @relation("CreatedRequests", fields: [createdById], references: [id])
+
+  @@index([createdById])
+  @@index([targetId])
+  @@index([status])
 }
 
 model ProfileColumn {
@@ -272,6 +304,7 @@ model ProfileValue {
   column ProfileColumn @relation(fields: [columnId], references: [id])
 
   @@unique([userId, columnId])
+  @@index([columnId])
 }
 
 model JobFormColumn {
@@ -289,6 +322,8 @@ model JobFormColumn {
 
   job    Job            @relation(fields: [jobId], references: [id])
   values JobFormValue[]
+
+  @@index([jobId])
 }
 
 model JobFormValue {
@@ -304,6 +339,7 @@ model JobFormValue {
   column      JobFormColumn        @relation(fields: [columnId], references: [id])
 
   @@unique([applicationId, columnId])
+  @@index([columnId])
 }
 
 model Skill {
@@ -331,6 +367,7 @@ model UserSkill {
   skill Skill @relation(fields: [skillId], references: [id])
 
   @@unique([userId, skillId])
+  @@index([skillId])
 }
 
 model JobSkill {
@@ -345,6 +382,7 @@ model JobSkill {
   skill Skill @relation(fields: [skillId], references: [id])
 
   @@unique([jobId, skillId])
+  @@index([skillId])
 }
 
 model JobRoleSkill {
@@ -358,6 +396,7 @@ model JobRoleSkill {
   skill   Skill   @relation(fields: [skillId], references: [id])
 
   @@unique([jobRoleId, skillId])
+  @@index([skillId])
 }
 
 model UserJobRole {
@@ -371,6 +410,7 @@ model UserJobRole {
   jobRole JobRole @relation(fields: [jobRoleId], references: [id])
 
   @@unique([userId, jobRoleId])
+  @@index([jobRoleId])
 }
 
 model ApplicationComment {
@@ -384,6 +424,9 @@ model ApplicationComment {
 
   application CandidateApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   sender      User                 @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@index([senderId])
 }
 
 model UserProfile {
@@ -420,6 +463,8 @@ model UserPhone {
   d_status    String   @default("active")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model UserAddress {
@@ -436,6 +481,8 @@ model UserAddress {
   d_status   String   @default("active")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model UserAcademicQualification {
@@ -452,6 +499,8 @@ model UserAcademicQualification {
   d_status        String   @default("active")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model UserLanguage {
@@ -464,6 +513,8 @@ model UserLanguage {
   d_status  String   @default("active")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model UserItSkill {
@@ -475,6 +526,8 @@ model UserItSkill {
   d_status    String   @default("active")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model UserDocument {
@@ -489,6 +542,8 @@ model UserDocument {
   d_status  String   @default("active")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model UserOtherQualification {
@@ -500,6 +555,8 @@ model UserOtherQualification {
   d_status    String   @default("active")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model UserExperience {
@@ -519,6 +576,8 @@ model UserExperience {
   d_status         String    @default("active")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model UserReference {
@@ -535,6 +594,8 @@ model UserReference {
   d_status     String   @default("active")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model AnonymousDiscoveryProfile {
@@ -568,6 +629,8 @@ model AIOperator {
   d_status     String    @default("active")
 
   profile AnonymousDiscoveryProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
 }
 
 model AnonymousJobMatch {
@@ -586,6 +649,9 @@ model AnonymousJobMatch {
   d_status    String   @default("active")
 
   profile AnonymousDiscoveryProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@index([profileId, createdAt])
 }
 
 // ─── Content management ──────────────────────────────────────────────────────

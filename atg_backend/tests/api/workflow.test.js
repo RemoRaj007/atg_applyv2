@@ -60,13 +60,34 @@ describe("link-request → fit review → confirm flow", () => {
     prisma.candidateApplication.findFirst.mockResolvedValue(application({ status: "fit_reviewed" }));
     prisma.candidateApplication.update.mockResolvedValue(application({ status: "candidate_applied" }));
     prisma.user.findUnique.mockResolvedValue(candidate({ appsUsed: 3 }));
+    prisma.user.updateMany.mockResolvedValue({ count: 1 });
 
     const res = await request(app).patch("/api/applications/100/confirm-apply").set(authHeader(CANDIDATE));
 
     expect(res.status).toBe(200);
-    expect(prisma.user.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { appsUsed: { increment: 1 } } })
+    // One conditional UPDATE does both the check and the increment, so the
+    // database arbitrates the last slot instead of a read-then-write pair.
+    expect(prisma.user.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          id: CANDIDATE.id,
+          appsUsed: { lt: expect.objectContaining({ _fieldRef: "appsTotal" }) },
+        }),
+        data: { appsUsed: { increment: 1 } },
+      })
     );
+  });
+
+  it("refuses to confirm when another request took the last slot first", async () => {
+    prisma.candidateApplication.findFirst.mockResolvedValue(application({ status: "fit_reviewed" }));
+    prisma.user.findUnique.mockResolvedValue(candidate({ appsUsed: 3 }));
+    // The row no longer satisfied appsUsed < appsTotal by the time the UPDATE ran.
+    prisma.user.updateMany.mockResolvedValue({ count: 0 });
+
+    const res = await request(app).patch("/api/applications/100/confirm-apply").set(authHeader(CANDIDATE));
+
+    expect(res.status).toBe(400);
+    expect(prisma.candidateApplication.update).not.toHaveBeenCalled();
   });
 
   it("refuses to confirm before an operator has reviewed the fit", async () => {
