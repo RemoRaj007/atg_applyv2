@@ -7,21 +7,58 @@ Compose + VPS setup for production.
 
 ## 1. Supabase
 
-1. Create a Supabase project and grab two connection strings from
-   Project Settings → Database:
-   - **Pooled** (port `6543`, `?pgbouncer=true`) — use this for `DATABASE_URL`
-     in Vercel. Serverless functions spin up many concurrent instances; the
-     pooler prevents exhausting Postgres' connection limit.
-   - **Direct** (port `5432`) — needed for every migration command, both
-     `prisma migrate dev` locally and `prisma migrate deploy` against
-     production, since migrations require a non-pooled connection. Keep it
-     somewhere you can find it; see "Applying migrations to production" below.
-2. Generate the initial Postgres migration (the old MySQL migrations were
-   deleted — they can't run against Postgres):
+### Which project is production
+
+> **Production is the Supabase project named `atg_applyv2`.**
+>
+> | | |
+> | --- | --- |
+> | Project name | `atg_applyv2` |
+> | Project ref | `jlfyewnowimoetemzhlt` |
+> | Region | `ca-central-1` |
+> | Pooler host | `aws-0-ca-central-1.pooler.supabase.com` |
+>
+> This account also contains an older, empty project named **`atg-apply`**
+> (ref `xjezpwtjjuzixszmfrln`, `ap-south-1`) that is **not** used by anything.
+> It is a leftover from an earlier attempt and is easy to mistake for the real
+> thing — the names differ by one character. Migrations have been run against it
+> by accident before, which looks like success while production stays broken.
+> **Always confirm the ref in the connection string before running anything.**
+
+1. Grab two connection strings from Project Settings → Database (or the
+   **Connect** button in the dashboard header):
+   - **Transaction pooler** (port `6543`) — use this for `DATABASE_URL` in
+     Vercel. Serverless functions spin up many concurrent instances; the pooler
+     prevents exhausting Postgres' connection limit. **This one cannot run
+     migrations** — Prisma needs advisory locks that a transaction pooler does
+     not hold across statements.
+     ```
+     postgresql://postgres.jlfyewnowimoetemzhlt:[PASSWORD]@aws-0-ca-central-1.pooler.supabase.com:6543/postgres
+     ```
+   - **Session pooler** (same host, port `5432`) — use this for every migration
+     command, both `prisma migrate dev` locally and `prisma migrate deploy`
+     against production. See "Applying migrations to production" below.
+     ```
+     postgresql://postgres.jlfyewnowimoetemzhlt:[PASSWORD]@aws-0-ca-central-1.pooler.supabase.com:5432/postgres
+     ```
+
+   The **direct** connection (`db.<ref>.supabase.co:5432`) also works for
+   migrations, but Supabase serves that host over IPv6 only unless the IPv4
+   add-on is enabled, so it times out from most ISPs and CI runners. The session
+   pooler above is the IPv4-reachable equivalent — note the username takes the
+   `postgres.<project-ref>` form rather than plain `postgres`.
+
+   Percent-encode special characters in the password (`@` → `%40`,
+   `#` → `%23`), and single-quote the URL in your shell so `$` and `!` survive.
+2. Apply the migrations that already exist in `prisma/migrations/` (the old
+   MySQL migrations were deleted — they can't run against Postgres, so the
+   Postgres baseline was regenerated and is committed):
    ```bash
    cd atg_backend
-   DATABASE_URL="<direct-connection-string>" npx prisma migrate dev --name init
+   DATABASE_URL="<session-pooler-string>" npx prisma migrate deploy
    ```
+   Only run `prisma migrate dev` when you are *authoring* a new migration
+   locally. It can reset the database, so never point it at production.
 3. Seed if needed: `npx prisma db seed`.
 
 ### Applying migrations to production — a required manual step
@@ -33,23 +70,27 @@ columns the database does not have, and every query touching them fails at
 runtime with `The column X does not exist in the current database`.
 
 Migrations are also not run automatically on purpose: `prisma migrate deploy`
-needs the **direct** (port `5432`) connection, while `DATABASE_URL` on Vercel is
-the pooled pgbouncer string. Running migrations through the transaction pooler
-is unreliable — it cannot hold the advisory locks Prisma uses.
+needs a **session-mode** (port `5432`) connection, while `DATABASE_URL` on Vercel
+is the transaction pooler on port `6543`. Running migrations through a
+transaction pooler is unreliable — it cannot hold the advisory locks Prisma uses.
+
+Before running anything, **check the project ref in your connection string is
+`jlfyewnowimoetemzhlt`.** The lookalike `atg-apply` project will happily accept
+the migration and report success while production stays broken.
 
 So whenever a change adds anything under `prisma/migrations/`, run this yourself
 against production, before or immediately after merging:
 
 ```bash
 cd atg_backend
-DATABASE_URL="<direct-connection-string>" npx prisma migrate deploy
+DATABASE_URL="<session-pooler-string>" npx prisma migrate deploy
 ```
 
 To check whether production is up to date at any point:
 
 ```bash
 cd atg_backend
-DATABASE_URL="<direct-connection-string>" npx prisma migrate status
+DATABASE_URL="<session-pooler-string>" npx prisma migrate status
 ```
 
 Note the ledger table `_prisma_migrations` is what Prisma uses to track which
@@ -68,7 +109,9 @@ already reflected in the schema, rather than editing the table by hand.
   `atg_server.js` (with `app.listen`) is for local dev only and isn't used
   on Vercel.
 - Required environment variables:
-  - `DATABASE_URL` — Supabase **pooled** connection string
+  - `DATABASE_URL` — Supabase **transaction pooler** string (port `6543`) for
+    project ref `jlfyewnowimoetemzhlt`. Not the `atg-apply` project, and not the
+    session pooler — see "Which project is production" above.
   - `FRONTEND_URL` — optional; extra frontend origin(s), comma-separated, added
     to the CORS allowlist. The production custom domain
     (`https://atgapply.atgconcordia.com`) and this project's generated Cloudflare

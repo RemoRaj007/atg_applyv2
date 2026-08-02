@@ -79,27 +79,30 @@ const SKILLS = [
   { name: 'Jira', category: 'soft' },
 ];
 
+// Fictional employers. These are fabricated listings, so naming real companies
+// would attribute invented roles, salaries and requirements to businesses that
+// never posted them. Locations are real cities — only the employers are made up.
 const JOBS = [
-  { company: 'Vercel', title: 'Frontend Engineer', location: 'Remote', experience: '2+', locationType: 'Full-time', jobRoleName: 'Frontend Developer', skills: ['React', 'TypeScript', 'Next.js', 'Tailwind CSS'] },
-  { company: 'Stripe', title: 'Backend Engineer (Node.js)', location: 'Remote / San Francisco, USA', experience: '3+', locationType: 'Full-time', jobRoleName: 'Backend Developer', skills: ['Node.js', 'Express.js', 'PostgreSQL', 'Docker'] },
-  { company: 'Shopify', title: 'Full Stack Developer', location: 'Remote', experience: '3-5', locationType: 'Full-time', jobRoleName: 'Full Stack Developer', skills: ['React', 'Node.js', 'TypeScript', 'MySQL'] },
-  { company: 'Klarna', title: 'Senior Backend Engineer', location: 'Stockholm, Sweden', experience: '5+', locationType: 'Full-time', jobRoleName: 'Backend Developer', skills: ['Node.js', 'Kubernetes', 'Docker', 'PostgreSQL'] },
-  { company: 'Notion', title: 'Product Designer', location: 'Remote', experience: '2+', locationType: 'Full-time', jobRoleName: 'UI/UX Designer', skills: ['Figma', 'Adobe XD', 'Communication'] },
-  { company: 'Airbnb', title: 'Data Scientist', location: 'Remote / New York, USA', experience: '3+', locationType: 'Full-time', jobRoleName: 'Data Scientist', skills: ['Python', 'Pandas', 'SQL'] },
-  { company: 'Meta', title: 'Machine Learning Engineer', location: 'Menlo Park, USA', experience: '4+', locationType: 'Full-time', jobRoleName: 'Data Scientist', skills: ['Python', 'Pandas', 'Docker'] },
-  { company: 'Spotify', title: 'DevOps Engineer', location: 'Remote / Stockholm, Sweden', experience: '3+', locationType: 'Full-time', jobRoleName: 'DevOps Engineer', skills: ['Docker', 'Kubernetes', 'AWS', 'CI/CD', 'Terraform'] },
-  { company: 'Grab', title: 'Mobile Developer (React Native)', location: 'Singapore', experience: '2-4', locationType: 'Full-time', jobRoleName: 'Mobile Developer (React Native)', skills: ['React Native', 'JavaScript', 'TypeScript'] },
-  { company: 'SAP', title: 'Cloud Architect', location: 'Frankfurt, Germany', experience: '5+', locationType: 'Full-time', jobRoleName: 'Cloud Architect', skills: ['AWS', 'Azure', 'GCP', 'Kubernetes', 'Terraform'] },
-  { company: 'WSO2', title: 'Senior Full Stack Developer', location: 'Colombo, Sri Lanka', experience: '4+', locationType: 'Full-time', jobRoleName: 'Full Stack Developer', skills: ['React', 'Node.js', 'MySQL', 'Git'] },
-  { company: 'IFS', title: 'Backend Developer', location: 'Colombo, Sri Lanka', experience: '2-5', locationType: 'Full-time', jobRoleName: 'Backend Developer', skills: ['PostgreSQL', 'REST APIs', 'Git'] },
-  { company: 'Arimac Lanka', title: 'Mobile Developer', location: 'Colombo, Sri Lanka', experience: '2+', locationType: 'Full-time', jobRoleName: 'Mobile Developer (React Native)', skills: ['React Native', 'REST APIs', 'Git'] },
-  { company: 'Sysco Labs', title: 'QA Automation Engineer', location: 'Colombo, Sri Lanka', experience: '2+', locationType: 'Full-time', jobRoleName: 'QA Engineer', skills: ['Selenium', 'Cypress', 'Python'] },
-  { company: 'Virtusa', title: 'Business Analyst', location: 'Colombo, Sri Lanka', experience: '3+', locationType: 'Full-time', jobRoleName: 'Business Analyst', skills: ['SQL', 'Jira', 'Communication', 'Agile/Scrum'] },
-  { company: 'Canva', title: 'Product Designer', location: 'Remote / Sydney, Australia', experience: '2+', locationType: 'Full-time', jobRoleName: 'UI/UX Designer', skills: ['Figma', 'Communication'] },
-  { company: 'Atlassian', title: 'QA Engineer', location: 'Sydney, Australia', experience: '2-4', locationType: 'Full-time', jobRoleName: 'QA Engineer', skills: ['Cypress', 'Selenium', 'Jira'] },
-  { company: 'Booking.com', title: 'Site Reliability Engineer', location: 'Remote / Amsterdam, Netherlands', experience: '4+', locationType: 'Full-time', jobRoleName: 'Site Reliability Engineer (SRE)', skills: ['Linux/Bash', 'Docker', 'Kubernetes', 'Nginx', 'CI/CD'] },
-  { company: 'Zoho', title: 'Backend Developer', location: 'Chennai, India', experience: '2-5', locationType: 'Full-time', jobRoleName: 'Backend Developer', skills: ['Node.js', 'MySQL', 'REST APIs'] },
-  { company: 'Datadog', title: 'Cybersecurity Analyst', location: 'Remote / London, UK', experience: '3+', locationType: 'Full-time', jobRoleName: 'Cybersecurity Analyst', skills: ['Linux/Bash', 'Python', 'AWS'] },
+  { company: 'Northwind Cloud', title: 'Frontend Engineer', location: 'Remote', experience: '2+', locationType: 'Full-time', jobRoleName: 'Frontend Developer', skills: ['React', 'TypeScript', 'Next.js', 'Tailwind CSS'] },
+  { company: 'Meridian Payments', title: 'Backend Engineer (Node.js)', location: 'Remote / San Francisco, USA', experience: '3+', locationType: 'Full-time', jobRoleName: 'Backend Developer', skills: ['Node.js', 'Express.js', 'PostgreSQL', 'Docker'] },
+  { company: 'Lumen Commerce', title: 'Full Stack Developer', location: 'Remote', experience: '3-5', locationType: 'Full-time', jobRoleName: 'Full Stack Developer', skills: ['React', 'Node.js', 'TypeScript', 'MySQL'] },
+  { company: 'Nordvik Pay', title: 'Senior Backend Engineer', location: 'Stockholm, Sweden', experience: '5+', locationType: 'Full-time', jobRoleName: 'Backend Developer', skills: ['Node.js', 'Kubernetes', 'Docker', 'PostgreSQL'] },
+  { company: 'Quillspace', title: 'Product Designer', location: 'Remote', experience: '2+', locationType: 'Full-time', jobRoleName: 'UI/UX Designer', skills: ['Figma', 'Adobe XD', 'Communication'] },
+  { company: 'Wanderly', title: 'Data Scientist', location: 'Remote / New York, USA', experience: '3+', locationType: 'Full-time', jobRoleName: 'Data Scientist', skills: ['Python', 'Pandas', 'SQL'] },
+  { company: 'Vantage Labs', title: 'Machine Learning Engineer', location: 'Menlo Park, USA', experience: '4+', locationType: 'Full-time', jobRoleName: 'Data Scientist', skills: ['Python', 'Pandas', 'Docker'] },
+  { company: 'Waveform Audio', title: 'DevOps Engineer', location: 'Remote / Stockholm, Sweden', experience: '3+', locationType: 'Full-time', jobRoleName: 'DevOps Engineer', skills: ['Docker', 'Kubernetes', 'AWS', 'CI/CD', 'Terraform'] },
+  { company: 'Velo Mobility', title: 'Mobile Developer (React Native)', location: 'Singapore', experience: '2-4', locationType: 'Full-time', jobRoleName: 'Mobile Developer (React Native)', skills: ['React Native', 'JavaScript', 'TypeScript'] },
+  { company: 'Kestrel Systems', title: 'Cloud Architect', location: 'Frankfurt, Germany', experience: '5+', locationType: 'Full-time', jobRoleName: 'Cloud Architect', skills: ['AWS', 'Azure', 'GCP', 'Kubernetes', 'Terraform'] },
+  { company: 'Serendib Systems', title: 'Senior Full Stack Developer', location: 'Colombo, Sri Lanka', experience: '4+', locationType: 'Full-time', jobRoleName: 'Full Stack Developer', skills: ['React', 'Node.js', 'MySQL', 'Git'] },
+  { company: 'Ceylon Enterprise Software', title: 'Backend Developer', location: 'Colombo, Sri Lanka', experience: '2-5', locationType: 'Full-time', jobRoleName: 'Backend Developer', skills: ['PostgreSQL', 'REST APIs', 'Git'] },
+  { company: 'Lanka Interactive', title: 'Mobile Developer', location: 'Colombo, Sri Lanka', experience: '2+', locationType: 'Full-time', jobRoleName: 'Mobile Developer (React Native)', skills: ['React Native', 'REST APIs', 'Git'] },
+  { company: 'Indigo Labs', title: 'QA Automation Engineer', location: 'Colombo, Sri Lanka', experience: '2+', locationType: 'Full-time', jobRoleName: 'QA Engineer', skills: ['Selenium', 'Cypress', 'Python'] },
+  { company: 'Cinnamon Digital', title: 'Business Analyst', location: 'Colombo, Sri Lanka', experience: '3+', locationType: 'Full-time', jobRoleName: 'Business Analyst', skills: ['SQL', 'Jira', 'Communication', 'Agile/Scrum'] },
+  { company: 'Palette Studio', title: 'Product Designer', location: 'Remote / Sydney, Australia', experience: '2+', locationType: 'Full-time', jobRoleName: 'UI/UX Designer', skills: ['Figma', 'Communication'] },
+  { company: 'Summit Toolworks', title: 'QA Engineer', location: 'Sydney, Australia', experience: '2-4', locationType: 'Full-time', jobRoleName: 'QA Engineer', skills: ['Cypress', 'Selenium', 'Jira'] },
+  { company: 'Voyagr', title: 'Site Reliability Engineer', location: 'Remote / Amsterdam, Netherlands', experience: '4+', locationType: 'Full-time', jobRoleName: 'Site Reliability Engineer (SRE)', skills: ['Linux/Bash', 'Docker', 'Kubernetes', 'Nginx', 'CI/CD'] },
+  { company: 'Orbital Suite', title: 'Backend Developer', location: 'Chennai, India', experience: '2-5', locationType: 'Full-time', jobRoleName: 'Backend Developer', skills: ['Node.js', 'MySQL', 'REST APIs'] },
+  { company: 'Beacon Metrics', title: 'Cybersecurity Analyst', location: 'Remote / London, UK', experience: '3+', locationType: 'Full-time', jobRoleName: 'Cybersecurity Analyst', skills: ['Linux/Bash', 'Python', 'AWS'] },
 ];
 
 const SCHOLARSHIPS = [
