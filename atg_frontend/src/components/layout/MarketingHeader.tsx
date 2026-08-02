@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import atgLogo from '../../assets/atg_apply.png';
 import LanguageSelector from '../ui/LanguageSelector';
+import MaintenanceBanner from './MaintenanceBanner';
 
 const NAV_LINKS = [
   { to: '/', key: 'nav.home' },
@@ -17,6 +18,9 @@ export default function MarketingHeader() {
   const { pathname } = useLocation();
 
   return (
+    <>
+    {/* Site-wide notice, raised from Site Settings. Renders nothing when empty. */}
+    <MaintenanceBanner />
     <header className="flex justify-between items-center py-6 px-8 border-b border-slate-800 bg-[#0f172a]/95 backdrop-blur-md text-white sticky top-0 z-50 shadow-lg">
       <div className="flex items-center gap-6">
         <Link to="/" className="flex items-center gap-3 font-extrabold text-2xl md:text-3xl text-white group">
@@ -47,5 +51,6 @@ export default function MarketingHeader() {
         </Link>
       </div>
     </header>
+    </>
   );
 }

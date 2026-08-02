@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { usePageContent } from '../hooks/useSiteContent';
 import { Link } from 'react-router-dom';
 import { CheckCircle, HelpCircle, ChevronDown, Award, Shield, Clock, Eye } from 'lucide-react';
 import atgLogo from '../assets/atg_apply.png';
@@ -16,6 +17,14 @@ const RISING_BLUE_PARTICLES = Array.from({ length: 48 }).map((_, i) => ({
 }));
 
 const LandingPage = () => {
+  // Fallback copy: what ships in the bundle, and what renders if the content
+  // request fails or the tables have not been seeded.
+  const content = usePageContent('landing', {
+    'hero.title': 'Your personal job\napplication team.',
+    'hero.subtitle':
+      'We help students, graduates and busy professionals find suitable jobs, prepare stronger applications, and apply with confidence. Our trained team researches roles, checks your fit, tailors your CV and motivation letter, and submits on your behalf.',
+  });
+
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
 
   return (
@@ -114,11 +123,14 @@ const LandingPage = () => {
                 </div>
               </div>
 
-              <h1 className="text-3xl lg:text-[2.8rem] font-serif text-white mb-6 leading-[1.2] tracking-tight">
-                Your personal job<br/>application team.
+              {/* Copy comes from Site Content when an admin has edited it; the
+                  strings passed to usePageContent are the shipped fallback and
+                  what renders if the request fails. Plain text only. */}
+              <h1 className="text-3xl lg:text-[2.8rem] font-serif text-white mb-6 leading-[1.2] tracking-tight whitespace-pre-line">
+                {content('hero.title')}
               </h1>
               <p className="text-base text-slate-300 mb-8 leading-relaxed">
-                We help students, graduates and busy professionals find suitable jobs, prepare stronger applications, and apply with confidence. Our trained team researches roles, checks your fit, tailors your CV and motivation letter, and submits on your behalf.
+                {content('hero.subtitle')}
               </p>
               <div className="flex flex-col sm:flex-row gap-4 items-center mb-6">
                 <Link to="/register" className="w-full sm:w-auto px-6 py-3.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/30 text-center text-sm">

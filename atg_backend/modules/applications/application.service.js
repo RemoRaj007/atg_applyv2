@@ -1,7 +1,7 @@
 const { prisma } = require("../../config/db");
 const ApiError = require("../../utils/ApiError");
 const { activityLogger } = require("../../config/atg_logger");
-const { sendEmail } = require("../notifications/email.service");
+const { sendEmail, sendTemplatedEmail } = require("../notifications/email.service");
 const { sendSms } = require("../notifications/sms.service");
 const { matchResumeToJob } = require("../../utils/apify.service");
 const { calculateFitScore, loadCandidateData } = require("../jobs/fitScore.service");
@@ -369,10 +369,11 @@ const sendStatusUpdateEmail = (application, previousStatus) => {
   const subject = `[ATG Apply] Application Status Updated: ${title}`;
   const body = `Hello ${application.user.name},\n\nYour application status for "${title}" has been updated to: ${application.status}.\n\nBest regards,\nATG Apply Team`;
 
-  sendEmail({
+  sendTemplatedEmail({
     to: application.user.email,
-    subject,
-    body,
+    templateKey: "application_status",
+    vars: { name: application.user.name, title, status: application.status },
+    fallback: { subject, body },
   }).catch(() => {});
 
   // System Notification for Candidate
