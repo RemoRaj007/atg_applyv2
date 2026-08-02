@@ -1,0 +1,38 @@
+name: CodeQL
+
+# Static analysis for the JavaScript/TypeScript in both apps. Runs on PRs so a
+# newly introduced injection or auth flaw is caught in review, and weekly so
+# newly published rules are applied to code that has not changed.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 3 * * 1"
+
+jobs:
+  analyze:
+    name: Analyze JavaScript/TypeScript
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-and-quality
+
+      # No build step: CodeQL analyses JS/TS from source, and building here would
+      # only duplicate the build job in deploy.yml.
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript-typescript"

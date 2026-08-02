@@ -14,6 +14,15 @@ const resolveBaseURL = () => {
 
   const hostname = typeof window === 'undefined' ? '' : window.location.hostname;
   const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+  if (!isLocal) {
+    // Loud, because the fallback is a guess: if the API ever moves off this
+    // host, a deploy missing the variable keeps working until it suddenly
+    // doesn't, with nothing pointing at the cause.
+    console.warn(
+      `VITE_API_URL was not set at build time; falling back to ${PRODUCTION_API_URL}. ` +
+        'Set it in the deploy environment so the API origin is explicit.'
+    );
+  }
   return isLocal ? LOCAL_API_URL : PRODUCTION_API_URL;
 };
 
@@ -39,6 +48,39 @@ export const setAccessToken = (token: string | null) => {
   accessToken = token;
 };
 
+// Called when a refresh finally fails, so the auth context can clear `user` and
+// send the browser to /login. Clearing only the token left `isAuthenticated`
+// true: the user sat on a protected page where every request 401'd behind a
+// generic toast, with nothing telling them their session had ended.
+type SessionExpiredHandler = () => void;
+let onSessionExpired: SessionExpiredHandler | null = null;
+
+export const setSessionExpiredHandler = (handler: SessionExpiredHandler | null) => {
+  onSessionExpired = handler;
+};
+
+// One refresh at a time. A dashboard firing five parallel requests used to send
+// five independent refreshes; with rotating refresh tokens all but the first
+// would fail, logging the user out mid-session. Everyone now awaits the same
+// promise and retries once it settles.
+let refreshInFlight: Promise<string> | null = null;
+
+const refreshAccessToken = () => {
+  if (!refreshInFlight) {
+    refreshInFlight = axios
+      .post(`${baseURL}/auth/refresh`, {}, { withCredentials: true })
+      .then(({ data }) => {
+        const token = data.data.accessToken as string;
+        setAccessToken(token);
+        return token;
+      })
+      .finally(() => {
+        refreshInFlight = null;
+      });
+  }
+  return refreshInFlight;
+};
+
 apiClient.interceptors.request.use((config) => {
   if (accessToken && config.headers) {
     config.headers.Authorization = `Bearer ${accessToken}`;
@@ -59,12 +101,14 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
       try {
-        const { data } = await axios.post(`${baseURL}/auth/refresh`, {}, { withCredentials: true });
-        setAccessToken(data.data.accessToken);
-        originalRequest.headers.Authorization = `Bearer ${data.data.accessToken}`;
+        const token = await refreshAccessToken();
+        originalRequest.headers.Authorization = `Bearer ${token}`;
         return apiClient(originalRequest);
       } catch {
         setAccessToken(null);
+        // The session is genuinely over: tell the app so it can clear the user
+        // and redirect, rather than leaving a signed-out UI that looks signed in.
+        onSessionExpired?.();
         // Surface the original request's error, not the refresh attempt's, since that's
         // what's actually relevant to the caller (e.g. the page that made the request)
         return Promise.reject(error);

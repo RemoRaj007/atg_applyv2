@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useSession } from '../hooks/useSession';
 import ProtectedRoute from './AtgProtectedRoute';
 import Layout from '../components/layout/AtgLayout';
@@ -8,6 +8,7 @@ import PricingPage from '../pages/PricingPage';
 import PrivacyPolicyPage from '../pages/PrivacyPolicyPage';
 import TermsOfServicePage from '../pages/TermsOfServicePage';
 import ContactPage from '../pages/ContactPage';
+import NotFound from '../pages/NotFound';
 import Login from '../pages/AtgLogin';
 import Register from '../pages/Register';
 import ForgotPassword from '../pages/AtgForgotPassword';
@@ -53,6 +54,7 @@ import OperatorJobLinksPage from '../pages/operator/OperatorJobLinksPage';
 
 export default function AppRoutes() {
   const { user, isAuthenticated, isLoading } = useSession();
+  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -64,11 +66,24 @@ export default function AppRoutes() {
 
   const homeForUser = isAuthenticated && user ? `/${user.role}` : '/login';
 
+  // Where to land after signing in. ProtectedRoute passes the blocked path in
+  // router state; the interceptor's expiry redirect passes it as ?from=, since
+  // it navigates with the browser rather than the router. Only same-origin
+  // relative paths are honoured, so `from` cannot be used as an open redirect.
+  const requestedReturn =
+    (location.state as { from?: string } | null)?.from ??
+    new URLSearchParams(location.search).get('from') ??
+    null;
+  const afterAuth =
+    requestedReturn && requestedReturn.startsWith('/') && !requestedReturn.startsWith('//')
+      ? requestedReturn
+      : homeForUser;
+
   return (
     <Routes>
       <Route
         path="/login"
-        element={isAuthenticated ? <Navigate to={homeForUser} replace /> : <Login />}
+        element={isAuthenticated ? <Navigate to={afterAuth} replace /> : <Login />}
       />
 
       <Route
@@ -205,7 +220,10 @@ export default function AppRoutes() {
       <Route path="/terms" element={<TermsOfServicePage />} />
       <Route path="/contact" element={<ContactPage />} />
       
-      <Route path="*" element={<Navigate to={homeForUser} replace />} />
+      {/* Show a real 404 rather than redirecting. Bouncing an unknown URL to the
+          dashboard (or /login when signed out) made a mistyped or dead link look
+          like a session problem, and hid genuinely broken links from us. */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

@@ -1,0 +1,32 @@
+version: 2
+
+# Grouped so a week's patch bumps arrive as one PR per ecosystem rather than a
+# dozen. Security advisories still open their own PR immediately, outside these
+# schedules.
+updates:
+  - package-ecosystem: npm
+    directory: /atg_backend
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      backend-minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: npm
+    directory: /atg_frontend
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      frontend-minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

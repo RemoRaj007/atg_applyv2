@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useSession } from '../hooks/useSession';
 import type { User } from '../types/user.types';
 
@@ -10,6 +10,7 @@ interface ProtectedRouteProps {
 
 export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const { user, isAuthenticated, isLoading } = useSession();
+  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -20,7 +21,9 @@ export default function ProtectedRoute({ children, allowedRoles }: ProtectedRout
   }
 
   if (!isAuthenticated || !user) {
-    return <Navigate to="/login" replace />;
+    // Carry where they were heading, so a shared or bookmarked deep link
+    // survives the sign-in instead of dropping them on the dashboard.
+    return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
