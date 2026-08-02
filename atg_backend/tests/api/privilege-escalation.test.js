@@ -187,6 +187,23 @@ describe("job role creation is bounded", () => {
     expect(written).not.toHaveProperty("id");
   });
 
+  // Creating is open to every authenticated user, so without a cap one account
+  // can insert unbounded rows for operators to review. Asserted through the
+  // advertised budget rather than by spending it: the limiter's window is
+  // process-wide, so exhausting it here would starve the cases below.
+  it("meters role proposals", async () => {
+    prisma.jobRole.findFirst.mockResolvedValue(null);
+    prisma.jobRole.create.mockResolvedValue(created);
+
+    const res = await request(app)
+      .post("/api/job-roles")
+      .set(authHeader(CANDIDATE))
+      .send({ name: "Cooper" });
+
+    expect(res.status).toBe(201);
+    expect(res.headers["ratelimit-limit"]).toBe("20");
+  });
+
   it("rejects a name that is missing or too short", async () => {
     for (const body of [{}, { name: "x" }]) {
       const res = await request(app).post("/api/job-roles").set(authHeader(CANDIDATE)).send(body);
