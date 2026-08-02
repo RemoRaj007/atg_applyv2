@@ -22,7 +22,10 @@ const updateUserSchema = Joi.object({
   profilePhoto: Joi.string().max(500).allow(null, ""),
   bio: Joi.string().max(1000).allow(null, ""),
   department: Joi.string().max(100).allow(null, ""),
-  password: Joi.string().min(8).max(72),
+  // No `password` here on purpose. Changing your own password goes through
+  // PUT /me/password, which requires the current one. Accepting it here let a
+  // stolen access token set a new password without knowing the old one, turning
+  // a 15-minute window into permanent account takeover.
 }).min(1);
 
 // Admin-only & Operator: role/package/quota changes

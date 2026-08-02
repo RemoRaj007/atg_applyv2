@@ -6,9 +6,16 @@ const resolveFileUrl = require("../../utils/fileUrl");
 
 const getByUserId = asyncHandler(async (req, res) => {
   const userId = Number(req.params.userId || req.user.id);
-  
-  // A candidate can only see their own values; admins/operators can see anyone's
-  if (req.user.role === "candidate" && req.user.id !== userId) {
+
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return res.status(400).json({ status: false, message: "Invalid user id" });
+  }
+
+  // Allowlist, not denylist. Naming only `candidate` here meant every other
+  // non-staff role — company, visitor — could read any user's profile values,
+  // which is where the CV, NIC and contact details live.
+  const STAFF_ROLES = ["admin", "operator"];
+  if (!STAFF_ROLES.includes(req.user.role) && req.user.id !== userId) {
     return res.status(403).json({ status: false, message: "Forbidden: Access denied" });
   }
 

@@ -59,6 +59,11 @@ const CLOUDFLARE_ORIGIN_PATTERNS = [
   new RegExp(`^https://${CLOUDFLARE_PROJECT}\\.[a-z0-9-]+\\.workers\\.dev$`),
 ];
 
+// Keyed off VERCEL as well as NODE_ENV, matching modules/auth/auth.controller.js:
+// the deployed API always runs on Vercel, so this stays correct even where
+// NODE_ENV is not set.
+const isProduction = process.env.NODE_ENV === "production" || Boolean(process.env.VERCEL);
+
 const stripTrailingSlash = (value) => value.replace(/\/$/, "");
 
 const allowedOrigins = new Set(
@@ -75,9 +80,14 @@ app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      const isLocalhost = origin.startsWith("http://localhost:") ||
-                          origin.startsWith("https://localhost:") ||
-                          origin.startsWith("http://127.0.0.1:");
+      // Only outside production. With credentials:true, allowing any localhost
+      // origin in production means a page served from a developer's — or a
+      // victim's — own machine can make authenticated calls against live data.
+      const isLocalhost = !isProduction && (
+        origin.startsWith("http://localhost:") ||
+        origin.startsWith("https://localhost:") ||
+        origin.startsWith("http://127.0.0.1:")
+      );
       const isCloudflare = CLOUDFLARE_ORIGIN_PATTERNS.some((re) => re.test(origin));
       if (isLocalhost || isCloudflare || allowedOrigins.has(stripTrailingSlash(origin))) {
         return callback(null, true);
@@ -118,6 +128,29 @@ app.get("/", async (req, res) => {
   } catch (err) {
     systemLogger.error("Database health check failed", { stack: err.stack });
     res.status(500).send("Database connection error");
+  }
+});
+
+// Machine-readable health for uptime probes. `/` returns prose and is easy to
+// mistake for healthy when only the database is down, so probes should watch
+// this: it answers 503 when the database is unreachable, which is the condition
+// worth paging on.
+app.get("/api/health", async (req, res) => {
+  const startedAt = Date.now();
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({
+      status: "ok",
+      uptime: Math.round(process.uptime()),
+      checks: { database: { status: "ok", latencyMs: Date.now() - startedAt } },
+    });
+  } catch (err) {
+    systemLogger.error("Health check failed", { stack: err.stack });
+    res.status(503).json({
+      status: "degraded",
+      uptime: Math.round(process.uptime()),
+      checks: { database: { status: "error" } },
+    });
   }
 });
 

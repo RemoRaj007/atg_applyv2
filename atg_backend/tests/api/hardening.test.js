@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import request from "supertest";
 
 import { loadApp, authHeader, CANDIDATE, ADMIN } from "../helpers/app.js";
@@ -68,6 +68,47 @@ describe("CORS", () => {
   it("does not treat a hostname that merely starts with localhost as local", async () => {
     const res = await preflight("http://localhost.evil.net");
     expect(res.headers["access-control-allow-origin"]).toBeUndefined();
+  });
+
+  it("allows localhost outside production, for local development", async () => {
+    const res = await preflight("http://localhost:5173");
+    expect(res.headers["access-control-allow-origin"]).toBe("http://localhost:5173");
+  });
+
+  // With credentials:true, a blanket localhost allowance in production means a
+  // page on the victim's own machine can call the live API with their cookies.
+  it("refuses localhost in production", async () => {
+    vi.resetModules();
+    process.env.NODE_ENV = "production";
+    try {
+      const prodApp = (await import("../../app.js")).default;
+      const res = await request(prodApp)
+        .options("/api/auth/login")
+        .set("Origin", "http://localhost:5173")
+        .set("Access-Control-Request-Method", "POST");
+      expect(res.headers["access-control-allow-origin"]).toBeUndefined();
+    } finally {
+      process.env.NODE_ENV = "test";
+      vi.resetModules();
+    }
+  });
+});
+
+describe("health endpoint", () => {
+  it("reports ok when the database answers", async () => {
+    const res = await request(app).get("/api/health");
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe("ok");
+    expect(res.body.checks.database.status).toBe("ok");
+  });
+
+  // 200-on-degraded is how an outage hides from an uptime probe.
+  it("answers 503 when the database is unreachable", async () => {
+    prisma.$queryRaw.mockRejectedValueOnce(new Error("connection refused"));
+    const res = await request(app).get("/api/health");
+    expect(res.status).toBe(503);
+    expect(res.body.status).toBe("degraded");
+    expect(res.body.checks.database.status).toBe("error");
   });
 });
 
