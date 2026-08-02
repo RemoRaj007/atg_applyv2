@@ -145,6 +145,7 @@ app.use("/api/job-roles", require("./modules/jobRoles/jobRole.routes"));
 app.use("/api/user-profile", userProfileRoutes);
 app.use("/api/anonymous-discovery", require("./modules/anonymous-discovery/anonymous-discovery.routes"));
 app.use("/api/contact", require("./modules/contact/contact.routes"));
+app.use("/api/logs", require("./modules/logs/log.routes"));
 
 app.use(notFound);
 app.use(errorHandler);

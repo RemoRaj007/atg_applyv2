@@ -37,7 +37,9 @@
     "paymentOptions": "Payment Options",
     "teamCapacity": "Team Capacity",
     "notifications": "Notifications",
-    "upgrade": "Upgrade"
+    "upgrade": "Upgrade",
+    "jobDiscovery": "Job Discovery",
+    "systemLogs": "System Logs"
   },
   "footer": {
     "tagline": "Human-managed job applications. Research-led matching, prepared and submitted by a trained team.",
