@@ -247,3 +247,33 @@ npm run test:watch
 
 CI runs the suite as a `test` job that `deploy` depends on, so a failure blocks
 the deploy.
+
+---
+
+## Follow-up: admin capability gaps (second pass)
+
+An inventory of what the `admin` role can reach in the UI versus what the API
+lets it do turned up several capabilities with no way in:
+
+| Capability | API | UI before | Now |
+|---|---|---|---|
+| Applications hub | admin sees all; `DELETE /applications/:id` is **admin-only** | none | `/admin/applications` |
+| Scholarships | `DELETE /scholarships/:id` is **admin-only** | none | `/admin/scholarships` |
+| Payments | `PATCH /payments/:id` confirms a payment and credits quota | none | `/admin/payments` |
+| Job link desk | admin may submit fit reviews | none | `/admin/job-links` |
+| Candidate directory | admin sees every user | only via User Management | `/admin/candidates` |
+| Job discovery | `POST /anonymous-discovery/admin/run/:id` | none | `/admin/anonymous-discovery` |
+| **Audit log** | **no endpoint existed** | `logApi` called a route that was never built | `/admin/logs` |
+
+The audit log is the substantive one. `config/atg_logger.js` has been writing
+every system, activity and security event into `LogEntry` through
+`PrismaLogTransport` since the app was built, and nothing could read it — the
+frontend even shipped a `logApi.list()` pointing at `/api/logs`, which returned
+404. Added `modules/logs/` (list with filters + pagination, a 7-day summary, and
+a CSV export), admin-only because security entries name the accounts behind
+failed logins and denied authorizations. 20 tests cover the access rules,
+filters, pagination ceiling, and CSV escaping.
+
+The other rows are routing: the pages already branch on role — the router was
+doing this for jobs, team capacity and reports, and simply had not been extended
+to the rest.
