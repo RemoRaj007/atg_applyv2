@@ -1,18 +1,22 @@
+const { rateLimit: expressRateLimit, MemoryStore } = require("express-rate-limit");
 const { securityLogger } = require("../config/atg_logger");
 
-// Fixed-window limiter for the endpoints an attacker can hammer without an
-// account: credential stuffing on login, account enumeration and mail flooding
-// through forgot-password, and the unauthenticated contact form.
+// Thin wrapper over express-rate-limit, keeping the { name, windowMs, max }
+// signature every call site already uses.
 //
-// Deliberately in-process and dependency-free. On Vercel that means the budget
-// is per warm instance rather than global, so it raises the cost of an attack
-// without being an absolute cap — a shared store (Redis/Postgres) is the fix if
-// the platform ever needs a hard guarantee. It is still worth having: before
-// this, one client could try passwords as fast as the network allowed.
-const buckets = new Map();
+// This was a hand-rolled fixed-window limiter. It worked, but static analysis
+// cannot recognise a bespoke implementation as rate limiting — CodeQL's
+// js/missing-rate-limiting flagged routes that were in fact limited, which
+// makes the rule useless for finding the routes that genuinely are not. Using
+// the library the analysis models keeps the alert meaningful.
+//
+// The serverless caveat is unchanged: the default MemoryStore is per-process, so
+// on Vercel the budget is per warm instance rather than global. That raises the
+// cost of an attack without being an absolute cap. A shared store (Redis, or
+// Postgres via rate-limit-postgresql) is the fix if a hard guarantee is needed.
 
-// Bound the map so a spray of unique IPs cannot grow it without limit.
-const MAX_TRACKED_CLIENTS = 10_000;
+// Every limiter's store, so tests can clear budgets between cases.
+const stores = new Set();
 
 const clientKey = (req) => {
   // Trust the platform's forwarding header only for its first hop; the rest is
@@ -22,43 +26,40 @@ const clientKey = (req) => {
   return first || req.ip || req.socket?.remoteAddress || "unknown";
 };
 
-const sweep = (now) => {
-  for (const [key, bucket] of buckets) {
-    if (bucket.resetAt <= now) buckets.delete(key);
-  }
-};
+const rateLimit = ({ windowMs = 15 * 60 * 1000, max = 10, name = "endpoint" } = {}) => {
+  // Constructed here rather than left to the default so reset() has a reference
+  // to it — the middleware object does not expose its store.
+  const store = new MemoryStore();
+  stores.add(store);
 
-const rateLimit = ({ windowMs = 15 * 60 * 1000, max = 10, name = "endpoint" } = {}) => (req, res, next) => {
-  const now = Date.now();
-  const key = `${name}:${clientKey(req)}`;
-  let bucket = buckets.get(key);
-
-  if (!bucket || bucket.resetAt <= now) {
-    if (buckets.size >= MAX_TRACKED_CLIENTS) sweep(now);
-    bucket = { count: 0, resetAt: now + windowMs };
-    buckets.set(key, bucket);
-  }
-
-  bucket.count += 1;
-
-  const remaining = Math.max(0, max - bucket.count);
-  res.setHeader("RateLimit-Limit", String(max));
-  res.setHeader("RateLimit-Remaining", String(remaining));
-  res.setHeader("RateLimit-Reset", String(Math.ceil((bucket.resetAt - now) / 1000)));
-
-  if (bucket.count > max) {
-    res.setHeader("Retry-After", String(Math.ceil((bucket.resetAt - now) / 1000)));
-    securityLogger.security("Rate limit exceeded", { path: req.originalUrl, name });
-    return res.status(429).json({
-      status: false,
-      message: "Too many requests. Please wait a few minutes and try again.",
-    });
-  }
-
-  return next();
+  return expressRateLimit({
+    store,
+    windowMs,
+    limit: max,
+    // draft-6 emits RateLimit-Limit / -Remaining / -Reset as separate headers,
+    // which is what clients here already read.
+    standardHeaders: "draft-6",
+    legacyHeaders: false,
+    keyGenerator: clientKey,
+    // The library's IP validators assume its own key generator; ours is
+    // deliberately stricter about x-forwarded-for, so they only produce noise.
+    validate: { keyGeneratorIpFallback: false, xForwardedForHeader: false, trustProxy: false },
+    handler: (req, res, _next, options) => {
+      securityLogger.security("Rate limit exceeded", { path: req.originalUrl, name });
+      res.setHeader("Retry-After", String(Math.ceil(options.windowMs / 1000)));
+      res.status(429).json({
+        status: false,
+        message: "Too many requests. Please wait a few minutes and try again.",
+      });
+    },
+  });
 };
 
 // Exposed for tests, which would otherwise inherit a spent budget between cases.
-rateLimit.reset = () => buckets.clear();
+rateLimit.reset = () => {
+  for (const store of stores) {
+    if (typeof store.resetAll === "function") store.resetAll();
+  }
+};
 
 module.exports = rateLimit;

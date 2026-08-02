@@ -131,6 +131,14 @@ app.get("/", async (req, res) => {
   }
 });
 
+// A ceiling for the whole API. Until now only the auth endpoints and the
+// contact form were limited, so every other router — applications, payments,
+// users, profile values — could be called as fast as the network allowed by
+// anyone holding a token. This is deliberately generous: it is a backstop
+// against scraping and hammering, not a per-feature quota. The tighter, purpose
+// -built budgets below and in the routers still apply on top of it.
+app.use("/api", rateLimit({ name: "api", windowMs: 15 * 60 * 1000, max: 1000 }));
+
 // Machine-readable health for uptime probes. `/` returns prose and is easy to
 // mistake for healthy when only the database is down, so probes should watch
 // this: it answers 503 when the database is unreachable, which is the condition
