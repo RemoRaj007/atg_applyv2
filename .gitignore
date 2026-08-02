@@ -9,7 +9,10 @@ node_modules/
 !.env.example
 
 # ---- Logs ----
-logs/
+# Winston's rotated log files. Anchored to the directory it actually writes to
+# (config/atg_logger.js) — a bare `logs/` also matched the source directory
+# atg_backend/modules/logs/, so that whole module was silently untracked.
+/atg_backend/logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
