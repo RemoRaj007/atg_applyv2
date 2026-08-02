@@ -12,8 +12,10 @@ Compose + VPS setup for production.
    - **Pooled** (port `6543`, `?pgbouncer=true`) — use this for `DATABASE_URL`
      in Vercel. Serverless functions spin up many concurrent instances; the
      pooler prevents exhausting Postgres' connection limit.
-   - **Direct** (port `5432`) — only needed locally when running
-     `prisma migrate dev`, since migrations require a non-pooled connection.
+   - **Direct** (port `5432`) — needed for every migration command, both
+     `prisma migrate dev` locally and `prisma migrate deploy` against
+     production, since migrations require a non-pooled connection. Keep it
+     somewhere you can find it; see "Applying migrations to production" below.
 2. Generate the initial Postgres migration (the old MySQL migrations were
    deleted — they can't run against Postgres):
    ```bash
@@ -21,6 +23,41 @@ Compose + VPS setup for production.
    DATABASE_URL="<direct-connection-string>" npx prisma migrate dev --name init
    ```
 3. Seed if needed: `npx prisma db seed`.
+
+### Applying migrations to production — a required manual step
+
+**Nothing in the deploy pipeline runs migrations.** Vercel's `postinstall` runs
+`prisma generate` only, which regenerates the client but never touches the
+database. Merging a PR that adds a migration therefore ships code that expects
+columns the database does not have, and every query touching them fails at
+runtime with `The column X does not exist in the current database`.
+
+Migrations are also not run automatically on purpose: `prisma migrate deploy`
+needs the **direct** (port `5432`) connection, while `DATABASE_URL` on Vercel is
+the pooled pgbouncer string. Running migrations through the transaction pooler
+is unreliable — it cannot hold the advisory locks Prisma uses.
+
+So whenever a change adds anything under `prisma/migrations/`, run this yourself
+against production, before or immediately after merging:
+
+```bash
+cd atg_backend
+DATABASE_URL="<direct-connection-string>" npx prisma migrate deploy
+```
+
+To check whether production is up to date at any point:
+
+```bash
+cd atg_backend
+DATABASE_URL="<direct-connection-string>" npx prisma migrate status
+```
+
+Note the ledger table `_prisma_migrations` is what Prisma uses to track which
+migrations have run. If the schema was ever created by `prisma db push` or by
+hand, that table will be missing or incomplete, and `migrate deploy` will try to
+replay the baseline against tables that already exist. In that case reconcile
+with `npx prisma migrate resolve --applied <migration_name>` for each migration
+already reflected in the schema, rather than editing the table by hand.
 
 ## 2. Backend (`atg_backend`) on Vercel
 
