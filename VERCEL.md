@@ -32,11 +32,15 @@ Compose + VPS setup for production.
   on Vercel.
 - Required environment variables:
   - `DATABASE_URL` — Supabase **pooled** connection string
-  - `FRONTEND_URL` — your deployed frontend origin(s), comma-separated. This is
-    the authoritative CORS allowlist; set it to the exact origin the browser
-    shows. `app.js` also matches this project's generated Cloudflare hostnames
-    (`<worker>.<subdomain>.workers.dev`, `<project>.pages.dev`) as a fallback, so
-    a missing value degrades rather than blocking every request.
+  - `FRONTEND_URL` — optional; extra frontend origin(s), comma-separated, added
+    to the CORS allowlist. The production custom domain
+    (`https://atgapply.atgconcordia.com`) and this project's generated Cloudflare
+    hostnames (`<worker>.<subdomain>.workers.dev`, `<project>.pages.dev`) are
+    already allowed by `app.js`, so leaving this unset does not break the
+    deployed frontend. Set it when you add another origin — a preview deployment
+    or a new custom domain. If you bind a new domain in Cloudflare, prefer adding
+    it to `PRODUCTION_ORIGINS` in `app.js` so the allowlist stays in version
+    control rather than living only in the dashboard.
   - `SUPABASE_URL` — e.g. `https://<project-ref>.supabase.co`
   - `SUPABASE_SERVICE_ROLE_KEY` — from Project Settings → API. Required for file
     uploads; keep it server-side only, it bypasses row-level security.

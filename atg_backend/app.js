@@ -33,10 +33,20 @@ app.use(helmet({
 }));
 app.use(cookieParser());
 app.use(express.json());
-// Set FRONTEND_URL (comma-separated) to pin the exact deployed origin(s) — that is
-// the authoritative list. The Cloudflare patterns below are a fallback so the API
-// still answers the frontend when FRONTEND_URL is missing, since the project is
-// served on a generated hostname that differs by deploy target:
+// Set FRONTEND_URL (comma-separated) to add further origins. The defaults below
+// are what production actually runs on, so the API answers the frontend even when
+// FRONTEND_URL is unset or incomplete.
+//
+// The custom domain must be listed explicitly: it matches neither Cloudflare
+// pattern, so before it was added here sign-up and sign-in were dead in
+// production. Those requests send Content-Type: application/json, which triggers
+// a CORS preflight; the preflight came back without CORS headers and the browser
+// dropped the real request, so nothing ever reached this server. (Token refresh
+// kept working and masked the breakage — it is a simple request, so it needs no
+// preflight.) Keep this list in sync with the domains bound in Cloudflare.
+const PRODUCTION_ORIGINS = ["https://atgapply.atgconcordia.com"];
+
+// The generated Cloudflare hostnames differ by deploy target:
 //   Workers: <worker>.<account-subdomain>.workers.dev
 //   Pages:   [<deploy-hash>.]<project>.pages.dev
 const CLOUDFLARE_PROJECT = "atgapplyv2";
@@ -47,11 +57,15 @@ const CLOUDFLARE_ORIGIN_PATTERNS = [
 
 const stripTrailingSlash = (value) => value.replace(/\/$/, "");
 
-const allowedOrigins = (process.env.FRONTEND_URL || "")
-  .split(",")
-  .map((o) => o.trim())
-  .filter(Boolean)
-  .map(stripTrailingSlash);
+const allowedOrigins = new Set(
+  [
+    ...PRODUCTION_ORIGINS,
+    ...(process.env.FRONTEND_URL || "").split(","),
+  ]
+    .map((o) => o.trim())
+    .filter(Boolean)
+    .map(stripTrailingSlash)
+);
 
 app.use(
   cors({
@@ -61,7 +75,7 @@ app.use(
                           origin.startsWith("https://localhost:") ||
                           origin.startsWith("http://127.0.0.1:");
       const isCloudflare = CLOUDFLARE_ORIGIN_PATTERNS.some((re) => re.test(origin));
-      if (isLocalhost || isCloudflare || allowedOrigins.includes(stripTrailingSlash(origin))) {
+      if (isLocalhost || isCloudflare || allowedOrigins.has(stripTrailingSlash(origin))) {
         return callback(null, true);
       }
       // Signal "no CORS headers" rather than throwing: throwing reaches the error
