@@ -9,6 +9,12 @@ const { sendTemplatedEmail } = require("../notifications/email.service");
 const { isValidEmail, validatePasswordStrength, isValidPhone } = require("../../utils/validators");
 const { verifyIdentityToken } = require("./federated-identity.service");
 
+// Shared with forgotPassword's resetLink construction.
+const frontendOrigin = () =>
+  process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(",")[0] : "http://localhost:5173";
+
+const verificationLink = (token) => `${frontendOrigin()}/verify-email?token=${token}`;
+
 const register = async (data) => {
   const { email, name, password, phone, country, city, isCompany, companyName, companyWebsite, companyDescription } = data;
   
@@ -31,6 +37,12 @@ const register = async (data) => {
   }
 
   const hashed = await argon2.hash(password);
+
+  // Local accounts start unverified; SSO accounts are created directly with
+  // emailVerified true in googleLogin/microsoftLogin, since the identity
+  // provider already attested the address. See "Login gating" below.
+  const emailVerificationToken = crypto.randomBytes(32).toString("hex");
+  const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
 
   if (isCompany) {
     const existingCompany = await prisma.company.findFirst({
@@ -70,6 +82,8 @@ const register = async (data) => {
         city,
         role: isCompany ? "company" : "candidate",
         companyId: createdCompany ? createdCompany.id : null,
+        emailVerificationToken,
+        emailVerificationExpires,
       },
     });
 
@@ -89,6 +103,16 @@ const register = async (data) => {
     fallback: {
       subject: "Welcome to ATG Apply",
       body: `Hi ${user.name}, your account has been created on the ${user.pkg} plan.`,
+    },
+  }).catch(() => {});
+
+  sendTemplatedEmail({
+    to: user.email,
+    templateKey: "email_verification",
+    vars: { name: user.name, email: user.email, verifyLink: verificationLink(emailVerificationToken) },
+    fallback: {
+      subject: "Verify your ATG Apply email address",
+      body: `Hi ${user.name},\n\nPlease verify your email address by clicking the link below:\n\n${verificationLink(emailVerificationToken)}\n\nThe link expires in 24 hours.\n\nBest regards,\nATG Apply Team`,
     },
   }).catch(() => {});
 
@@ -231,6 +255,74 @@ const resetPassword = async (token, password) => {
   activityLogger.activity("Password reset successful", { userId: user.id, email: user.email });
 };
 
+// Verification does not gate login (see the comment on `register`'s token
+// generation) — it only flips `emailVerified` and clears the token. A future
+// change that wants to enforce verification for new signups can check that
+// flag in `login` without touching this function.
+const verifyEmail = async (token) => {
+  if (!token) {
+    throw ApiError.badRequest("Verification token is required");
+  }
+
+  const user = await prisma.user.findFirst({
+    where: {
+      emailVerificationToken: token,
+      emailVerificationExpires: { gt: new Date() },
+      d_status: "active",
+    },
+  });
+
+  if (!user) {
+    throw ApiError.badRequest("This verification link is invalid or has expired");
+  }
+
+  if (user.emailVerified) {
+    // Already verified — most likely the link was opened twice (email client
+    // prefetch, or the user clicking it again). Not an error.
+    return { alreadyVerified: true };
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      emailVerified: true,
+      emailVerificationToken: null,
+      emailVerificationExpires: null,
+    },
+  });
+
+  activityLogger.activity("Email verified", { userId: user.id, email: user.email });
+  return { alreadyVerified: false };
+};
+
+const resendVerificationEmail = async (email) => {
+  const user = await prisma.user.findFirst({ where: { email, d_status: "active" } });
+
+  // Same opaque-response shape as forgotPassword: do not reveal whether the
+  // address is registered, or whether it is already verified.
+  if (!user || user.emailVerified) {
+    return;
+  }
+
+  const token = crypto.randomBytes(32).toString("hex");
+  const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { emailVerificationToken: token, emailVerificationExpires: expires },
+  });
+
+  await sendTemplatedEmail({
+    to: user.email,
+    templateKey: "email_verification",
+    vars: { name: user.name, email: user.email, verifyLink: verificationLink(token) },
+    fallback: {
+      subject: "Verify your ATG Apply email address",
+      body: `Hi ${user.name},\n\nPlease verify your email address by clicking the link below:\n\n${verificationLink(token)}\n\nThe link expires in 24 hours.\n\nBest regards,\nATG Apply Team`,
+    },
+  });
+};
+
 // Signs a user in from an already-verified federated identity. Shared by every
 // provider — only the token verification differs between them.
 //
@@ -330,4 +422,14 @@ const socialLogin = async (provider, { idToken, credential }) => {
 const googleLogin = (payload) => socialLogin("google", payload);
 const microsoftLogin = (payload) => socialLogin("microsoft", payload);
 
-module.exports = { register, login, refresh, googleLogin, microsoftLogin, forgotPassword, resetPassword };
+module.exports = {
+  register,
+  login,
+  refresh,
+  googleLogin,
+  microsoftLogin,
+  forgotPassword,
+  resetPassword,
+  verifyEmail,
+  resendVerificationEmail,
+};

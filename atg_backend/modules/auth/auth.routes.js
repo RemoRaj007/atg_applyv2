@@ -3,7 +3,16 @@ const authController = require("./auth.controller");
 const validate = require("../../middlewares/validations/validate.middleware");
 const rateLimit = require("../../middlewares/rateLimit.middleware");
 const requireTrustedOrigin = require("../../middlewares/csrf.middleware");
-const { registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema, googleSchema, microsoftSchema } = require("./auth.schema");
+const {
+  registerSchema,
+  loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  verifyEmailSchema,
+  resendVerificationSchema,
+  googleSchema,
+  microsoftSchema,
+} = require("./auth.schema");
 
 const router = express.Router();
 
@@ -17,6 +26,9 @@ const registerLimiter = rateLimit({ name: "auth:register", windowMs: 60 * 60 * 1
 const resetLimiter = rateLimit({ name: "auth:reset", windowMs: 60 * 60 * 1000, max: 10 });
 const socialLimiter = rateLimit({ name: "auth:social", windowMs: 15 * 60 * 1000, max: 30 });
 const refreshLimiter = rateLimit({ name: "auth:refresh", windowMs: 15 * 60 * 1000, max: 120 });
+// Same budget as password reset: token guessing and mail flooding are the same
+// threat here.
+const verifyLimiter = rateLimit({ name: "auth:verify", windowMs: 60 * 60 * 1000, max: 10 });
 
 router.post("/register", registerLimiter, validate(registerSchema), authController.register);
 router.post("/login", loginLimiter, validate(loginSchema), authController.login);
@@ -31,5 +43,7 @@ router.post("/refresh", refreshLimiter, requireTrustedOrigin, authController.ref
 router.post("/logout", requireTrustedOrigin, authController.logout);
 router.post("/forgot-password", resetLimiter, validate(forgotPasswordSchema), authController.forgotPassword);
 router.post("/reset-password", resetLimiter, validate(resetPasswordSchema), authController.resetPassword);
+router.post("/verify-email", verifyLimiter, validate(verifyEmailSchema), authController.verifyEmail);
+router.post("/resend-verification", verifyLimiter, validate(resendVerificationSchema), authController.resendVerification);
 
 module.exports = router;

@@ -97,6 +97,14 @@ const EMAIL_TEMPLATES = [
     variables: ["name", "email", "resetLink", "siteName"],
   },
   {
+    key: "email_verification",
+    name: "Verify email address",
+    description: "Sent on registration, and again on request from /resend-verification. Must contain {{verifyLink}}.",
+    subject: "Verify your {{siteName}} email address",
+    body: "Hi {{name}},\n\nPlease verify your email address by clicking the link below:\n\n{{verifyLink}}\n\nThe link expires in 24 hours.\n\nBest regards,\n{{siteName}} Team",
+    variables: ["name", "email", "verifyLink", "siteName"],
+  },
+  {
     key: "password_reset_unknown",
     name: "Password reset — unregistered address",
     description: "Sent when a reset is requested for an address with no account.",
