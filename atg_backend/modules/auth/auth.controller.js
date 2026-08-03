@@ -50,6 +50,18 @@ const resetPassword = asyncHandler(async (req, res) => {
   sendSuccess(res, { message: "Password has been successfully reset." });
 });
 
+const verifyEmail = asyncHandler(async (req, res) => {
+  const { alreadyVerified } = await authService.verifyEmail(req.body.token);
+  sendSuccess(res, {
+    message: alreadyVerified ? "Email already verified." : "Email verified successfully.",
+  });
+});
+
+const resendVerification = asyncHandler(async (req, res) => {
+  await authService.resendVerificationEmail(req.body.email);
+  sendSuccess(res, { message: "If that account needs verifying, a new link has been sent." });
+});
+
 const googleLogin = asyncHandler(async (req, res) => {
   const { user, accessToken, refreshToken } = await authService.googleLogin(req.body);
   res.cookie(REFRESH_COOKIE_NAME, refreshToken, refreshCookieOptions());
@@ -62,4 +74,15 @@ const microsoftLogin = asyncHandler(async (req, res) => {
   sendSuccess(res, { message: "Authenticated with Microsoft", data: { user, accessToken } });
 });
 
-module.exports = { register, login, refresh, logout, googleLogin, microsoftLogin, forgotPassword, resetPassword };
+module.exports = {
+  register,
+  login,
+  refresh,
+  logout,
+  googleLogin,
+  microsoftLogin,
+  forgotPassword,
+  resetPassword,
+  verifyEmail,
+  resendVerification,
+};

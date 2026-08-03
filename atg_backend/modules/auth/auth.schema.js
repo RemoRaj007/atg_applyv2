@@ -27,6 +27,14 @@ const resetPasswordSchema = Joi.object({
   password: Joi.string().min(8).max(72).required(),
 });
 
+const verifyEmailSchema = Joi.object({
+  token: Joi.string().required(),
+});
+
+const resendVerificationSchema = Joi.object({
+  email: Joi.string().email().required(),
+});
+
 // Both providers post the same shape: an ID token under either key. Google
 // Identity Services calls it `credential`; MSAL calls it `idToken`.
 const socialLoginSchema = Joi.object({
@@ -37,4 +45,13 @@ const socialLoginSchema = Joi.object({
 const googleSchema = socialLoginSchema;
 const microsoftSchema = socialLoginSchema;
 
-module.exports = { registerSchema, loginSchema, forgotPasswordSchema, resetPasswordSchema, googleSchema, microsoftSchema };
+module.exports = {
+  registerSchema,
+  loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  verifyEmailSchema,
+  resendVerificationSchema,
+  googleSchema,
+  microsoftSchema,
+};

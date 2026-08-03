@@ -31,6 +31,9 @@ model User {
   resetPasswordToken   String?
   resetPasswordExpires DateTime?
 
+  emailVerificationToken   String?
+  emailVerificationExpires DateTime?
+
   // Federated identity. provider is "google" | "microsoft" (null for local
   // password accounts); externalId is the IdP's stable subject — Google's `sub`
   // or Entra's `oid` — which survives the user changing their email address.

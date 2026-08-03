@@ -287,6 +287,89 @@ describe("password reset", () => {
   });
 });
 
+describe("POST /api/auth/register issues an email verification token", () => {
+  it("stores a high-entropy, time-limited token on the new user", async () => {
+    prisma.user.findFirst.mockResolvedValue(null);
+    prisma.user.create.mockResolvedValue(await activeUser());
+
+    await request(app)
+      .post("/api/auth/register")
+      .send({ email: "candidate@example.com", name: "Cand Idate", password: "Password123!" });
+
+    const { emailVerificationToken, emailVerificationExpires } = prisma.user.create.mock.calls[0][0].data;
+    expect(emailVerificationToken).toMatch(/^[0-9a-f]{64}$/);
+    expect(emailVerificationExpires.getTime()).toBeGreaterThan(Date.now());
+    expect(emailVerificationExpires.getTime()).toBeLessThanOrEqual(Date.now() + 24 * 3600_000);
+  });
+
+  it("does not block login before the address is verified", async () => {
+    // The account is unverified by construction (emailVerified defaults false),
+    // and login must not care — see the "don't block" decision on this feature.
+    prisma.user.findFirst.mockResolvedValue(await activeUser({ emailVerified: false }));
+    const res = await request(app)
+      .post("/api/auth/login")
+      .send({ email: "candidate@example.com", password: "Password123!" });
+    expect(res.status).toBe(200);
+  });
+});
+
+describe("email verification", () => {
+  it("verifies and clears the token", async () => {
+    prisma.user.findFirst.mockResolvedValue(await activeUser({ emailVerified: false }));
+
+    const res = await request(app).post("/api/auth/verify-email").send({ token: "a".repeat(64) });
+
+    expect(res.status).toBe(200);
+    const data = prisma.user.update.mock.calls[0][0].data;
+    expect(data.emailVerified).toBe(true);
+    expect(data.emailVerificationToken).toBeNull();
+    expect(data.emailVerificationExpires).toBeNull();
+  });
+
+  it("rejects an expired or unknown token", async () => {
+    prisma.user.findFirst.mockResolvedValue(null);
+    const res = await request(app).post("/api/auth/verify-email").send({ token: "deadbeef" });
+    expect(res.status).toBe(400);
+    expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+
+  it("only accepts an unexpired token in the lookup", async () => {
+    prisma.user.findFirst.mockResolvedValue(null);
+    await request(app).post("/api/auth/verify-email").send({ token: "a".repeat(64) });
+    expect(prisma.user.findFirst.mock.calls[0][0].where.emailVerificationExpires).toEqual({ gt: expect.any(Date) });
+  });
+
+  it("treats a second click on the same link as success, not an error", async () => {
+    prisma.user.findFirst.mockResolvedValue(await activeUser({ emailVerified: true }));
+    const res = await request(app).post("/api/auth/verify-email").send({ token: "a".repeat(64) });
+    expect(res.status).toBe(200);
+    expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+
+  it("does not reveal whether an address is registered or already verified", async () => {
+    prisma.user.findFirst.mockResolvedValue(null);
+    const unknown = await request(app).post("/api/auth/resend-verification").send({ email: "nobody@example.com" });
+
+    prisma.user.findFirst.mockResolvedValue(await activeUser({ emailVerified: true }));
+    const verified = await request(app).post("/api/auth/resend-verification").send({ email: "candidate@example.com" });
+
+    expect(unknown.status).toBe(200);
+    expect(verified.status).toBe(200);
+    expect(unknown.body.message).toBe(verified.body.message);
+    expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+
+  it("issues a fresh token for an unverified account", async () => {
+    prisma.user.findFirst.mockResolvedValue(await activeUser({ emailVerified: false }));
+    const res = await request(app).post("/api/auth/resend-verification").send({ email: "candidate@example.com" });
+
+    expect(res.status).toBe(200);
+    const { emailVerificationToken, emailVerificationExpires } = prisma.user.update.mock.calls[0][0].data;
+    expect(emailVerificationToken).toMatch(/^[0-9a-f]{64}$/);
+    expect(emailVerificationExpires.getTime()).toBeGreaterThan(Date.now());
+  });
+});
+
 describe("POST /api/auth/logout", () => {
   it("clears the refresh cookie", async () => {
     const res = await request(app).post("/api/auth/logout");

@@ -13,6 +13,7 @@ import Login from '../pages/AtgLogin';
 import Register from '../pages/Register';
 import ForgotPassword from '../pages/AtgForgotPassword';
 import ResetPassword from '../pages/ResetPassword';
+import VerifyEmail from '../pages/VerifyEmail';
 import AdminDashboard from '../pages/dashboards/AtgAdminDashboard';
 import OperatorDashboard from '../pages/dashboards/OperatorDashboard';
 import CandidateDashboard from '../pages/dashboards/CandidateDashboard';
@@ -100,6 +101,11 @@ export default function AppRoutes() {
         path="/reset-password"
         element={isAuthenticated ? <Navigate to={homeForUser} replace /> : <ResetPassword />}
       />
+
+      {/* Unlike the other auth routes, this is reachable while signed in:
+          register() logs the user in immediately, so the verification link in
+          their inbox is often opened in an already-authenticated session. */}
+      <Route path="/verify-email" element={<VerifyEmail />} />
 
       <Route
         path="/admin"

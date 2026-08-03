@@ -67,4 +67,20 @@ export const authApi = {
       throw new Error(error.response?.data?.message || 'Failed to reset password');
     }
   },
+
+  verifyEmail: async (token: string): Promise<void> => {
+    try {
+      await apiClient.post('/auth/verify-email', { token });
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to verify email');
+    }
+  },
+
+  resendVerification: async (email: string): Promise<void> => {
+    try {
+      await apiClient.post('/auth/resend-verification', { email });
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to resend verification email');
+    }
+  },
 };
