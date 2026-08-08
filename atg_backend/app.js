@@ -27,6 +27,8 @@ const profileValueRoutes = require("./modules/profile-values/profile-value.route
 const jobFormRoutes = require("./modules/job-forms/job-form.routes");
 const skillRoutes = require("./modules/skills/skill.routes");
 const userProfileRoutes = require("./modules/user-profile/user-profile.routes");
+const universityApplicationRoutes = require("./modules/university-applications/university-applications.route");
+const documentApplicationRoutes = require("./modules/document-applications/document-applications.route");
 
 const app = express();
 
