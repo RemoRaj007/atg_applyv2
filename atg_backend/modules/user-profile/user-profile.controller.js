@@ -1,6 +1,19 @@
 const { prisma } = require("../../config/db");
-const { systemLogger } = require("../../config/atg_logger");
+const { systemLogger, securityLogger } = require("../../config/atg_logger");
 const { validateNIC, isValidPhone } = require("../../utils/validators");
+const resolveFileUrl = require("../../utils/fileUrl");
+const sanitizeUser = require("../../utils/sanitizeUser");
+
+// These routes take req.body straight to Prisma. Ownership is decided by the
+// session, so the client must never be able to supply the keys that carry it —
+// or a primary key, which would let one user's write land on another's row.
+const OWNERSHIP_KEYS = ["id", "userId", "user", "createdAt", "updatedAt", "d_status"];
+
+const stripOwnershipKeys = (body) => {
+  const clean = { ...body };
+  for (const key of OWNERSHIP_KEYS) delete clean[key];
+  return clean;
+};
 
 const getEntityModel = (entity) => {
   const map = {
@@ -31,7 +44,23 @@ exports.getJobRoles = async (req, res, next) => {
 
 exports.getProfile = async (req, res, next) => {
   try {
-    const userId = parseInt(req.params.userId);
+    const userId = parseInt(req.params.userId, 10);
+
+    if (Number.isNaN(userId)) {
+      return res.status(400).json({ status: false, message: "Invalid user id" });
+    }
+
+    // Candidates may only read their own profile; staff read any. Without this
+    // check any authenticated user could dump another user's identity documents.
+    const isSelf = req.user.id === userId;
+    const isStaff = ["admin", "operator"].includes(req.user.role);
+    if (!isSelf && !isStaff) {
+      securityLogger.security("Blocked cross-user profile read", {
+        requesterId: req.user.id,
+        targetUserId: userId,
+      });
+      return res.status(403).json({ status: false, message: "Forbidden" });
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -52,9 +81,9 @@ exports.getProfile = async (req, res, next) => {
       }
     });
 
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!user) return res.status(404).json({ status: false, message: "User not found" });
 
-    res.json(user);
+    res.json(sanitizeUser(user));
   } catch (error) {
     next(error);
   }
@@ -63,7 +92,7 @@ exports.getProfile = async (req, res, next) => {
 exports.updatePersonal = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    const data = { ...req.body };
+    const data = stripOwnershipKeys(req.body);
     if (data.dob) {
       data.dob = new Date(data.dob).toISOString();
     }
@@ -97,7 +126,7 @@ exports.addEntity = async (req, res, next) => {
 
     if (!model) return res.status(400).json({ error: "Invalid entity" });
 
-    let data = { ...req.body, userId };
+    let data = { ...stripOwnershipKeys(req.body), userId };
 
     if (model === "userPhone" && data.phoneNumber) {
       if (!isValidPhone(data.phoneNumber)) {
@@ -143,11 +172,8 @@ exports.addEntity = async (req, res, next) => {
       skillName = data.language;
     }
 
-    require('fs').appendFileSync('addEntity.log', `[${new Date().toISOString()}] model=${model}, data.description=${data.description}, skillName=${skillName}\n`);
-
     if (skillName && skillCategory) {
       const existingSkill = await prisma.skill.findUnique({ where: { name: skillName } });
-      console.log(`[addEntity] existingSkill:`, existingSkill);
       if (!existingSkill) {
         await prisma.skill.create({
           data: {
@@ -183,7 +209,7 @@ exports.updateEntity = async (req, res, next) => {
       return res.status(404).json({ error: "Record not found" });
     }
 
-    let data = { ...req.body };
+    let data = stripOwnershipKeys(req.body);
     if (model === "userAcademicQualification") {
       if (data.fromDate) data.fromDate = new Date(data.fromDate).toISOString();
       if (data.toDate) data.toDate = new Date(data.toDate).toISOString();
@@ -245,7 +271,7 @@ exports.uploadDocument = async (req, res, next) => {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const fileUrl = `/uploads/${req.file.filename}`;
+    const fileUrl = resolveFileUrl(req.file);
     const fileName = req.file.originalname;
     const fileSize = req.file.size;
 

@@ -34,6 +34,15 @@ export const authApi = {
     }
   },
 
+  microsoftLogin: async (idToken: string): Promise<AuthResponse> => {
+    try {
+      const { data } = await apiClient.post('/auth/microsoft', { idToken });
+      return unwrapOrThrow<AuthResponse>(data);
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Microsoft authentication failed');
+    }
+  },
+
   refresh: async (): Promise<AuthResponse> => {
     const { data } = await apiClient.post('/auth/refresh');
     return unwrapOrThrow<AuthResponse>(data);
@@ -56,6 +65,22 @@ export const authApi = {
       await apiClient.post('/auth/reset-password', payload);
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Failed to reset password');
+    }
+  },
+
+  verifyEmail: async (token: string): Promise<void> => {
+    try {
+      await apiClient.post('/auth/verify-email', { token });
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to verify email');
+    }
+  },
+
+  resendVerification: async (email: string): Promise<void> => {
+    try {
+      await apiClient.post('/auth/resend-verification', { email });
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to resend verification email');
     }
   },
 };

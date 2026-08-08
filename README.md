@@ -30,6 +30,10 @@ atg_apply/
 
 - **Setting this up on your own machine to develop or test?** → [SETUP.md](SETUP.md)
 - **Provisioning a server / configuring CI deploys?** → [DEVOPS.md](DEVOPS.md)
+- **Deploying the current Vercel + Supabase stack?** → [VERCEL.md](VERCEL.md)
+- **Writing or planning tests?** → [TESTING.md](TESTING.md)
+- **What the last audit found, and what's still open?** → [QA_REPORT.md](QA_REPORT.md)
+- **What's missing or broken, and what to build next?** → [ROADMAP.md](ROADMAP.md)
 
 Fastest path, once prerequisites are installed (see SETUP.md):
 
@@ -68,6 +72,7 @@ Never commit real `.env` files:
 | `npm run db:seed` | Seed demo data (skips if DB already has users) |
 | `npm run db:seed:force` | Wipe all tables and reseed |
 | `npm run setup` | generate + migrate + seed in one go |
+| `npm test` | Run the Vitest + Supertest suite (no database needed) |
 
 **Frontend** (`atg_frontend/`)
 

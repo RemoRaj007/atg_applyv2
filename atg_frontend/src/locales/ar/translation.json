@@ -37,7 +37,12 @@
     "paymentOptions": "خيارات الدفع",
     "teamCapacity": "سعة الفريق",
     "notifications": "الإشعارات",
-    "upgrade": "ترقية الباقة"
+    "upgrade": "ترقية الباقة",
+    "jobDiscovery": "اكتشاف الوظائف",
+    "systemLogs": "سجلات النظام",
+    "siteContent": "محتوى الموقع",
+    "siteSettings": "إعدادات الموقع",
+    "emailTemplates": "قوالب البريد"
   },
   "footer": {
     "tagline": "إدارة بشرية لطلبات التوظيف. مطابقة قائمة على البحث، يتم إعدادها وتقديمها بواسطة فريق مدرب.",
@@ -176,5 +181,26 @@
     "edit": "تعديل",
     "close": "إغلاق",
     "submit": "إرسال"
+  },
+  "contactPage": {
+    "title": "تواصل معنا",
+    "subtitle": "أسئلة حول الأسعار أو طلبك أو أي شيء آخر — أرسل لنا رسالة.",
+    "nameLabel": "الاسم الكامل",
+    "namePlaceholder": "اسمك",
+    "emailLabel": "البريد الإلكتروني",
+    "emailPlaceholder": "you@example.com",
+    "subjectLabel": "الموضوع",
+    "subjectPlaceholder": "ما هو الموضوع؟",
+    "messageLabel": "الرسالة",
+    "messagePlaceholder": "أخبرنا كيف يمكننا المساعدة...",
+    "sendBtn": "إرسال الرسالة",
+    "sending": "جارٍ الإرسال...",
+    "successTitle": "تم إرسال الرسالة",
+    "successDesc": "شكرًا لتواصلك — سيرد فريقنا عبر البريد الإلكتروني قريبًا.",
+    "errorName": "يرجى إدخال اسمك",
+    "errorEmail": "يرجى إدخال بريد إلكتروني صحيح",
+    "errorSubject": "يرجى إدخال الموضوع",
+    "errorMessage": "يرجى إدخال رسالة لا تقل عن 10 أحرف",
+    "errorGeneric": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
   }
 }

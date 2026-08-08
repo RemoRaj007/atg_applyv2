@@ -37,7 +37,12 @@
     "paymentOptions": "支付选项",
     "teamCapacity": "团队容量",
     "notifications": "通知",
-    "upgrade": "升级套餐"
+    "upgrade": "升级套餐",
+    "jobDiscovery": "职位发现",
+    "systemLogs": "系统日志",
+    "siteContent": "站点内容",
+    "siteSettings": "站点设置",
+    "emailTemplates": "邮件模板"
   },
   "footer": {
     "tagline": "人工管理的求职申请服务。由专业团队研究匹配，精心准备并手动提交。",
@@ -176,5 +181,26 @@
     "edit": "编辑",
     "close": "关闭",
     "submit": "提交"
+  },
+  "contactPage": {
+    "title": "联系我们",
+    "subtitle": "有关于价格、申请或其他任何问题——给我们发消息。",
+    "nameLabel": "全名",
+    "namePlaceholder": "您的姓名",
+    "emailLabel": "电子邮箱",
+    "emailPlaceholder": "you@example.com",
+    "subjectLabel": "主题",
+    "subjectPlaceholder": "关于什么？",
+    "messageLabel": "留言",
+    "messagePlaceholder": "告诉我们可以如何帮助您……",
+    "sendBtn": "发送消息",
+    "sending": "发送中……",
+    "successTitle": "消息已发送",
+    "successDesc": "感谢您的联系——我们的团队将尽快通过电子邮件回复。",
+    "errorName": "请输入您的姓名",
+    "errorEmail": "请输入有效的电子邮箱",
+    "errorSubject": "请输入主题",
+    "errorMessage": "请输入至少10个字符的留言",
+    "errorGeneric": "出了点问题，请重试。"
   }
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CheckCircle } from 'lucide-react';
 import BackButton from '../components/ui/BackButton';
+import MarketingHeader from '../components/layout/MarketingHeader';
 import { paymentOptionApi } from '../api/paymentOptionApi';
 import type { PaymentOption } from '../types/paymentOption.types';
 import { useNavigate } from 'react-router-dom';
@@ -104,8 +105,9 @@ const PricingPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-slate-100 font-sans py-16 px-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-[#0f172a] text-slate-100 font-sans">
+      <MarketingHeader />
+      <div className="max-w-6xl mx-auto py-16 px-8">
         <div className="mb-8">
           <BackButton label={t('common.backToHome')} to="/" variant="dark" />
         </div>

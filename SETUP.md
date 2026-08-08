@@ -98,7 +98,14 @@ EMAIL_USER=
 EMAIL_PASSWORD=
 EMAIL_FROM="ATG Apply <no-reply@atgapply.com>"
 
+# Social sign-in. Each provider is optional, but if you enable a provider in the
+# frontend you must set its id here too — the server refuses tokens it cannot
+# check the audience of.
 GOOGLE_CLIENT_ID=
+MICROSOFT_CLIENT_ID=
+# Optional. Leave unset (or "common") to accept work/school and personal
+# accounts; set a tenant id to restrict sign-in to one organisation.
+MICROSOFT_TENANT_ID=
 ```
 
 ## 4. Manual setup (if you skip the script, or it fails partway)

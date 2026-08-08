@@ -50,30 +50,11 @@ const getCompanyLogo = (companyName: string) => {
   );
 };
 
-// Demo cards fallback for recommendation carousel matching reference image
-const fallbackRecommendations = [
-  {
-    id: 'rec-roche',
-    company: 'Roche',
-    title: 'Data Scientist',
-    location: 'Basel, Switzerland',
-    tag: 'Full-time'
-  },
-  {
-    id: 'rec-abb',
-    company: 'ABB',
-    title: 'Automation Engineer',
-    location: 'Zürich, Switzerland',
-    tag: 'Full-time'
-  },
-  {
-    id: 'rec-nestle',
-    company: 'Nestlé',
-    title: 'Supply Chain Specialist',
-    location: 'Vevey, Switzerland',
-    tag: 'Full-time'
-  }
-];
+// There is deliberately no demo-card fallback here. This carousel used to fall
+// back to invented Roche / ABB / Nestlé postings whenever the API returned
+// nothing, so an empty account looked like it had real matches from named
+// companies that had never posted to this platform. An empty state is shown
+// instead.
 
 const RISING_GREEN_PARTICLES = Array.from({ length: 48 }).map((_, i) => ({
   id: i,
@@ -162,7 +143,7 @@ export default function CandidateDashboard() {
         applied: true,
         appStatus: app.status
       }))
-    : fallbackRecommendations;
+    : [];
 
   const handleRequestApply = async (jobId: number) => {
     try {
@@ -177,11 +158,14 @@ export default function CandidateDashboard() {
     }
   };
 
+  // Guarded: with nothing to show, `% 0` is NaN and the carousel index breaks.
   const nextSlide = () => {
+    if (displayItems.length === 0) return;
     setActiveIndex((prev) => (prev + 1) % displayItems.length);
   };
 
   const prevSlide = () => {
+    if (displayItems.length === 0) return;
     setActiveIndex((prev) => (prev - 1 + displayItems.length) % displayItems.length);
   };
 
@@ -493,6 +477,22 @@ export default function CandidateDashboard() {
 
           {/* Right Side: Recommendation Carousel Cards */}
           <div className="w-full lg:w-2/3 relative flex items-center justify-center min-h-[280px] py-4">
+            {displayItems.length === 0 ? (
+              <div className="text-center px-8 max-w-sm">
+                <p className="text-slate-300 font-semibold mb-2">No recommendations yet</p>
+                <p className="text-slate-500 text-sm mb-6">
+                  Complete your profile so we can match you to openings, or browse everything that's
+                  currently listed.
+                </p>
+                <button
+                  onClick={() => navigate('/candidate/jobs')}
+                  className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-100 text-xs font-bold py-3 px-6 rounded-full transition-all cursor-pointer"
+                >
+                  Browse all jobs
+                </button>
+              </div>
+            ) : (
+            <>
             {/* Left Nav Button */}
             <button
               onClick={prevSlide}
@@ -598,6 +598,8 @@ export default function CandidateDashboard() {
             >
               <ChevronRight size={20} />
             </button>
+            </>
+            )}
           </div>
         </div>
       </div>

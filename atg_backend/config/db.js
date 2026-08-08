@@ -14,8 +14,10 @@ const globalForPrisma = globalThis;
 // (module scope is cached between warm invocations on Vercel).
 const prisma = globalForPrisma.__atgPrisma || new PrismaClient({ adapter });
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.__atgPrisma = prisma;
-}
+// Cache in every environment, production included. Serverless is where reuse
+// matters most: module scope survives between warm invocations, so skipping the
+// cache in production meant each cold module init built a fresh client and its
+// own connection — the opposite of what the pooled connection string is for.
+globalForPrisma.__atgPrisma = prisma;
 
 module.exports = { prisma };

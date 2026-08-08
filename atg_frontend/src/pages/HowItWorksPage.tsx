@@ -1,4 +1,5 @@
 import BackButton from '../components/ui/BackButton';
+import MarketingHeader from '../components/layout/MarketingHeader';
 import { useTranslation } from 'react-i18next';
 
 const HowItWorksPage = () => {
@@ -19,8 +20,9 @@ const HowItWorksPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-slate-100 font-sans py-16 px-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-[#0f172a] text-slate-100 font-sans">
+      <MarketingHeader />
+      <div className="max-w-4xl mx-auto py-16 px-8">
         <div className="mb-8">
           <BackButton label={t('common.backToHome')} to="/" variant="dark" />
         </div>

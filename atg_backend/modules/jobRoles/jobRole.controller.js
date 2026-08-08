@@ -13,8 +13,14 @@ const getById = asyncHandler(async (req, res) => {
 });
 
 const create = asyncHandler(async (req, res) => {
-  // If a candidate/operator creates a new job role via 'Other', it defaults to 'pending'
-  const jobRole = await jobRoleService.create(req.body);
+  // Set explicitly rather than relying on the column default, which is "active":
+  // a role proposed through the "Other" field was going live on the spot, with
+  // no operator ever seeing it. Staff-created roles are already reviewed.
+  const isStaff = req.user.role === "admin" || req.user.role === "operator";
+  const jobRole = await jobRoleService.create({
+    ...req.body,
+    status: isStaff ? "active" : "pending",
+  });
   sendSuccess(res, { statusCode: 201, message: "Job Role created", data: { jobRole } });
 });
 

@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useSession } from '../hooks/useSession';
 import ProtectedRoute from './AtgProtectedRoute';
 import Layout from '../components/layout/AtgLayout';
@@ -7,10 +7,13 @@ import HowItWorksPage from '../pages/HowItWorksPage';
 import PricingPage from '../pages/PricingPage';
 import PrivacyPolicyPage from '../pages/PrivacyPolicyPage';
 import TermsOfServicePage from '../pages/TermsOfServicePage';
+import ContactPage from '../pages/ContactPage';
+import NotFound from '../pages/NotFound';
 import Login from '../pages/AtgLogin';
 import Register from '../pages/Register';
 import ForgotPassword from '../pages/AtgForgotPassword';
 import ResetPassword from '../pages/ResetPassword';
+import VerifyEmail from '../pages/VerifyEmail';
 import AdminDashboard from '../pages/dashboards/AtgAdminDashboard';
 import OperatorDashboard from '../pages/dashboards/OperatorDashboard';
 import CandidateDashboard from '../pages/dashboards/CandidateDashboard';
@@ -43,11 +46,16 @@ import NotificationsPage from '../pages/shared/NotificationsPage';
 import AnonymousJobDiscovery from '../pages/candidate/AnonymousJobDiscovery';
 import AnonymousJobDiscoveryAdmin from '../pages/operator/AnonymousJobDiscoveryAdmin';
 import AdminPaymentOptions from '../pages/admin/AdminPaymentOptions';
+import AdminSystemLogs from '../pages/admin/AdminSystemLogs';
+import AdminSiteSettings from '../pages/admin/AdminSiteSettings';
+import AdminSiteContent from '../pages/admin/AdminSiteContent';
+import AdminEmailTemplates from '../pages/admin/AdminEmailTemplates';
 import CandidateJobLinksPage from '../pages/candidate/CandidateJobLinksPage';
 import OperatorJobLinksPage from '../pages/operator/OperatorJobLinksPage';
 
 export default function AppRoutes() {
   const { user, isAuthenticated, isLoading } = useSession();
+  const location = useLocation();
 
   if (isLoading) {
     return (
@@ -59,11 +67,24 @@ export default function AppRoutes() {
 
   const homeForUser = isAuthenticated && user ? `/${user.role}` : '/login';
 
+  // Where to land after signing in. ProtectedRoute passes the blocked path in
+  // router state; the interceptor's expiry redirect passes it as ?from=, since
+  // it navigates with the browser rather than the router. Only same-origin
+  // relative paths are honoured, so `from` cannot be used as an open redirect.
+  const requestedReturn =
+    (location.state as { from?: string } | null)?.from ??
+    new URLSearchParams(location.search).get('from') ??
+    null;
+  const afterAuth =
+    requestedReturn && requestedReturn.startsWith('/') && !requestedReturn.startsWith('//')
+      ? requestedReturn
+      : homeForUser;
+
   return (
     <Routes>
       <Route
         path="/login"
-        element={isAuthenticated ? <Navigate to={homeForUser} replace /> : <Login />}
+        element={isAuthenticated ? <Navigate to={afterAuth} replace /> : <Login />}
       />
 
       <Route
@@ -81,6 +102,11 @@ export default function AppRoutes() {
         element={isAuthenticated ? <Navigate to={homeForUser} replace /> : <ResetPassword />}
       />
 
+      {/* Unlike the other auth routes, this is reachable while signed in:
+          register() logs the user in immediately, so the verification link in
+          their inbox is often opened in an already-authenticated session. */}
+      <Route path="/verify-email" element={<VerifyEmail />} />
+
       <Route
         path="/admin"
         element={
@@ -92,6 +118,18 @@ export default function AppRoutes() {
         <Route index element={<AdminDashboard />} />
         <Route path="companies" element={<AdminCompanies />} />
         <Route path="jobs" element={<OperatorJobs />} />
+        <Route path="jobs/new" element={<OperatorAddJob />} />
+        {/* Applications, scholarships, payments and the job-link desk were
+            reachable only under /operator, even though several of their
+            endpoints (DELETE /applications/:id, DELETE /scholarships/:id) are
+            admin-only — so the one role allowed to call them had no way to.
+            The pages already branch on role, the way jobs and reports do. */}
+        <Route path="applications" element={<OperatorApplications />} />
+        <Route path="job-links" element={<OperatorJobLinksPage />} />
+        <Route path="scholarships" element={<OperatorScholarships />} />
+        <Route path="payments" element={<OperatorPayments />} />
+        <Route path="candidates" element={<OperatorUsers />} />
+        <Route path="anonymous-discovery" element={<AnonymousJobDiscoveryAdmin />} />
         <Route path="roles" element={<AdminRoles />} />
         <Route path="approvals" element={<AdminApprovals />} />
         <Route path="profile-columns" element={<AdminProfileColumns />} />
@@ -100,6 +138,10 @@ export default function AppRoutes() {
         <Route path="payment-options" element={<AdminPaymentOptions />} />
         <Route path="team-capacity" element={<OperatorTeamCapacity />} />
         <Route path="reports" element={<OperatorExport />} />
+        <Route path="site-content" element={<AdminSiteContent />} />
+        <Route path="site-settings" element={<AdminSiteSettings />} />
+        <Route path="email-templates" element={<AdminEmailTemplates />} />
+        <Route path="logs" element={<AdminSystemLogs />} />
         <Route path="notifications" element={<NotificationsPage />} />
         <Route path="profile" element={<SystemUserProfile />} />
       </Route>
@@ -182,8 +224,12 @@ export default function AppRoutes() {
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/privacy" element={<PrivacyPolicyPage />} />
       <Route path="/terms" element={<TermsOfServicePage />} />
+      <Route path="/contact" element={<ContactPage />} />
       
-      <Route path="*" element={<Navigate to={homeForUser} replace />} />
+      {/* Show a real 404 rather than redirecting. Bouncing an unknown URL to the
+          dashboard (or /login when signed out) made a mistyped or dead link look
+          like a session problem, and hid genuinely broken links from us. */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

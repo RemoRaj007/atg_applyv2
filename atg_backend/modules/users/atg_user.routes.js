@@ -5,6 +5,7 @@ const authorize = require("../../middlewares/permissions/authorize.middleware");
 const validate = require("../../middlewares/validations/validate.middleware");
 const { createUserSchema, updateUserSchema, adminUpdateUserSchema, changePasswordSchema, verifyPasswordSchema } = require("./user.schema");
 const upload = require("../../middlewares/upload.middleware");
+const numericParam = require("../../middlewares/validations/objectId.middleware");
 
 const router = express.Router();
 
@@ -22,9 +23,9 @@ router.post("/me/verify-password", validate(verifyPasswordSchema), userControlle
 router.get("/me", userController.getSelf);
 router.get("/", authorize("admin", "operator"), userController.list);
 router.get("/export", authorize("admin", "operator"), userController.exportCsv);
-router.get("/:id", authorize("admin", "operator"), userController.getById);
+router.get("/:id", numericParam("id"), authorize("admin", "operator"), userController.getById);
 router.post("/", authorize("admin", "operator"), validate(createUserSchema), userController.create);
-router.put("/:id", validateUpdate, userController.update);
-router.delete("/:id", authorize("admin", "operator"), userController.remove);
+router.put("/:id", numericParam("id"), validateUpdate, userController.update);
+router.delete("/:id", numericParam("id"), authorize("admin", "operator"), userController.remove);
 
 module.exports = router;

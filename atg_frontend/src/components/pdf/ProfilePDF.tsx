@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import type { FullUserProfile } from '../../api/userProfileApi';
+import { getFileUrlFresh } from '../../utils/fileUrl';
 
 // Register a standard clean font if needed, otherwise Helvetica is default.
 const styles = StyleSheet.create({
@@ -92,7 +93,7 @@ export const ProfilePDF = ({ profileData }: { profileData: FullUserProfile }) =>
         <View style={styles.headerContainer}>
           {profilePic && (
             <Image 
-              src={`http://localhost:5000${profilePic.fileUrl}?t=${new Date().getTime()}`} 
+              src={getFileUrlFresh(profilePic.fileUrl)} 
               style={styles.profileImage} 
             />
           )}
