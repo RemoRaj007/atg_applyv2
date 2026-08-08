@@ -25,6 +25,8 @@ const profileValueRoutes = require("./modules/profile-values/profile-value.route
 const jobFormRoutes = require("./modules/job-forms/job-form.routes");
 const skillRoutes = require("./modules/skills/skill.routes");
 const userProfileRoutes = require("./modules/user-profile/user-profile.routes");
+const universityApplicationRoutes = require("./modules/university-applications/university-applications.route");
+const documentApplicationRoutes = require("./modules/document-applications/document-applications.route");
 
 const app = express();
 
@@ -87,6 +89,8 @@ app.use("/api/skills", skillRoutes);
 app.use("/api/job-roles", require("./modules/jobRoles/jobRole.routes"));
 app.use("/api/user-profile", userProfileRoutes);
 app.use("/api/anonymous-discovery", require("./modules/anonymous-discovery/anonymous-discovery.routes"));
+app.use("/api/university-applications", universityApplicationRoutes);
+app.use("/api/document-applications", documentApplicationRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

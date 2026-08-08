@@ -53,6 +53,26 @@ const DEFAULT_OPTIONS = [
     isPopular: false,
     status: "active",
   },
+  {
+    name: "University & Scholarships",
+    price: 150.00,
+    currency: "USD",
+    appsCount: 20,
+    features: JSON.stringify(["20 university/scholarship applications", "One-time purchase", "Unlimited validity"]),
+    description: "Assistance with up to 20 university and scholarship applications.",
+    isPopular: false,
+    status: "active",
+  },
+  {
+    name: "Visa & Documents",
+    price: 100.00,
+    currency: "USD",
+    appsCount: 0,
+    features: JSON.stringify(["Unlimited document applications", "Visa, ID, citizenship, bank, passport & more", "One-time purchase"]),
+    description: "Assistance with visa, ID, citizenship, bank, and other documents.",
+    isPopular: false,
+    status: "active",
+  },
 ];
 
 const list = async (requesterRole) => {

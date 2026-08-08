@@ -171,6 +171,82 @@ const PricingPage = () => {
           })}
         </div>
 
+        {/* Add-On Services Section */}
+        <div className="mt-20">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-black text-white mb-4">Add-On Services</h2>
+            <p className="text-lg text-slate-300">Extend your capabilities with specialized services</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+            {/* University & Scholarships Add-On */}
+            <div className="rounded-2xl p-8 shadow-xl flex flex-col bg-slate-800/90 border border-slate-700">
+              <h3 className="text-2xl font-bold text-white mb-2">University & Scholarships</h3>
+              <p className="text-slate-400 text-sm mb-6 h-10">Assistance with university and scholarship applications</p>
+              <div className="mb-6 flex items-baseline gap-1">
+                <span className="text-4xl font-black text-white">$150</span>
+                <span className="text-slate-400 text-sm font-medium">USD</span>
+              </div>
+              <div className="text-blue-400 font-bold mb-6 pb-6 border-b border-slate-700">
+                Up to 20 applications
+              </div>
+              <ul className="space-y-4 mb-8 flex-grow">
+                <li className="flex gap-3 text-sm text-slate-300">
+                  <CheckCircle className="w-5 h-5 text-blue-400 shrink-0" />
+                  <span>20 university/scholarship applications</span>
+                </li>
+                <li className="flex gap-3 text-sm text-slate-300">
+                  <CheckCircle className="w-5 h-5 text-blue-400 shrink-0" />
+                  <span>One-time purchase</span>
+                </li>
+                <li className="flex gap-3 text-sm text-slate-300">
+                  <CheckCircle className="w-5 h-5 text-blue-400 shrink-0" />
+                  <span>Unlimited validity</span>
+                </li>
+              </ul>
+              <button
+                onClick={() => navigate('/register')}
+                className="w-full py-3 font-bold rounded-xl transition-colors cursor-pointer border border-slate-600 text-slate-200 hover:bg-slate-700"
+              >
+                Purchase Add-On
+              </button>
+            </div>
+
+            {/* Visa & Documents Add-On */}
+            <div className="rounded-2xl p-8 shadow-xl flex flex-col bg-slate-800/90 border border-slate-700">
+              <h3 className="text-2xl font-bold text-white mb-2">Visa & Documents</h3>
+              <p className="text-slate-400 text-sm mb-6 h-10">Assistance with visa, ID, citizenship, and document applications</p>
+              <div className="mb-6 flex items-baseline gap-1">
+                <span className="text-4xl font-black text-white">$100</span>
+                <span className="text-slate-400 text-sm font-medium">USD</span>
+              </div>
+              <div className="text-blue-400 font-bold mb-6 pb-6 border-b border-slate-700">
+                Unlimited applications
+              </div>
+              <ul className="space-y-4 mb-8 flex-grow">
+                <li className="flex gap-3 text-sm text-slate-300">
+                  <CheckCircle className="w-5 h-5 text-blue-400 shrink-0" />
+                  <span>Visa, ID, citizenship applications</span>
+                </li>
+                <li className="flex gap-3 text-sm text-slate-300">
+                  <CheckCircle className="w-5 h-5 text-blue-400 shrink-0" />
+                  <span>Bank & other documents</span>
+                </li>
+                <li className="flex gap-3 text-sm text-slate-300">
+                  <CheckCircle className="w-5 h-5 text-blue-400 shrink-0" />
+                  <span>One-time purchase</span>
+                </li>
+              </ul>
+              <button
+                onClick={() => navigate('/register')}
+                className="w-full py-3 font-bold rounded-xl transition-colors cursor-pointer border border-slate-600 text-slate-200 hover:bg-slate-700"
+              >
+                Purchase Add-On
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div className="text-center text-slate-400 text-sm">
           <p>{t('pricingPage.paymentNote')}</p>
           <p className="mt-2">{t('pricingPage.refundNote')}</p>

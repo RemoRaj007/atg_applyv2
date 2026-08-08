@@ -28,6 +28,14 @@ model User {
   resetPasswordToken   String?
   resetPasswordExpires DateTime?
 
+  // Add-on packages
+  hasUniversityPackage    Boolean   @default(false)
+  universityPackageDate   DateTime?
+  universityAppsUsed      Int       @default(0)
+
+  hasDocumentPackage      Boolean   @default(false)
+  documentPackageDate     DateTime?
+
   // Relations
   applications CandidateApplication[] @relation("CandidateApps")
   staffedApps  CandidateApplication[] @relation("StaffedApps")
@@ -52,6 +60,9 @@ model User {
   references             UserReference[]
   comments               ApplicationComment[]
   discoveryProfile       AnonymousDiscoveryProfile?
+
+  universityApplications UniversityApplication[] @relation("university_apps")
+  documentApplications   DocumentApplication[]   @relation("document_apps")
 }
 
 model Company {
@@ -574,5 +585,36 @@ model AnonymousJobMatch {
   d_status     String                    @default("active")
 
   profile      AnonymousDiscoveryProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model UniversityApplication {
+  id                   Int      @id @default(autoincrement())
+  userId               Int
+  universityName       String
+  programName          String
+  applicationStatus    String   @default("pending") // pending, submitted, accepted, rejected, withdrawn
+  submissionDate       DateTime?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  d_status             String   @default("active")
+
+  user                 User     @relation("university_apps", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model DocumentApplication {
+  id                   Int      @id @default(autoincrement())
+  userId               Int
+  documentType         String   // visa, id, citizenship, bank, passport, driving_license, etc.
+  status               String   @default("pending") // pending, submitted, approved, rejected, processing
+  submissionDate       DateTime?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  d_status             String   @default("active")
+
+  user                 User     @relation("document_apps", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
