@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import universityApplicationApi, { UniversityApplication } from "../../api/universityApplicationApi";
-import AdminLayout from "../../components/AdminLayout";
+import universityApplicationApi from "../../api/universityApplicationApi";
+import type { UniversityApplication } from "../../api/universityApplicationApi";
 
 export default function AdminUniversityApplications() {
   const [applications, setApplications] = useState<UniversityApplication[]>([]);
@@ -52,10 +52,10 @@ export default function AdminUniversityApplications() {
     }
   };
 
-  if (loading) return <AdminLayout><div className="p-6">Loading...</div></AdminLayout>;
+  if (loading) return <div className="p-6">Loading...</div>;
 
   return (
-    <AdminLayout>
+    <>
       <div className="p-6">
         <h1 className="text-3xl font-bold mb-6">University Applications</h1>
 
@@ -192,6 +192,6 @@ export default function AdminUniversityApplications() {
           </div>
         )}
       </div>
-    </AdminLayout>
+    </>
   );
 }

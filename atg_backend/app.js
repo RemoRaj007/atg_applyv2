@@ -6,8 +6,9 @@ const cookieParser = require("cookie-parser");
 const path = require("path");
 
 const { prisma } = require("./config/db");
-const { systemLogger } = require("./config/atg_logger");
+const { systemLogger, securityLogger } = require("./config/atg_logger");
 const { isAllowedOrigin } = require("./config/origins");
+const { assertAuthConfig, authConfigStatus } = require("./config/authConfig");
 const notFound = require("./middlewares/notFound.middleware");
 const rateLimit = require("./middlewares/rateLimit.middleware");
 const errorHandler = require("./middlewares/error.middleware");
@@ -32,6 +33,11 @@ const documentApplicationRoutes = require("./modules/document-applications/docum
 
 const app = express();
 
+// Once, at boot: names the environment variables authentication needs and is
+// missing. Without this a misconfigured deploy only ever surfaced as a generic
+// "Failed to log in" in the browser. See config/authConfig.js.
+assertAuthConfig();
+
 app.use(helmet({
   crossOriginResourcePolicy: false
 }));
@@ -51,6 +57,13 @@ app.use(
       // handler and returns a 500, which masks the real reason in the browser.
       // Note the preflight still returns 2xx — it just carries no CORS headers, so
       // the browser drops the follow-up request without ever sending it.
+      //
+      // Logged because that failure mode is otherwise completely silent
+      // server-side: the request the browser drops never arrives, so the only
+      // trace of a frontend served from an unlisted hostname was a CORS error in
+      // one user's console. A rejected origin is exactly what an operator needs
+      // to see to fix config/origins.js or FRONTEND_URL.
+      securityLogger.security("Blocked a cross-origin request from an unlisted origin", { origin });
       return callback(null, false);
     },
     credentials: true,
@@ -111,21 +124,30 @@ app.use("/api", rateLimit({ name: "api", windowMs: 15 * 60 * 1000, max: 1000 }))
 // Generous enough for a probe on a 30s interval, plus room for several probes.
 app.use("/api/health", rateLimit({ name: "health", windowMs: 60 * 1000, max: 60 }));
 
+// The auth check reports *names* of missing environment variables, never
+// values: a deploy that cannot sign tokens is otherwise only visible as a failed
+// login, and this is the endpoint an operator can reach without one.
 app.get("/api/health", async (req, res) => {
   const startedAt = Date.now();
+  const auth = authConfigStatus();
   try {
     await prisma.$queryRaw`SELECT 1`;
-    res.json({
-      status: "ok",
+    const database = { status: "ok", latencyMs: Date.now() - startedAt };
+    // A signable-token failure is as fatal to logging in as an unreachable
+    // database, so it degrades the overall status the same way and probes page
+    // on it too.
+    const healthy = auth.status === "ok";
+    res.status(healthy ? 200 : 503).json({
+      status: healthy ? "ok" : "degraded",
       uptime: Math.round(process.uptime()),
-      checks: { database: { status: "ok", latencyMs: Date.now() - startedAt } },
+      checks: { database, auth },
     });
   } catch (err) {
     systemLogger.error("Health check failed", { stack: err.stack });
     res.status(503).json({
       status: "degraded",
       uptime: Math.round(process.uptime()),
-      checks: { database: { status: "error" } },
+      checks: { database: { status: "error" }, auth },
     });
   }
 });

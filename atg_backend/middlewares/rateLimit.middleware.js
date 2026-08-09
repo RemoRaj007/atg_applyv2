@@ -16,7 +16,14 @@ const { securityLogger } = require("../config/atg_logger");
 // Postgres via rate-limit-postgresql) is the fix if a hard guarantee is needed.
 
 // Every limiter's store, so tests can clear budgets between cases.
-const stores = new Set();
+//
+// Held on globalThis rather than in module scope because the test runner loads
+// this file twice — once through the app's CommonJS `require` graph, once
+// through the suite's ESM `import` — and those are two separate module
+// instances with two separate Sets. `reset()` was therefore clearing a Set that
+// held no stores at all, so a case that spent a budget silently poisoned every
+// case after it. Same trick as the Prisma client cache in config/db.js.
+const stores = globalThis.__atgRateLimitStores || (globalThis.__atgRateLimitStores = new Set());
 
 const clientKey = (req) => {
   // Trust the platform's forwarding header only for its first hop; the rest is
@@ -26,7 +33,13 @@ const clientKey = (req) => {
   return first || req.ip || req.socket?.remoteAddress || "unknown";
 };
 
-const rateLimit = ({ windowMs = 15 * 60 * 1000, max = 10, name = "endpoint" } = {}) => {
+// `skipSuccessfulRequests` only charges the budget for responses that failed
+// (4xx/5xx). On login that is the difference between "10 wrong passwords" and
+// "10 sign-ins": everyone behind one office NAT or mobile carrier CGNAT shares a
+// client key here, so counting successes locked out people who had done nothing
+// wrong. Credential stuffing is unaffected — those attempts fail by definition,
+// which is exactly what still counts.
+const rateLimit = ({ windowMs = 15 * 60 * 1000, max = 10, name = "endpoint", skipSuccessfulRequests = false } = {}) => {
   // Constructed here rather than left to the default so reset() has a reference
   // to it — the middleware object does not expose its store.
   const store = new MemoryStore();
@@ -36,6 +49,7 @@ const rateLimit = ({ windowMs = 15 * 60 * 1000, max = 10, name = "endpoint" } = 
     store,
     windowMs,
     limit: max,
+    skipSuccessfulRequests,
     // draft-6 emits RateLimit-Limit / -Remaining / -Reset as separate headers,
     // which is what clients here already read.
     standardHeaders: "draft-6",

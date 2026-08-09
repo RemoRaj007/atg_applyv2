@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import request from "supertest";
 import jwt from "jsonwebtoken";
+import argon2 from "argon2";
 
 import { loadApp, authHeader, CANDIDATE, ADMIN } from "../helpers/app.js";
 import { prisma, resetPrismaMock } from "../helpers/prismaMock.js";
@@ -184,6 +185,25 @@ describe("health endpoint", () => {
     expect(res.body.status).toBe("degraded");
     expect(res.body.checks.database.status).toBe("error");
   });
+
+  it("reports the auth configuration, so a deploy that cannot sign tokens is visible", async () => {
+    const res = await request(app).get("/api/health");
+    expect(res.body.checks.auth.status).toBe("ok");
+  });
+
+  it("degrades, naming the variable, when a token secret is missing", async () => {
+    const saved = process.env.JWT_REFRESH_SECRET;
+    delete process.env.JWT_REFRESH_SECRET;
+    try {
+      const res = await request(app).get("/api/health");
+      expect(res.status).toBe(503);
+      expect(res.body.checks.auth).toMatchObject({ status: "error", missing: ["JWT_REFRESH_SECRET"] });
+      // Names only. This endpoint is unauthenticated.
+      expect(JSON.stringify(res.body)).not.toContain(saved);
+    } finally {
+      process.env.JWT_REFRESH_SECRET = saved;
+    }
+  });
 });
 
 describe("request body limits", () => {
@@ -266,13 +286,40 @@ describe("brute force resistance", () => {
   it("rate limits repeated failed logins from one client", async () => {
     prisma.user.findFirst.mockResolvedValue(null);
 
+    // Past the 20-failure budget. Only failures count now (the limiter skips
+    // successful requests), which is why the budget is larger than it was.
     let lastStatus = 0;
-    for (let i = 0; i < 12; i += 1) {
+    for (let i = 0; i < 22; i += 1) {
       const res = await request(app).post("/api/auth/login").send({ email: "victim@example.com", password: `guess${i}!A` });
       lastStatus = res.status;
     }
 
     expect(lastStatus).toBe(429);
+  });
+
+  it("does not spend the login budget on successful sign-ins", async () => {
+    prisma.user.findFirst.mockResolvedValue({
+      id: 4,
+      email: "candidate@example.com",
+      name: "Cand Idate",
+      password: await argon2.hash("Password123!"),
+      role: "candidate",
+      companyId: null,
+      d_status: "active",
+    });
+
+    // Comfortably past the budget. Everyone behind one office NAT shares a
+    // client key here, so counting successes locked out people who had done
+    // nothing wrong.
+    let lastStatus = 0;
+    for (let i = 0; i < 25; i += 1) {
+      const res = await request(app)
+        .post("/api/auth/login")
+        .send({ email: "candidate@example.com", password: "Password123!" });
+      lastStatus = res.status;
+    }
+
+    expect(lastStatus).toBe(200);
   });
 
   it("rate limits password reset requests, which send mail on every call", async () => {

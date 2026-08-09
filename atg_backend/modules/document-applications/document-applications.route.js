@@ -1,6 +1,9 @@
 const express = require("express");
 const controller = require("./document-applications.controller");
-const { authenticate } = require("../../middlewares/auth");
+// See the note in university-applications.route.js: `middlewares/auth` is not a
+// real module and this is a default export. The bad require took the whole API
+// down at load time, not just this router.
+const authenticate = require("../../middlewares/permissions/atg_authenticate.middleware");
 
 const router = express.Router();
 

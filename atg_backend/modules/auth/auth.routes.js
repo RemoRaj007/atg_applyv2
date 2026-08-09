@@ -21,11 +21,33 @@ const router = express.Router();
 // creation, and the reset pair for mail flooding and token guessing. Budgets are
 // generous enough for a person mistyping their password and far too small for a
 // script. See middlewares/rateLimit.middleware.js for the serverless caveat.
-const loginLimiter = rateLimit({ name: "auth:login", windowMs: 15 * 60 * 1000, max: 10 });
+// Only failed attempts count (see skipSuccessfulRequests in the middleware), so
+// this is a budget for wrong passwords rather than for sign-ins — a shared
+// office or carrier IP no longer locks itself out by successfully logging a
+// dozen people in.
+const loginLimiter = rateLimit({
+  name: "auth:login",
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  skipSuccessfulRequests: true,
+});
 const registerLimiter = rateLimit({ name: "auth:register", windowMs: 60 * 60 * 1000, max: 10 });
 const resetLimiter = rateLimit({ name: "auth:reset", windowMs: 60 * 60 * 1000, max: 10 });
-const socialLimiter = rateLimit({ name: "auth:social", windowMs: 15 * 60 * 1000, max: 30 });
-const refreshLimiter = rateLimit({ name: "auth:refresh", windowMs: 15 * 60 * 1000, max: 120 });
+const socialLimiter = rateLimit({
+  name: "auth:social",
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  skipSuccessfulRequests: true,
+});
+// Refresh fires on every page load and on every 401 retry, so a shared IP
+// reaches a success-counting budget quickly through entirely normal use. Failed
+// refreshes — the ones worth limiting — still count.
+const refreshLimiter = rateLimit({
+  name: "auth:refresh",
+  windowMs: 15 * 60 * 1000,
+  max: 120,
+  skipSuccessfulRequests: true,
+});
 // Same budget as password reset: token guessing and mail flooding are the same
 // threat here.
 const verifyLimiter = rateLimit({ name: "auth:verify", windowMs: 60 * 60 * 1000, max: 10 });
