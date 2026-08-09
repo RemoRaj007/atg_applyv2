@@ -1,6 +1,9 @@
-import axios from "axios";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+// The shared client, not a bare axios instance: it carries the resolved API
+// origin, the Bearer access token, and the refresh-and-retry interceptor. These
+// endpoints all require authentication, and the base URL this module used to read
+// (VITE_API_BASE_URL) is set nowhere in the project — every call fell back to
+// localhost and, in a browser, went nowhere.
+import { apiClient } from "./apiClient";
 
 export interface UniversityApplication {
   id: number;
@@ -11,36 +14,39 @@ export interface UniversityApplication {
   submissionDate?: string;
   createdAt: string;
   updatedAt: string;
+  // The admin list joins the applicant, which these pages render. Optional
+  // because the candidate-facing endpoints return the row without it.
+  user?: { id: number; name?: string; email: string };
 }
 
 const universityApplicationApi = {
   list: async () => {
-    const response = await axios.get(`${API_BASE_URL}/university-applications`);
+    const response = await apiClient.get(`/university-applications`);
     return response.data.data;
   },
 
   listAll: async () => {
-    const response = await axios.get(`${API_BASE_URL}/university-applications/all`);
+    const response = await apiClient.get(`/university-applications/all`);
     return response.data.data;
   },
 
   getById: async (id: number) => {
-    const response = await axios.get(`${API_BASE_URL}/university-applications/${id}`);
+    const response = await apiClient.get(`/university-applications/${id}`);
     return response.data.data;
   },
 
   create: async (data: Omit<UniversityApplication, "id" | "userId" | "createdAt" | "updatedAt">) => {
-    const response = await axios.post(`${API_BASE_URL}/university-applications`, data);
+    const response = await apiClient.post(`/university-applications`, data);
     return response.data.data;
   },
 
   update: async (id: number, data: Partial<UniversityApplication>) => {
-    const response = await axios.patch(`${API_BASE_URL}/university-applications/${id}`, data);
+    const response = await apiClient.patch(`/university-applications/${id}`, data);
     return response.data.data;
   },
 
   remove: async (id: number) => {
-    const response = await axios.delete(`${API_BASE_URL}/university-applications/${id}`);
+    const response = await apiClient.delete(`/university-applications/${id}`);
     return response.data;
   },
 };

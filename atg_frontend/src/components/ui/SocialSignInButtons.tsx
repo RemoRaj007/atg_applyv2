@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useSession } from '../../hooks/useSession';
 import GoogleIcon from './GoogleIcon';
 import MicrosoftIcon from './MicrosoftIcon';
@@ -29,27 +29,44 @@ interface Props {
 export default function SocialSignInButtons({ onError, disabled }: Props) {
   const { googleLogin, microsoftLogin } = useSession();
   const [busy, setBusy] = useState(false);
+  // Set when One Tap declines to appear, which swaps our own button for
+  // Google's rendered one. See handleGoogle.
+  const [googleFallback, setGoogleFallback] = useState(false);
+  const googleButtonRef = useRef<HTMLDivElement | null>(null);
+  const googleInitialised = useRef(false);
 
-  const handleGoogle = async () => {
-    if (!googleClientId) return;
-
-    if (typeof window !== 'undefined' && !(window as any).google) {
-      await new Promise((resolve) => {
+  const loadGoogleScript = async () => {
+    if (typeof window === 'undefined') return null;
+    if (!(window as any).google) {
+      await new Promise((resolve, reject) => {
+        const existing = document.querySelector<HTMLScriptElement>('script[src*="accounts.google.com/gsi/client"]');
+        if (existing) {
+          existing.addEventListener('load', resolve, { once: true });
+          existing.addEventListener('error', reject, { once: true });
+          return;
+        }
         const script = document.createElement('script');
         script.src = 'https://accounts.google.com/gsi/client';
         script.async = true;
         script.onload = resolve;
+        // Without this an ad blocker or a blocked network left the promise
+        // pending forever, so the click did nothing at all — no spinner, no
+        // error, no sign-in.
+        script.onerror = () => reject(new Error('blocked'));
         document.body.appendChild(script);
-      });
+      }).catch(() => null);
     }
+    return (window as any).google ?? null;
+  };
 
-    if (!(window as any).google) {
-      onError('Could not reach Google sign-in. Check your connection and try again.');
-      return;
-    }
-
-    (window as any).google.accounts.id.initialize({
+  const initGoogle = (google: any) => {
+    if (googleInitialised.current) return;
+    google.accounts.id.initialize({
       client_id: googleClientId,
+      // Chrome's third-party cookie phase-out breaks the legacy One Tap
+      // transport; FedCM is the supported path and is required for the prompt
+      // to appear at all in current Chrome.
+      use_fedcm_for_prompt: true,
       callback: async (response: any) => {
         try {
           setBusy(true);
@@ -61,7 +78,57 @@ export default function SocialSignInButtons({ onError, disabled }: Props) {
         }
       },
     });
-    (window as any).google.accounts.id.prompt();
+    googleInitialised.current = true;
+  };
+
+  // Renders Google's own sign-in button into the container below. One Tap is
+  // suppressed in a long list of ordinary situations — the user dismissed it
+  // earlier ("exponential cooldown"), the browser blocks third-party state,
+  // Safari/Firefox private mode, an ad blocker, or no Google session at all —
+  // and in every one of them `prompt()` returns silently. That is the reported
+  // symptom: the Google button appears to do nothing. The rendered button has
+  // none of those constraints, so it becomes the visible fallback.
+  const renderGoogleButton = (google: any) => {
+    setGoogleFallback(true);
+    // After the state flip, so the container exists.
+    requestAnimationFrame(() => {
+      if (!googleButtonRef.current) return;
+      googleButtonRef.current.innerHTML = '';
+      google.accounts.id.renderButton(googleButtonRef.current, {
+        theme: 'filled_black',
+        size: 'large',
+        shape: 'pill',
+        text: 'continue_with',
+        width: googleButtonRef.current.offsetWidth || 320,
+      });
+    });
+  };
+
+  const handleGoogle = async () => {
+    if (!googleClientId) return;
+
+    const google = await loadGoogleScript();
+    if (!google) {
+      onError('Could not reach Google sign-in — an ad blocker or your network may be blocking it.');
+      return;
+    }
+
+    initGoogle(google);
+
+    try {
+      google.accounts.id.prompt((notification: any) => {
+        // These predicates are deprecated under FedCM and may be absent, so
+        // anything other than a clear "it displayed" falls back rather than
+        // leaving the user staring at a button that did nothing.
+        const skipped =
+          typeof notification?.isNotDisplayed === 'function'
+            ? notification.isNotDisplayed() || notification.isSkippedMoment?.()
+            : !notification?.isDisplayed?.();
+        if (skipped) renderGoogleButton(google);
+      });
+    } catch {
+      renderGoogleButton(google);
+    }
   };
 
   const handleMicrosoft = async () => {
@@ -100,10 +167,16 @@ export default function SocialSignInButtons({ onError, disabled }: Props) {
   return (
     <div className="space-y-3">
       {googleClientId && (
-        <button type="button" onClick={handleGoogle} disabled={disabled || busy} className={BUTTON_CLASS}>
-          <GoogleIcon className="h-5 w-5" />
-          Continue with Google
-        </button>
+        <>
+          {!googleFallback && (
+            <button type="button" onClick={handleGoogle} disabled={disabled || busy} className={BUTTON_CLASS}>
+              <GoogleIcon className="h-5 w-5" />
+              Continue with Google
+            </button>
+          )}
+          {/* Google renders its own button in here when One Tap is suppressed. */}
+          <div ref={googleButtonRef} className={googleFallback ? 'flex justify-center' : 'hidden'} />
+        </>
       )}
       {microsoftClientId && (
         <button type="button" onClick={handleMicrosoft} disabled={disabled || busy} className={BUTTON_CLASS}>

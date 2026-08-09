@@ -1,6 +1,10 @@
 const express = require("express");
 const controller = require("./university-applications.controller");
-const { authenticate } = require("../../middlewares/auth");
+// `middlewares/auth` does not exist, and this is a default export, not a named
+// one. Requiring it threw MODULE_NOT_FOUND while app.js was still loading its
+// routers, so the Express app never finished building and *every* endpoint —
+// login included — failed. Match the path the other routers use.
+const authenticate = require("../../middlewares/permissions/atg_authenticate.middleware");
 
 const router = express.Router();
 

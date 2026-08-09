@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import documentApplicationApi, { DocumentApplication, DOCUMENT_TYPES } from "../../api/documentApplicationApi";
-import AdminLayout from "../../components/AdminLayout";
+import documentApplicationApi, { DOCUMENT_TYPES } from "../../api/documentApplicationApi";
+import type { DocumentApplication } from "../../api/documentApplicationApi";
 
 export default function AdminDocumentApplications() {
   const [applications, setApplications] = useState<DocumentApplication[]>([]);
@@ -52,10 +52,10 @@ export default function AdminDocumentApplications() {
     }
   };
 
-  if (loading) return <AdminLayout><div className="p-6">Loading...</div></AdminLayout>;
+  if (loading) return <div className="p-6">Loading...</div>;
 
   return (
-    <AdminLayout>
+    <>
       <div className="p-6">
         <h1 className="text-3xl font-bold mb-6">Document Applications</h1>
 
@@ -181,6 +181,6 @@ export default function AdminDocumentApplications() {
           </div>
         )}
       </div>
-    </AdminLayout>
+    </>
   );
 }

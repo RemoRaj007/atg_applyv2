@@ -1,6 +1,9 @@
-import axios from "axios";
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+// The shared client, not a bare axios instance: it carries the resolved API
+// origin, the Bearer access token, and the refresh-and-retry interceptor. These
+// endpoints all require authentication, and the base URL this module used to read
+// (VITE_API_BASE_URL) is set nowhere in the project — every call fell back to
+// localhost and, in a browser, went nowhere.
+import { apiClient } from "./apiClient";
 
 export interface DocumentApplication {
   id: number;
@@ -10,6 +13,9 @@ export interface DocumentApplication {
   submissionDate?: string;
   createdAt: string;
   updatedAt: string;
+  // The admin list joins the applicant, which these pages render. Optional
+  // because the candidate-facing endpoints return the row without it.
+  user?: { id: number; name?: string; email: string };
 }
 
 export const DOCUMENT_TYPES = [
@@ -28,32 +34,32 @@ export const DOCUMENT_TYPES = [
 
 const documentApplicationApi = {
   list: async () => {
-    const response = await axios.get(`${API_BASE_URL}/document-applications`);
+    const response = await apiClient.get(`/document-applications`);
     return response.data.data;
   },
 
   listAll: async () => {
-    const response = await axios.get(`${API_BASE_URL}/document-applications/all`);
+    const response = await apiClient.get(`/document-applications/all`);
     return response.data.data;
   },
 
   getById: async (id: number) => {
-    const response = await axios.get(`${API_BASE_URL}/document-applications/${id}`);
+    const response = await apiClient.get(`/document-applications/${id}`);
     return response.data.data;
   },
 
   create: async (data: Omit<DocumentApplication, "id" | "userId" | "createdAt" | "updatedAt">) => {
-    const response = await axios.post(`${API_BASE_URL}/document-applications`, data);
+    const response = await apiClient.post(`/document-applications`, data);
     return response.data.data;
   },
 
   update: async (id: number, data: Partial<DocumentApplication>) => {
-    const response = await axios.patch(`${API_BASE_URL}/document-applications/${id}`, data);
+    const response = await apiClient.patch(`/document-applications/${id}`, data);
     return response.data.data;
   },
 
   remove: async (id: number) => {
-    const response = await axios.delete(`${API_BASE_URL}/document-applications/${id}`);
+    const response = await apiClient.delete(`/document-applications/${id}`);
     return response.data;
   },
 };
