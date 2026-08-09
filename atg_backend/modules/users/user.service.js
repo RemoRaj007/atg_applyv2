@@ -4,6 +4,9 @@ const ApiError = require("../../utils/ApiError");
 const sanitizeUser = require("../../utils/sanitizeUser");
 const { activityLogger, securityLogger } = require("../../config/atg_logger");
 const { isValidEmail, validatePasswordStrength, isValidPhone } = require("../../utils/validators");
+// Aliased: this module already exports a `verifyPassword` of its own (the
+// /me/verify-password handler), which shadowed the import outright.
+const { verifyPassword: checkPassword, isVerifiableHash } = require("../../utils/passwordHash");
 
 const list = async () => {
   const users = await prisma.user.findMany({ where: { d_status: "active" }, orderBy: { createdAt: "desc" } });
@@ -166,7 +169,21 @@ const changePassword = async (id, { oldPassword, newPassword }) => {
     );
   }
 
-  const valid = await argon2.verify(user.password, oldPassword);
+  // A stored value argon2 cannot parse — a plaintext password, a truncated
+  // hash — made this endpoint answer 500 on the old-password check, which is
+  // what an admin changing their own password actually hit. It is a dead end
+  // rather than a mistyped password, so say so and point at the flow that can
+  // set a fresh hash.
+  if (!isVerifiableHash(user.password)) {
+    securityLogger.security("Change password blocked: stored password is not a usable hash", {
+      userId: user.id,
+    });
+    throw ApiError.badRequest(
+      "This account's stored password cannot be verified. Use “Forgot password” to set a new one."
+    );
+  }
+
+  const valid = await checkPassword(user.password, oldPassword, { userId: user.id });
   if (!valid) {
     throw ApiError.badRequest("Incorrect old password");
   }
@@ -183,7 +200,7 @@ const verifyPassword = async (id, password) => {
   const user = await prisma.user.findFirst({ where: { id, d_status: "active" } });
   if (!user) throw ApiError.notFound("User not found");
   if (!user.password) return false;
-  return await argon2.verify(user.password, password);
+  return await checkPassword(user.password, password, { userId: user.id });
 };
 
 module.exports = { list, getById, create, update, remove, exportAll, changePassword, verifyPassword };
