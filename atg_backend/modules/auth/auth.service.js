@@ -8,6 +8,7 @@ const { activityLogger, securityLogger } = require("../../config/atg_logger");
 const { sendTemplatedEmail } = require("../notifications/email.service");
 const { isValidEmail, validatePasswordStrength, isValidPhone } = require("../../utils/validators");
 const { verifyIdentityToken } = require("./federated-identity.service");
+const { verifyPassword } = require("../../utils/passwordHash");
 
 // Shared with forgotPassword's resetLink construction.
 const frontendOrigin = () =>
@@ -141,7 +142,10 @@ const login = async ({ email, password }) => {
     throw ApiError.unauthorized("Invalid email or password");
   }
 
-  const valid = await argon2.verify(user.password, password);
+  // Not argon2.verify directly: it throws on a stored value it cannot parse,
+  // which reached the error handler as a 500 and made a single unusable row look
+  // like the API was down. See utils/passwordHash.js.
+  const valid = await verifyPassword(user.password, password, { userId: user.id });
   if (!valid) {
     securityLogger.security("Login failed: wrong password", { userId: user.id, email });
     throw ApiError.unauthorized("Invalid email or password");
