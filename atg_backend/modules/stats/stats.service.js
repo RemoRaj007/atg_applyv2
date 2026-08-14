@@ -86,12 +86,24 @@ const adminOverview = async () => {
 
 // Cumulative revenue over the paid payments, oldest first. Only the two columns
 // the chart plots are selected, so this stays cheap even as Payment grows.
-const revenueTrend = async (limit = 200) => {
+const MAX_TREND_POINTS = 1000;
+const DEFAULT_TREND_POINTS = 200;
+
+// `limit` arrives from the query string, so it is clamped into a fixed range
+// rather than merely defaulted — a negative or absurd value must not become the
+// row count. NaN falls back to the default.
+const clampTrendLimit = (limit) => {
+  const parsed = Number.parseInt(limit, 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return DEFAULT_TREND_POINTS;
+  return Math.min(parsed, MAX_TREND_POINTS);
+};
+
+const revenueTrend = async (limit) => {
   const payments = await prisma.payment.findMany({
     where: PAID_PAYMENT,
     orderBy: { createdAt: "asc" },
     select: { amount: true, createdAt: true },
-    take: Math.min(Number(limit) || 200, 1000),
+    take: clampTrendLimit(limit),
   });
 
   let runningTotal = 0;
