@@ -54,14 +54,21 @@ jobs:
           shopt -s nullglob
           for f in sarif-results/*.sarif; do
             echo "=== $f ==="
+            echo "result count: $(jq '[.runs[].results[]?] | length' "$f")"
+            # Rule metadata lives under tool.extensions[].rules for CodeQL query
+            # packs and only sometimes under tool.driver.rules, so the severity
+            # lookup is built from both — and a rule missing from it must still
+            # not suppress the finding itself.
             jq -r '
-              .runs[] as $run
-              | $run.results[]?
-              | . as $r
-              | ($run.tool.driver.rules[]? | select(.id == $r.ruleId)) as $rule
-              | "[\($rule.properties["security-severity"] // "n/a")] \($r.ruleId)\n" +
-                "  \($r.locations[0].physicalLocation.artifactLocation.uri):" +
-                "\($r.locations[0].physicalLocation.region.startLine)\n" +
-                "  \($r.message.text)"
-            ' "$f" || echo "(could not parse $f)"
+              . as $doc
+              | ([ $doc.runs[].tool
+                   | (.driver.rules[]?), (.extensions[]?.rules[]?) ]
+                 | map({key: .id, value: (.properties["security-severity"] // "n/a")})
+                 | from_entries) as $sev
+              | $doc.runs[].results[]?
+              | "[\($sev[.ruleId] // "n/a")] \(.ruleId)\n" +
+                "  \(.locations[0].physicalLocation.artifactLocation.uri // "?"):" +
+                "\(.locations[0].physicalLocation.region.startLine // 0)\n" +
+                "  \(.message.text)"
+            ' "$f"
           done
