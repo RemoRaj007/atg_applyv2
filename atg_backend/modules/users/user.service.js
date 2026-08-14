@@ -50,8 +50,19 @@ const create = async (data, requester) => {
     throw ApiError.badRequest("Invalid phone number format");
   }
 
-  const existing = await prisma.user.findFirst({ where: { email: data.email, d_status: "active" } });
-  if (existing) throw ApiError.conflict("An account with this email already exists");
+  // `email` is globally unique, but every lookup in this codebase filters on
+  // d_status — so a soft-deleted account still holds its address while being
+  // invisible to the check. Testing only for an active row meant the create
+  // below hit the unique constraint and answered 500, with a message the admin
+  // could do nothing about. Look at the address itself and say which case it is.
+  const existing = await prisma.user.findUnique({ where: { email: data.email } });
+  if (existing) {
+    throw ApiError.conflict(
+      existing.d_status === "active"
+        ? "An account with this email already exists"
+        : "A deactivated account already uses this email. Restore it instead of creating a new one."
+    );
+  }
 
   const password = await argon2.hash(data.password);
   const user = await prisma.user.create({ data: { ...data, password } });

@@ -92,6 +92,44 @@ apiClient.interceptors.request.use((config) => {
 // a 401 from these is a real auth failure, not an expired-token signal to retry
 const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/refresh', '/auth/logout', '/auth/forgot-password', '/auth/reset-password', '/auth/google', '/auth/microsoft'];
 
+// Replaces axios's own message with the one the API sent.
+//
+// Almost every module in this directory is written as
+//
+//   const { data } = await apiClient.post(...);
+//   if (!data.status) throw new Error(data.message ?? 'Failed to …');
+//
+// but that check can never run on a failure: axios rejects on any non-2xx, so
+// the body — and the message the API went to the trouble of writing — is thrown
+// away before the line is reached. The component's `catch (err) { err.message }`
+// then renders axios's own string, so "An account with this email already
+// exists" reached the user as "Request failed with status code 409", and every
+// server fault as "Request failed with status code 500".
+//
+// Rewriting the message here fixes all 20 of those modules at once, and keeps
+// working for the three that already unwrap the body themselves.
+const applyServerMessage = (error: any) => {
+  const serverMessage = error?.response?.data?.message;
+  if (typeof serverMessage === 'string' && serverMessage.trim()) {
+    error.message = serverMessage;
+  } else if (error?.response) {
+    error.message = `The server returned an unexpected error (HTTP ${error.response.status}).`;
+  } else if (error?.code === 'ECONNABORTED') {
+    error.message = 'The server took too long to respond. Please try again.';
+  } else if (error?.request) {
+    // No response at all: offline, DNS, or a CORS rejection — which looks
+    // identical to a network failure from here.
+    error.message = 'Could not reach the server. Check your connection and try again.';
+  }
+
+  // A 500 body carries an errorId matching the server log line. Quoting it gives
+  // the user something to report that can actually be traced.
+  const errorId = error?.response?.data?.errorId;
+  if (errorId) error.message = `${error.message} (ref: ${errorId})`;
+
+  return error;
+};
+
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -111,11 +149,11 @@ apiClient.interceptors.response.use(
         onSessionExpired?.();
         // Surface the original request's error, not the refresh attempt's, since that's
         // what's actually relevant to the caller (e.g. the page that made the request)
-        return Promise.reject(error);
+        return Promise.reject(applyServerMessage(error));
       }
     }
 
-    return Promise.reject(error);
+    return Promise.reject(applyServerMessage(error));
   }
 );
 

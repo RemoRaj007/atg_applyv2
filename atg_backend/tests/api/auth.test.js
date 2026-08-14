@@ -93,11 +93,26 @@ describe("POST /api/auth/register", () => {
   });
 
   it("409s when the email is taken", async () => {
-    prisma.user.findFirst.mockResolvedValue(await activeUser());
+    // findUnique, not findFirst: the address is checked regardless of d_status,
+    // because a soft-deleted row still holds it.
+    prisma.user.findUnique.mockResolvedValue(await activeUser());
     const res = await request(app)
       .post("/api/auth/register")
       .send({ email: "candidate@example.com", name: "Cand Idate", password: "Password123!" });
     expect(res.status).toBe(409);
+    expect(res.body.message).toMatch(/already exists/i);
+  });
+
+  it("409s — rather than hitting the unique constraint as a 500 — when a deactivated account holds the email", async () => {
+    prisma.user.findUnique.mockResolvedValue(await activeUser({ d_status: "inactive" }));
+
+    const res = await request(app)
+      .post("/api/auth/register")
+      .send({ email: "candidate@example.com", name: "Cand Idate", password: "Password123!" });
+
+    expect(res.status).toBe(409);
+    expect(res.body.message).toMatch(/deactivated/i);
+    expect(prisma.user.create).not.toHaveBeenCalled();
   });
 
   it("ignores a self-assigned privileged role in the payload", async () => {
