@@ -11,6 +11,7 @@
     "db:migrate": "prisma migrate deploy",
     "db:seed": "node prisma/seed.js",
     "db:seed:force": "node prisma/seed.js --force",
+    "db:import:scholarships": "node scripts/importScholarships.js",
     "setup": "npm run db:generate && npm run db:migrate && npm run db:seed",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
