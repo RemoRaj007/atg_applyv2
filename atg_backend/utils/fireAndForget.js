@@ -1,4 +1,5 @@
 const { systemLogger } = require("../config/atg_logger");
+const { sanitizeForLog } = require("./sanitizeForLog");
 
 /**
  * Error handler for notifications that are deliberately not awaited.
@@ -14,7 +15,7 @@ const { systemLogger } = require("../config/atg_logger");
 const logNotifyFailure = (context) => (err) => {
   systemLogger.warn("Notification dispatch failed", {
     context,
-    error: err?.message || String(err),
+    error: sanitizeForLog(err?.message || String(err)),
   });
 };
 

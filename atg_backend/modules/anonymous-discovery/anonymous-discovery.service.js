@@ -1,6 +1,7 @@
 const { prisma } = require("../../config/db");
 const { systemLogger } = require("../../config/atg_logger");
 const axios = require("axios");
+const { sanitizeForLog } = require("../../utils/sanitizeForLog");
 
 /**
  * Dynamically extract search profile bounds from a candidate's actual registered DB profile
@@ -228,11 +229,15 @@ const runJobDiscovery = async (profileId) => {
       );
 
       const items = Array.isArray(runResponse.data) ? runResponse.data : [];
-      systemLogger.info(`Apify response status: ${runResponse.status}. Received ${items.length} raw items from dataset.`);
-      systemLogger.info(`Apify full response data: ${JSON.stringify(runResponse.data)}`);
-      if (items.length > 0) {
-        systemLogger.info(`Sample raw item keys: ${Object.keys(items[0]).join(", ")}`);
-      }
+      // Counts and key names only. This used to log the entire response body,
+      // which put every scraped listing — third-party text, unbounded in size —
+      // into a log message and, through PrismaLogTransport, into the LogEntry
+      // table on every successful run.
+      systemLogger.info("Apify scrape completed", {
+        status: runResponse.status,
+        itemCount: items.length,
+        sampleKeys: items.length > 0 ? Object.keys(items[0]).map(sanitizeForLog) : [],
+      });
 
       marketJobs = items.map(item => ({
         title: item.title || item.positionName || "",
@@ -242,7 +247,12 @@ const runJobDiscovery = async (profileId) => {
         url: item.url || item.URL || item.jobUrl || ""
       }));
     } catch (err) {
-      const errorDetail = err.response && err.response.data ? JSON.stringify(err.response.data) : err.message;
+      // Apify's response body is third-party text heading for a log line and,
+      // via PrismaLogTransport, the LogEntry table — sanitised so it cannot
+      // forge extra log entries.
+      const errorDetail = sanitizeForLog(
+        err.response && err.response.data ? JSON.stringify(err.response.data) : err.message
+      );
       if (mockDiscoveryAllowed()) {
         systemLogger.warn("Apify direct API call failed or timed out. Falling back to simulated market search.", { error: errorDetail });
         marketJobs = getSimulatedMarketJobs(targetRole, industry);

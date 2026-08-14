@@ -1,6 +1,7 @@
 const { prisma } = require("../../config/db");
 const ApiError = require("../../utils/ApiError");
 const { activityLogger, systemLogger } = require("../../config/atg_logger");
+const { sanitizeForLog } = require("../../utils/sanitizeForLog");
 const { sendTemplatedEmail } = require("./email.service");
 
 // Notifications are always scoped to the requester, even for admin/operator
@@ -37,7 +38,7 @@ const emailNotification = async (user, { title, body }) => {
   } catch (err) {
     systemLogger.warn("Failed to send notification email", {
       userId: user.id,
-      error: err.message,
+      error: sanitizeForLog(err.message),
     });
   }
 };
@@ -113,7 +114,7 @@ const notifyRoles = async ({ roles, type, title, body, excludeUserId }) => {
 
     await notifyMany(users, { type, title, body });
   } catch (err) {
-    systemLogger.error("Failed to notify roles", { roles, type, error: err.message });
+    systemLogger.error("Failed to notify roles", { roles, type, error: sanitizeForLog(err.message) });
   }
 };
 
@@ -127,7 +128,7 @@ const notifyCompanyUsers = async ({ companyId, type, title, body }) => {
 
     await notifyMany(users, { type, title, body });
   } catch (err) {
-    systemLogger.error("Failed to notify company users", { companyId, type, error: err.message });
+    systemLogger.error("Failed to notify company users", { companyId, type, error: sanitizeForLog(err.message) });
   }
 };
 
