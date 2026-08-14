@@ -50,13 +50,17 @@ it currently has.
 
 ```bash
 EVER_JOBS_URL=http://localhost:3001 node scripts/fetch-ever-jobs-sample.js \
-  --term "software engineer" --sites remoteok,remotive --count 10
+  --term "software engineer" --sites remoteok,remotive --count 10 > sample.json
 ```
 
-Writes `raw-response.json` (exactly what the aggregator returned) and
-`mapped-rows.json` (the rows an import would create). It calls the importer's own
-mapper, so the preview cannot drift from what an import actually writes. Nothing
-touches the database.
+Prints `{ query, raw, mapped }` — exactly what the aggregator returned alongside
+the rows an import would create. It calls the importer's own mapper, so the
+preview cannot drift from what an import actually writes. Nothing touches the
+database.
+
+The JSON goes to stdout and the summary to stderr, so the redirect captures the
+data while the summary still reaches your terminal. Choosing a path on disk for
+third-party content is the shell's job, not the script's.
 
 ## The endpoint
 
