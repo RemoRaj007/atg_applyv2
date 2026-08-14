@@ -22,6 +22,29 @@ const publicSettings = async () => {
 
 // Values are stored as text because the column is shared across types; this
 // hands the client the shape the type promises rather than a string every time.
+// Both of these replace regexes that ran over a request-supplied value. The URL
+// one uses the platform parser rather than a pattern, which is both stricter
+// (it rejects things a `\S+` tail happily accepted) and free of backtracking.
+const isHttpUrl = (value) => {
+  if (value.length > 2048) return false;
+  try {
+    const { protocol, host } = new URL(value);
+    return (protocol === "http:" || protocol === "https:") && Boolean(host);
+  } catch {
+    return false;
+  }
+};
+
+const isSimpleEmail = (value) => {
+  if (value.length > 320) return false;
+  const parts = value.split("@");
+  if (parts.length !== 2) return false;
+  const [local, domain] = parts;
+  if (!local || !domain || /\s/.test(value)) return false;
+  const labels = domain.split(".");
+  return labels.length >= 2 && labels.every(Boolean);
+};
+
 const coerce = (value, valueType) => {
   if (valueType === "number") {
     const n = Number(value);
@@ -71,12 +94,17 @@ const normalizeForType = (value, valueType, label) => {
   if (valueType === "url" && trimmed !== "") {
     // Anything that is not http(s) — javascript:, data: — would become a live
     // link in the site footer, so it is refused rather than stored.
-    if (!/^https?:\/\/\S+$/i.test(trimmed)) {
+    if (!isHttpUrl(trimmed)) {
       throw ApiError.badRequest(`${label} must be an http(s) URL`);
     }
   }
 
-  if (valueType === "email" && trimmed !== "" && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(trimmed)) {
+  // Checked without a regex. `^[^@\s]+@[^@\s]+\.[^@\s]+$` backtracks
+  // polynomially — the two trailing groups both match the same characters, so a
+  // long value with no dot makes the engine retry every split (js/polynomial-redos,
+  // and this value arrives from a request). Splitting on the separators is linear
+  // and says the same thing.
+  if (valueType === "email" && trimmed !== "" && !isSimpleEmail(trimmed)) {
     throw ApiError.badRequest(`${label} must be an email address`);
   }
 

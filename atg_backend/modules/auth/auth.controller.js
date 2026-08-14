@@ -2,6 +2,7 @@ const asyncHandler = require("../../utils/asyncHandler");
 const { sendSuccess } = require("../../utils/apiResponse");
 const authService = require("./auth.service");
 const parseDurationToMs = require("../../utils/parseDuration");
+const readCookie = require("../../utils/readCookie");
 
 const REFRESH_COOKIE_NAME = "refreshToken";
 // In production the frontend (Cloudflare Pages) and this API (Vercel) are on
@@ -31,7 +32,7 @@ const login = asyncHandler(async (req, res) => {
 });
 
 const refresh = asyncHandler(async (req, res) => {
-  const { user, accessToken } = await authService.refresh(req.cookies?.[REFRESH_COOKIE_NAME]);
+  const { user, accessToken } = await authService.refresh(readCookie(req, REFRESH_COOKIE_NAME));
   sendSuccess(res, { message: "Token refreshed", data: { user, accessToken } });
 });
 
