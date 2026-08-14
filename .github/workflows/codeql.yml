@@ -38,6 +38,30 @@ jobs:
       # No build step: CodeQL analyses JS/TS from source, and building here would
       # only duplicate the build job in deploy.yml.
       - name: Perform CodeQL analysis
+        id: analyze
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:javascript-typescript"
+          output: sarif-results
+
+      # The "CodeQL" check reports only a severity count ("1 high"), and the rule
+      # behind it is readable only in the Security tab. That is fine in a browser
+      # and useless from anywhere else — CI, a terminal, a review bot. Printing
+      # each finding here makes a red run self-describing from the job log alone.
+      - name: Print findings
+        if: always()
+        run: |
+          shopt -s nullglob
+          for f in sarif-results/*.sarif; do
+            echo "=== $f ==="
+            jq -r '
+              .runs[] as $run
+              | $run.results[]?
+              | . as $r
+              | ($run.tool.driver.rules[]? | select(.id == $r.ruleId)) as $rule
+              | "[\($rule.properties["security-severity"] // "n/a")] \($r.ruleId)\n" +
+                "  \($r.locations[0].physicalLocation.artifactLocation.uri):" +
+                "\($r.locations[0].physicalLocation.region.startLine)\n" +
+                "  \($r.message.text)"
+            ' "$f" || echo "(could not parse $f)"
+          done
