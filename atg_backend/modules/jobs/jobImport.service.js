@@ -26,6 +26,21 @@ const REQUEST_TIMEOUT_MS = Number(process.env.EVER_JOBS_TIMEOUT_MS || 130000);
 // is a write, and this runs inside one HTTP request.
 const MAX_RESULTS_WANTED = 200;
 
+/**
+ * Everything logged here comes from somewhere untrusted — the caller's search
+ * terms, or a response body assembled from public job boards — and these logs
+ * are not write-only: config/atg_logger.js persists them to the LogEntry table,
+ * which the admin log viewer renders.
+ *
+ * A newline in a logged value lets its author forge whole log lines, and control
+ * characters can rewrite a terminal tailing the output. Flatten both, and cap
+ * the length so one posting cannot flood the log.
+ */
+const forLog = (value, max = 200) =>
+  String(value ?? "")
+    .replace(/[\u0000-\u001F\u007F]/g, " ")
+    .slice(0, max);
+
 const everJobsUrl = () => {
   const configured = (process.env.EVER_JOBS_URL || "").trim().replace(/\/$/, "");
   if (!configured) {
@@ -62,7 +77,7 @@ const searchEverJobs = async (query) => {
     });
   } catch (err) {
     const reason = err.name === "AbortError" ? "timed out" : "could not be reached";
-    systemLogger.error(`Ever Jobs search ${reason}`, { url, message: err.message });
+    systemLogger.error(`Ever Jobs search ${reason}`, { url, message: forLog(err.message) });
     throw ApiError.badGateway(`The job source (${url}) ${reason}.`);
   } finally {
     clearTimeout(timer);
@@ -70,7 +85,7 @@ const searchEverJobs = async (query) => {
 
   if (!response.ok) {
     const body = await response.text().catch(() => "");
-    systemLogger.error("Ever Jobs search failed", { url, status: response.status, body: body.slice(0, 500) });
+    systemLogger.error("Ever Jobs search failed", { url, status: response.status, body: forLog(body, 500) });
     throw ApiError.badGateway(`The job source answered ${response.status}.`);
   }
 
@@ -216,7 +231,7 @@ const importJobs = async (query, requester) => {
   activityLogger.activity("Jobs imported from Ever Jobs", {
     ...summary,
     importedBy: requester?.id,
-    searchTerm: payload.searchTerm,
+    searchTerm: forLog(payload.searchTerm),
   });
 
   return summary;

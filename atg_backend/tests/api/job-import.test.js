@@ -268,3 +268,40 @@ describe("POST /api/jobs/import — request validation", () => {
     });
   });
 });
+
+describe("POST /api/jobs/import — logging", () => {
+  it("flattens newlines out of logged values, which are persisted to LogEntry", async () => {
+    // Winston writes through PrismaLogTransport, so a newline in a logged value
+    // forges a whole row in the admin log viewer — not just noise on stdout.
+    // The body is set directly rather than through everJobsResponds, which
+    // JSON-encodes and would turn the newline into two harmless characters.
+    global.fetch = vi.fn(async () => ({
+      ok: false,
+      status: 500,
+      json: async () => ({}),
+      text: async () => "line one\nERROR forged line",
+    }));
+
+    await search({ searchTerm: "developer" });
+
+    const logged = prisma.logEntry.create.mock.calls.map((call) => JSON.stringify(call[0])).join("\n");
+    expect(logged).toContain("line one ERROR forged line");
+    expect(logged).not.toContain("line one\\nERROR forged line");
+  });
+
+  it("caps a logged value so one response cannot flood the log", async () => {
+    global.fetch = vi.fn(async () => ({
+      ok: false,
+      status: 500,
+      json: async () => ({}),
+      text: async () => "x".repeat(5000),
+    }));
+
+    await search();
+
+    const meta = prisma.logEntry.create.mock.calls
+      .map((call) => call[0].data.meta)
+      .find((m) => m && typeof m.body === "string");
+    expect(meta.body.length).toBeLessThanOrEqual(500);
+  });
+});
