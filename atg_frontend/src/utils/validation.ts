@@ -194,3 +194,31 @@ export function validateNIC(nic: string, countryNameOrCode: string): ValidationR
 
   return { isValid: true, message: '' };
 }
+
+/**
+ * Returns a URL that is safe to put in an href, or null if it is not.
+ *
+ * Values like `javascript:alert(1)` reach the admin tables straight from the
+ * Company.website column, and a bare {@link href} on such a string executes in
+ * the admin's session on click. Only http/https survive; callers must render
+ * plain text when this returns null rather than falling back to the raw value.
+ *
+ * A bare `example.com` (no scheme) is treated as https, since that is how the
+ * value is usually typed into the company form.
+ */
+export function safeExternalUrl(url: string | null | undefined): string | null {
+  if (!url || !url.trim()) return null;
+
+  const candidate = url.trim();
+  const withScheme = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(candidate)
+    ? candidate
+    : `https://${candidate}`;
+
+  try {
+    const parsed = new URL(withScheme);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return null;
+    return parsed.href;
+  } catch {
+    return null;
+  }
+}

@@ -9,6 +9,7 @@ import { paymentApi } from '../../api/paymentApi';
 import { companyApi } from '../../api/companyApi';
 import { requestApi, type ChangeRequest } from '../../api/requestApi';
 import { applicationApi } from '../../api/applicationApi';
+import { safeExternalUrl } from '../../utils/validation';
 
 // Recharts imports for beautiful visualizations
 import {
@@ -675,15 +676,21 @@ export default function AdminDashboard() {
             <p className="p-8 text-center text-sm text-gray-500">No company profiles awaiting verification.</p>
           ) : (
             <div className="divide-y divide-gray-100">
-              {pendingCompanies.map((c) => (
+              {pendingCompanies.map((c) => {
+                // A pending company's website is attacker-supplied and unreviewed;
+                // link it only when it is a real http(s) URL.
+                const website = safeExternalUrl(c.website);
+                return (
                 <div key={c.id} className="p-6 hover:bg-gray-55/30 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fadeIn">
                   <div>
                     <h3 className="font-bold text-gray-800">{c.name}</h3>
                     <p className="text-xs text-gray-550">{c.email}</p>
-                    {c.website && (
-                      <a href={c.website} target="_blank" rel="noreferrer" className="text-[10px] text-brand-600 hover:underline block mt-1">
+                    {website ? (
+                      <a href={website} target="_blank" rel="noreferrer" className="text-[10px] text-brand-600 hover:underline block mt-1">
                         {c.website}
                       </a>
+                    ) : (
+                      c.website && <span className="text-[10px] text-gray-500 block mt-1">{c.website}</span>
                     )}
                     {c.description && <p className="text-xs text-gray-500 mt-1.5 line-clamp-2 italic">"{c.description}"</p>}
                   </div>
@@ -702,7 +709,8 @@ export default function AdminDashboard() {
                     </button>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

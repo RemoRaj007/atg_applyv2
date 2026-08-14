@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 import toast from 'react-hot-toast';
 import { companyApi, type Company } from '../../api/companyApi';
-import { validateEmail } from '../../utils/validation';
+import { validateEmail, safeExternalUrl } from '../../utils/validation';
 import Button from '../../components/ui/AtgButton';
 import ReusableTable from '../../components/ui/AtgReusableTable';
 import getIconComponent from '../../components/ui/AtgIconMapper';
@@ -137,21 +137,28 @@ export default function AdminCompanies() {
     {
       key: 'name',
       label: 'Company Profile',
-      render: (c: Company) => (
-        <div>
-          <p className="font-bold text-gray-800">{c.name}</p>
-          {c.website && (
-            <a
-              href={c.website}
-              target="_blank"
-              rel="noreferrer"
-              className="text-xs text-brand-600 hover:underline"
-            >
-              {c.website}
-            </a>
-          )}
-        </div>
-      ),
+      render: (c: Company) => {
+        // Rows predating the Joi scheme check can still hold a javascript: URL;
+        // show those as text rather than as a clickable link.
+        const website = safeExternalUrl(c.website);
+        return (
+          <div>
+            <p className="font-bold text-gray-800">{c.name}</p>
+            {website ? (
+              <a
+                href={website}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-brand-600 hover:underline"
+              >
+                {c.website}
+              </a>
+            ) : (
+              c.website && <span className="text-xs text-gray-500">{c.website}</span>
+            )}
+          </div>
+        );
+      },
     },
     {
       key: 'email',
