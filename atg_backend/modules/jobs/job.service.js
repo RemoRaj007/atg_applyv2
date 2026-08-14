@@ -4,6 +4,7 @@ const { activityLogger } = require("../../config/atg_logger");
 const { annotateJobsWithFitScore } = require("./fitScore.service");
 const notificationService = require("../notifications/notification.service");
 const { parsePagination, paginated } = require("../../utils/pagination");
+const { logNotifyFailure } = require("../../utils/fireAndForget");
 
 const list = async (requester, query = {}) => {
   const where = { d_status: "active" };
@@ -136,20 +137,20 @@ const create = async (data, requester) => {
       type: "job_created",
       title: "Job Submitted",
       body: `Your job post for "${job.title}" has been created and is pending payment/approval.`,
-    }).catch(() => {});
+    }).catch(logNotifyFailure("job_created"));
     notificationService.notifyRoles({
       roles: ["admin", "operator"],
       type: "job_created",
       title: "New Job Submitted",
       body: `Company ${job.company} submitted a new job: "${job.title}".`,
-    }).catch(() => {});
+    }).catch(logNotifyFailure("job_created"));
   } else {
     notificationService.notifyRoles({
       roles: ["candidate"],
       type: "job_created",
       title: `New Job Opening: ${job.title}`,
       body: `A new job "${job.title}" at ${job.company} has been published.`,
-    }).catch(() => {});
+    }).catch(logNotifyFailure("job_created"));
   }
 
   return job;
@@ -195,14 +196,14 @@ const approve = async (id, status) => {
         type: "job_approved",
         title: "Job Approved",
         body: `Your job posting "${job.title}" has been approved and is now live!`,
-      }).catch(() => {});
+      }).catch(logNotifyFailure("job_approved"));
     }
     notificationService.notifyRoles({
       roles: ["candidate"],
       type: "job_approved",
       title: `New Job Opening: ${job.title}`,
       body: `A new job "${job.title}" at ${job.company} is now open for applications.`,
-    }).catch(() => {});
+    }).catch(logNotifyFailure("job_approved"));
   }
 
   return updatedJob;

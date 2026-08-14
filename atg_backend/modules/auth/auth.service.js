@@ -9,6 +9,7 @@ const { sendTemplatedEmail } = require("../notifications/email.service");
 const { isValidEmail, validatePasswordStrength, isValidPhone } = require("../../utils/validators");
 const { verifyIdentityToken } = require("./federated-identity.service");
 const { verifyPassword } = require("../../utils/passwordHash");
+const { logNotifyFailure } = require("../../utils/fireAndForget");
 
 // Shared with forgotPassword's resetLink construction.
 const frontendOrigin = () =>
@@ -105,7 +106,7 @@ const register = async (data) => {
       subject: "Welcome to ATG Apply",
       body: `Hi ${user.name}, your account has been created on the ${user.pkg} plan.`,
     },
-  }).catch(() => {});
+  }).catch(logNotifyFailure("notification"));
 
   sendTemplatedEmail({
     to: user.email,
@@ -115,7 +116,7 @@ const register = async (data) => {
       subject: "Verify your ATG Apply email address",
       body: `Hi ${user.name},\n\nPlease verify your email address by clicking the link below:\n\n${verificationLink(emailVerificationToken)}\n\nThe link expires in 24 hours.\n\nBest regards,\nATG Apply Team`,
     },
-  }).catch(() => {});
+  }).catch(logNotifyFailure("notification"));
 
   const tokens = issueTokenPair(user);
   return { user: sanitizeUser(user), ...tokens };
@@ -196,7 +197,7 @@ const forgotPassword = async (email) => {
         subject: "Attempted password reset on ATG Apply",
         body: `Hello,\n\nYou (or someone else) requested a password reset for this email address. However, this email is not registered on ATG Apply.\n\nIf you do not have an account, please ignore this email.\n\nBest regards,\nATG Apply Team`,
       },
-    }).catch(() => {});
+    }).catch(logNotifyFailure("notification"));
     return;
   }
 

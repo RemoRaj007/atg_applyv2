@@ -548,7 +548,11 @@ export default function AdminDashboard() {
                 let detailsObj: any = {};
                 try {
                   if (req.details) detailsObj = JSON.parse(req.details);
-                } catch (e) {}
+                } catch {
+                  // details is free-form stringified JSON that may predate the
+                  // current shape; an unparseable payload just renders the
+                  // request without its detail rows.
+                }
 
                 return (
                   <div key={req.id} className="p-6 hover:bg-gray-55/30 transition-all space-y-3.5 animate-fadeIn">

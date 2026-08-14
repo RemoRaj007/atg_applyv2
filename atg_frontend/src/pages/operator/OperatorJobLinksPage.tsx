@@ -259,7 +259,12 @@ export default function OperatorJobLinksPage() {
                 if (app.jobLinkRequest) {
                   domain = new URL(app.jobLinkRequest).hostname.replace('www.', '');
                 }
-              } catch {}
+              } catch {
+                // A candidate can paste anything into the link field, so a value
+                // that will not parse is expected, not exceptional — keep the
+                // 'Job Link' placeholder. Nothing to report: this runs during
+                // render, once per row.
+              }
 
               return (
                 <div

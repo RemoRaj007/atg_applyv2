@@ -4,6 +4,7 @@ const { activityLogger } = require("../../config/atg_logger");
 const userService = require("../users/user.service");
 const notificationService = require("../notifications/notification.service");
 const { editUserDetailsSchema } = require("./request.schema");
+const { logNotifyFailure } = require("../../utils/fireAndForget");
 
 const list = async () => {
   const requests = await prisma.changeRequest.findMany({
@@ -65,7 +66,7 @@ const create = async (data, operatorId) => {
     type: "change_request_submitted",
     title: "New Change Request",
     body: `Operator requested ${data.type} for target user ID ${data.targetId}.`
-  }).catch(() => {});
+  }).catch(logNotifyFailure("change_request_submitted"));
 
   return request;
 };
@@ -104,7 +105,7 @@ const approve = async (id, requester) => {
     type: "change_request_approved",
     title: "Change Request Approved",
     body: `Your change request (${request.type}) for target ID ${request.targetId} was approved.`
-  }).catch(() => {});
+  }).catch(logNotifyFailure("change_request_approved"));
 
   return updatedRequest;
 };
@@ -128,7 +129,7 @@ const reject = async (id, requester) => {
     type: "change_request_rejected",
     title: "Change Request Rejected",
     body: `Your change request (${request.type}) for target ID ${request.targetId} was rejected.`
-  }).catch(() => {});
+  }).catch(logNotifyFailure("change_request_rejected"));
 
   return updatedRequest;
 };

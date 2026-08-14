@@ -7,6 +7,7 @@ const { matchResumeToJob } = require("../../utils/apify.service");
 const { calculateFitScore, loadCandidateData } = require("../jobs/fitScore.service");
 const notificationService = require("../notifications/notification.service");
 const { parsePagination, paginated } = require("../../utils/pagination");
+const { logNotifyFailure } = require("../../utils/fireAndForget");
 
 const QUOTA_EXHAUSTED =
   "You have reached your application limit. Please upgrade or subscribe to apply for more roles.";
@@ -203,7 +204,7 @@ const create = async (data, requester) => {
     type: "application_created",
     title: "Application Submitted",
     body: `Your application for "${appTitle}" has been successfully submitted.`
-  }).catch(() => {});
+  }).catch(logNotifyFailure("application_created"));
 
   if (application.job && application.job.companyId) {
     notificationService.notifyCompanyUsers({
@@ -211,7 +212,7 @@ const create = async (data, requester) => {
       type: "application_received",
       title: "New Application Received",
       body: `${application.user?.name || "A candidate"} applied for "${application.job.title}".`
-    }).catch(() => {});
+    }).catch(logNotifyFailure("application_received"));
   }
 
   notificationService.notifyRoles({
@@ -219,7 +220,7 @@ const create = async (data, requester) => {
     type: "application_created",
     title: "New Application",
     body: `${application.user?.name || "Candidate"} applied for "${appTitle}".`
-  }).catch(() => {});
+  }).catch(logNotifyFailure("application_created"));
 
   return getById(application.id, requester);
 };
@@ -270,7 +271,7 @@ const createLinkRequest = async (data, requester) => {
     type: "link_request_received",
     title: "New Job Link Request",
     body: `${user.name} submitted a job link for review: ${data.jobLinkRequest.substring(0, 80)}...`
-  }).catch(() => {});
+  }).catch(logNotifyFailure("link_request_received"));
 
   // Notify candidate of submission
   notificationService.notifyUser({
@@ -278,7 +279,7 @@ const createLinkRequest = async (data, requester) => {
     type: "link_request_submitted",
     title: "Job Link Submitted",
     body: "Your job link has been sent to our operator team for a fit review. We'll notify you once the assessment is ready."
-  }).catch(() => {});
+  }).catch(logNotifyFailure("link_request_submitted"));
 
   return getById(application.id, requester);
 };
@@ -315,7 +316,7 @@ const submitFitReview = async (id, data, requester) => {
     type: "fit_review_received",
     title: "Fit Assessment Ready!",
     body: `Your operator has reviewed your job link and given a fit score of ${data.fitScore}%. Open your applications to review and confirm your application.`
-  }).catch(() => {});
+  }).catch(logNotifyFailure("fit_review_received"));
 
   activityLogger.activity("Fit review submitted by operator", {
     applicationId: id,
@@ -370,7 +371,7 @@ const confirmApply = async (id, requester) => {
     type: "candidate_confirmed_apply",
     title: "Candidate Confirmed Application",
     body: `${user.name} confirmed their application after reviewing the fit assessment (Score: ${updated.fitScore}%).`
-  }).catch(() => {});
+  }).catch(logNotifyFailure("candidate_confirmed_apply"));
 
   // Notify candidate
   notificationService.notifyUser({
@@ -378,7 +379,7 @@ const confirmApply = async (id, requester) => {
     type: "application_confirmed",
     title: "Application Confirmed!",
     body: `You've successfully applied! An operator will now process your application.`
-  }).catch(() => {});
+  }).catch(logNotifyFailure("application_confirmed"));
 
   if (updated.staff) {
     notificationService.notifyUser({
@@ -386,7 +387,7 @@ const confirmApply = async (id, requester) => {
       type: "candidate_confirmed_apply",
       title: "Candidate Confirmed",
       body: `${user.name} confirmed their application. Please proceed with processing.`
-    }).catch(() => {});
+    }).catch(logNotifyFailure("candidate_confirmed_apply"));
   }
 
   activityLogger.activity("Candidate confirmed application after fit review", {
@@ -412,7 +413,7 @@ const sendStatusUpdateEmail = (application, previousStatus) => {
     templateKey: "application_status",
     vars: { name: application.user.name, title, status: application.status },
     fallback: { subject, body },
-  }).catch(() => {});
+  }).catch(logNotifyFailure("notification"));
 
   // System Notification for Candidate
   notificationService.notifyUser({
@@ -420,7 +421,7 @@ const sendStatusUpdateEmail = (application, previousStatus) => {
     type: "application_status_changed",
     title: "Application Status Updated",
     body: `Your application status for "${title}" was updated to: ${application.status}.`
-  }).catch(() => {});
+  }).catch(logNotifyFailure("application_status_changed"));
 
   // Notification for Company if applicable
   if (application.job && application.job.companyId) {
@@ -429,7 +430,7 @@ const sendStatusUpdateEmail = (application, previousStatus) => {
       type: "application_status_changed",
       title: "Application Status Changed",
       body: `Candidate ${application.user?.name}'s application for "${application.job.title}" is now: ${application.status}.`
-    }).catch(() => {});
+    }).catch(logNotifyFailure("application_status_changed"));
   }
 };
 
@@ -442,9 +443,9 @@ const notifyStaffOfDecision = (application, approved) => {
   const subject = `Application ${decision}: ${title}`;
   const body = `${application.user.name} has ${decision} the recommendation for ${title}.`;
 
-  sendEmail({ to: application.staff.email, subject, body }).catch(() => {});
+  sendEmail({ to: application.staff.email, subject, body }).catch(logNotifyFailure("application_status_changed"));
   if (application.staff.phone) {
-    sendSms({ phone: application.staff.phone, message: `${subject}. ${body}` }).catch(() => {});
+    sendSms({ phone: application.staff.phone, message: `${subject}. ${body}` }).catch(logNotifyFailure("application_status_changed"));
   }
 
   notificationService.notifyUser({
@@ -452,7 +453,7 @@ const notifyStaffOfDecision = (application, approved) => {
     type: "candidate_decision",
     title: `Candidate ${decision.toUpperCase()} Recommendation`,
     body: `${application.user.name} ${decision} the recommendation for "${title}".`
-  }).catch(() => {});
+  }).catch(logNotifyFailure("candidate_decision"));
 };
 
 const setCandidateApproval = async (id, requester, approved, comment) => {
@@ -534,7 +535,7 @@ const bookApplication = async (id, operatorId) => {
     type: "operator_assigned",
     title: "Operator Assigned",
     body: `Operator ${operator.name} has been assigned to review your application.`
-  }).catch(() => {});
+  }).catch(logNotifyFailure("operator_assigned"));
 
   return updated;
 };
@@ -560,7 +561,7 @@ const setQcApproval = async (id, approved, requester) => {
     type: "qc_approval_updated",
     title: "Quality Check Update",
     body: `QC approval status for your application "${title}" has been updated to: ${approved ? "PASSED" : "PENDING/FAILED"}.`
-  }).catch(() => {});
+  }).catch(logNotifyFailure("qc_approval_updated"));
 
   return updated;
 };
