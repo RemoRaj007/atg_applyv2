@@ -26,6 +26,12 @@ export interface AIOperator {
   updatedAt: string;
 }
 
+export interface DiscoveryRunResult {
+  matches: AnonymousJobMatch[];
+  marketSearchUnavailable: boolean;
+  message?: string;
+}
+
 export interface AnonymousJobMatch {
   id: number;
   profileId: number;
@@ -99,10 +105,17 @@ export const anonymousDiscoveryApi = {
     return data.data;
   },
 
-  runDiscovery: async (): Promise<AnonymousJobMatch[]> => {
+  runDiscovery: async (): Promise<DiscoveryRunResult> => {
     const { data } = await apiClient.post('/anonymous-discovery/run');
     if (!data.status) throw new Error(data.message || 'Failed to run job discovery');
-    return data.data;
+    return {
+      matches: data.data,
+      // Set when the upstream market search could not be reached. The server
+      // used to substitute invented listings here; it now says so instead, and
+      // leaves any existing matches in place.
+      marketSearchUnavailable: Boolean(data.marketSearchUnavailable),
+      message: data.message,
+    };
   },
 
   // Admin/Operator methods

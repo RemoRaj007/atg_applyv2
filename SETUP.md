@@ -87,6 +87,13 @@ FRONTEND_URL=http://localhost:5173,http://localhost:5174
 
 APIFY_API_KEY=
 
+# Local-only. Lets anonymous job discovery serve a canned set of invented
+# listings when APIFY_API_KEY is missing or the scrape fails, so the feature is
+# demoable without a key. The jobs are not real and the UI links them as if they
+# were, so never set this in a deployed environment — without it, a failed
+# search reports itself as unavailable instead.
+ALLOW_MOCK_JOB_DISCOVERY=false
+
 SMS_API_URL=
 SMS_SID=
 SMS_USERNAME=

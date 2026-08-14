@@ -130,9 +130,18 @@ export default function AnonymousJobDiscovery() {
     setIsRunning(true);
     setMessage(null);
     try {
-      const newMatches = await anonymousDiscoveryApi.runDiscovery();
-      setMatches(newMatches);
-      setMessage({ type: 'success', text: `Scraping & AI Matching Completed! Found ${newMatches.length} matches.` });
+      const result = await anonymousDiscoveryApi.runDiscovery();
+      if (result.marketSearchUnavailable) {
+        // No search ran, so the existing matches are still the best we have —
+        // don't blank the list to show an empty result.
+        setMessage({
+          type: 'error',
+          text: result.message || 'Market search is unavailable right now. Please try again later.',
+        });
+        return;
+      }
+      setMatches(result.matches);
+      setMessage({ type: 'success', text: `Scraping & AI Matching Completed! Found ${result.matches.length} matches.` });
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message || 'Error running discovery scraper.' });
     } finally {

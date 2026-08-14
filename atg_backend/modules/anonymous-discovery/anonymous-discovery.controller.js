@@ -93,8 +93,15 @@ const runDiscovery = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const profile = await anonymousDiscoveryService.getOrCreateProfile(userId);
-    const matches = await anonymousDiscoveryService.runJobDiscovery(profile.id);
-    res.json({ status: true, data: matches, message: `Scraper executed successfully! Found ${matches.length} job matches.` });
+    const { matches, marketSearchUnavailable } = await anonymousDiscoveryService.runJobDiscovery(profile.id);
+    res.json({
+      status: true,
+      data: matches,
+      marketSearchUnavailable,
+      message: marketSearchUnavailable
+        ? "Market search is unavailable right now. No new matches were retrieved — your existing matches are unchanged."
+        : `Scraper executed successfully! Found ${matches.length} job matches.`,
+    });
   } catch (err) {
     next(err);
   }
@@ -113,8 +120,15 @@ const adminGetAllProfiles = async (req, res, next) => {
 const adminRunDiscoveryForProfile = async (req, res, next) => {
   try {
     const profileId = parseInt(req.params.profileId, 10);
-    const matches = await anonymousDiscoveryService.runJobDiscovery(profileId);
-    res.json({ status: true, data: matches, message: `Operator ran discovery job for profile #${profileId}. Found ${matches.length} matches.` });
+    const { matches, marketSearchUnavailable } = await anonymousDiscoveryService.runJobDiscovery(profileId);
+    res.json({
+      status: true,
+      data: matches,
+      marketSearchUnavailable,
+      message: marketSearchUnavailable
+        ? `Market search is unavailable right now. No matches were retrieved for profile #${profileId}.`
+        : `Operator ran discovery job for profile #${profileId}. Found ${matches.length} matches.`,
+    });
   } catch (err) {
     next(err);
   }
