@@ -1,6 +1,7 @@
 const asyncHandler = require("../../utils/asyncHandler");
 const { sendSuccess } = require("../../utils/apiResponse");
 const jobService = require("./job.service");
+const jobImportService = require("./jobImport.service");
 
 const list = asyncHandler(async (req, res) => {
   const jobs = await jobService.list(req.user);
@@ -38,4 +39,9 @@ const getRecommendations = asyncHandler(async (req, res) => {
   sendSuccess(res, { message: "Recommendations retrieved", data: recommendations });
 });
 
-module.exports = { list, getById, create, update, approve, remove, getRecommendations };
+const importJobs = asyncHandler(async (req, res) => {
+  const summary = await jobImportService.importJobs(req.body, req.user);
+  sendSuccess(res, { message: "Jobs imported", data: summary });
+});
+
+module.exports = { list, getById, create, update, approve, remove, getRecommendations, importJobs };
