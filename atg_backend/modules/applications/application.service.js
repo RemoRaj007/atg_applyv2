@@ -1,11 +1,21 @@
 const { prisma } = require("../../config/db");
 const ApiError = require("../../utils/ApiError");
 const { activityLogger } = require("../../config/atg_logger");
-const { sendEmail } = require("../notifications/email.service");
+const { sendEmail, sendTemplatedEmail } = require("../notifications/email.service");
 const { sendSms } = require("../notifications/sms.service");
 const { matchResumeToJob } = require("../../utils/apify.service");
 const { calculateFitScore, loadCandidateData } = require("../jobs/fitScore.service");
 const notificationService = require("../notifications/notification.service");
+
+const QUOTA_EXHAUSTED =
+  "You have reached your application limit. Please upgrade or subscribe to apply for more roles.";
+
+// The claim is `UPDATE ... SET appsUsed = appsUsed + 1 WHERE appsUsed < appsTotal`,
+// so the database decides who gets the last slot. A count of 0 means the row no
+// longer satisfied the condition — someone else took it between the read and here.
+const claimQuotaSlot = (result) => {
+  if (result.count === 0) throw ApiError.badRequest(QUOTA_EXHAUSTED);
+};
 
 const getInclude = (requester) => {
   const role = requester?.role || "candidate";
@@ -56,7 +66,10 @@ const getById = async (id, requester) => {
   if (requester.role === "candidate" && application.userId !== requester.id) {
     throw ApiError.forbidden("You do not have access to this application");
   }
-  if (requester.role === "company" && application.job && application.job.companyId !== requester.companyId) {
+  // A company is only ever entitled to applications against its own postings.
+  // Guarding on `application.job` being present let scholarship applications and
+  // job-link requests — which carry no job — through the check entirely.
+  if (requester.role === "company" && application.job?.companyId !== requester.companyId) {
     throw ApiError.forbidden("You do not have access to this application");
   }
   return application;
@@ -127,12 +140,24 @@ const create = async (data, requester) => {
     console.error("Error matching resume to job:", err);
   }
 
-  const application = await prisma.candidateApplication.create({ data: applicationData, include: getInclude(requester) });
+  // Claiming the slot and creating the row happen together, and the claim is a
+  // single conditional UPDATE. Reading appsUsed and incrementing it in a separate
+  // statement let two concurrent requests both observe the same under-quota value
+  // and both proceed, so a candidate could spend more applications than they had.
+  const application = await prisma.$transaction(async (tx) => {
+    if (user.role === "candidate") {
+      claimQuotaSlot(await tx.user.updateMany({
+        where: { id: applicationData.userId, appsUsed: { lt: prisma.user.fields.appsTotal } },
+        data: { appsUsed: { increment: 1 } },
+      }));
+    } else {
+      await tx.user.update({
+        where: { id: applicationData.userId },
+        data: { appsUsed: { increment: 1 } },
+      });
+    }
 
-  // Increment user's appsUsed count
-  await prisma.user.update({
-    where: { id: application.userId },
-    data: { appsUsed: { increment: 1 } },
+    return tx.candidateApplication.create({ data: applicationData, include: getInclude(requester) });
   });
 
   if (candidateComment && candidateComment.trim()) {
@@ -300,27 +325,27 @@ const confirmApply = async (id, requester) => {
     throw ApiError.badRequest("You can only confirm applications that have been reviewed by an operator");
   }
 
-  // Check quota BEFORE incrementing
   const user = await prisma.user.findUnique({ where: { id: requester.id } });
   if (!user) throw ApiError.notFound("User not found");
-  if (user.appsUsed >= user.appsTotal) {
-    throw ApiError.badRequest("You have reached your application limit. Please upgrade or subscribe to apply for more roles.");
-  }
 
-  const updated = await prisma.candidateApplication.update({
-    where: { id },
-    data: {
-      status: "candidate_applied",
-      appliedAt: new Date(),
-      candidateApproval: true,
-    },
-    include: getInclude(requester),
-  });
+  // Claim the slot and flip the status together. Checking the quota and then
+  // incrementing it in a second statement let two confirmations racing on the
+  // last slot both pass the check.
+  const updated = await prisma.$transaction(async (tx) => {
+    claimQuotaSlot(await tx.user.updateMany({
+      where: { id: requester.id, appsUsed: { lt: prisma.user.fields.appsTotal } },
+      data: { appsUsed: { increment: 1 } },
+    }));
 
-  // NOW increment appsUsed
-  await prisma.user.update({
-    where: { id: requester.id },
-    data: { appsUsed: { increment: 1 } },
+    return tx.candidateApplication.update({
+      where: { id },
+      data: {
+        status: "candidate_applied",
+        appliedAt: new Date(),
+        candidateApproval: true,
+      },
+      include: getInclude(requester),
+    });
   });
 
   // Notify operators/admins
@@ -366,10 +391,11 @@ const sendStatusUpdateEmail = (application, previousStatus) => {
   const subject = `[ATG Apply] Application Status Updated: ${title}`;
   const body = `Hello ${application.user.name},\n\nYour application status for "${title}" has been updated to: ${application.status}.\n\nBest regards,\nATG Apply Team`;
 
-  sendEmail({
+  sendTemplatedEmail({
     to: application.user.email,
-    subject,
-    body,
+    templateKey: "application_status",
+    vars: { name: application.user.name, title, status: application.status },
+    fallback: { subject, body },
   }).catch(() => {});
 
   // System Notification for Candidate

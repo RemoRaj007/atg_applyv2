@@ -5,6 +5,7 @@ import CandidateHeader from './CandidateHeader';
 import Footer from './AtgFooter';
 import BackButton from '../ui/BackButton';
 import { useSession } from '../../hooks/useSession';
+import MaintenanceBanner from './MaintenanceBanner';
 
 export default function Layout() {
   const { user, logout } = useSession();
@@ -17,6 +18,7 @@ export default function Layout() {
     const isProfilePage = location.pathname.includes('/profile');
     return (
       <div className="min-h-screen flex flex-col bg-[#0f172a] text-slate-100">
+        <MaintenanceBanner />
         <CandidateHeader />
 
         {/* Content Area */}
@@ -46,6 +48,7 @@ export default function Layout() {
     <div className="flex min-h-screen bg-[#0f172a] text-slate-100 font-sans">
       <Sidebar user={user} onLogout={logout} />
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        <MaintenanceBanner />
         <Header title={`${user.role} workspace`} />
         <div className="flex-1 flex flex-col justify-between overflow-y-auto">
           <main className="p-8 flex-1">

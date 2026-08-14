@@ -1,12 +1,14 @@
 import BackButton from '../components/ui/BackButton';
+import MarketingHeader from '../components/layout/MarketingHeader';
 import { useTranslation } from 'react-i18next';
 
 const TermsOfServicePage = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-slate-100 font-sans py-16 px-8">
-      <div className="max-w-3xl mx-auto bg-slate-800/90 border border-slate-700 p-10 rounded-2xl shadow-2xl">
+    <div className="min-h-screen bg-[#0f172a] text-slate-100 font-sans">
+      <MarketingHeader />
+      <div className="max-w-3xl mx-auto bg-slate-800/90 border border-slate-700 p-10 rounded-2xl shadow-2xl my-16 mx-8 md:mx-auto">
         <div className="mb-8">
           <BackButton label={t('common.backToHome')} to="/" variant="dark" />
         </div>

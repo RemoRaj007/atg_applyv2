@@ -19,7 +19,12 @@
     "helpSupport": "Ayuda y Soporte",
     "logout": "Cerrar sesión",
     "applicationsLeft": "Postulaciones restantes",
-    "buyMore": "Comprar más"
+    "buyMore": "Comprar más",
+    "jobDiscovery": "Descubrimiento de empleo",
+    "systemLogs": "Registros del sistema",
+    "siteContent": "Contenido del sitio",
+    "siteSettings": "Ajustes del sitio",
+    "emailTemplates": "Plantillas de correo"
   },
   "footer": {
     "tagline": "Servicio de postulación laboral gestionado por personas. Selección basada en investigación y envío manual.",
@@ -141,5 +146,26 @@
     "save": "Guardar",
     "cancel": "Cancelar",
     "loading": "Cargando..."
+  },
+  "contactPage": {
+    "title": "Ponte en contacto",
+    "subtitle": "Preguntas sobre precios, tu postulación o cualquier otra cosa — envíanos un mensaje.",
+    "nameLabel": "Nombre completo",
+    "namePlaceholder": "Tu nombre",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "subjectLabel": "Asunto",
+    "subjectPlaceholder": "¿De qué se trata?",
+    "messageLabel": "Mensaje",
+    "messagePlaceholder": "Cuéntanos cómo podemos ayudarte...",
+    "sendBtn": "Enviar mensaje",
+    "sending": "Enviando...",
+    "successTitle": "Mensaje enviado",
+    "successDesc": "Gracias por contactarnos — nuestro equipo responderá por correo pronto.",
+    "errorName": "Por favor ingresa tu nombre",
+    "errorEmail": "Por favor ingresa un correo electrónico válido",
+    "errorSubject": "Por favor ingresa un asunto",
+    "errorMessage": "Por favor ingresa un mensaje de al menos 10 caracteres",
+    "errorGeneric": "Algo salió mal. Inténtalo de nuevo."
   }
 }

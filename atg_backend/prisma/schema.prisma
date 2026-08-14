@@ -7,26 +7,41 @@ generator client {
 }
 
 model User {
-  id          Int      @id @default(autoincrement())
-  email       String   @unique
-  name        String
-  password    String
-  phone       String?
-  country     String?
-  city        String?
-  role        String   @default("candidate") // admin, operator, candidate, visitor, company
-  pkg         String   @default("Trial") // Trial, Premium, Professional
-  appsUsed    Int      @default(0)
-  appsTotal   Int      @default(2)
-  capacity    Int      @default(10) // operators only: max concurrent applications they can staff
-  createdAt   DateTime @default(now())
-  d_status    String   @default("active")
-  isLegendary Boolean  @default(false)
-  profilePhoto String?
-  bio          String?  @db.Text
-  department   String?
+  id                   Int       @id @default(autoincrement())
+  email                String    @unique
+  name                 String
+  // Optional: users who only ever sign in through Google or Microsoft have no
+  // password. Previously required, which forced the social-login path to
+  // fabricate and hash a random password for every SSO user.
+  password             String?
+  phone                String?
+  country              String?
+  city                 String?
+  role                 String    @default("candidate") // admin, operator, candidate, visitor, company
+  pkg                  String    @default("Trial") // Trial, Premium, Professional
+  appsUsed             Int       @default(0)
+  appsTotal            Int       @default(2)
+  capacity             Int       @default(10) // operators only: max concurrent applications they can staff
+  createdAt            DateTime  @default(now())
+  d_status             String    @default("active")
+  isLegendary          Boolean   @default(false)
+  profilePhoto         String?
+  bio                  String?   @db.Text
+  department           String?
   resetPasswordToken   String?
   resetPasswordExpires DateTime?
+
+  emailVerificationToken   String?
+  emailVerificationExpires DateTime?
+
+  // Federated identity. provider is "google" | "microsoft" (null for local
+  // password accounts); externalId is the IdP's stable subject — Google's `sub`
+  // or Entra's `oid` — which survives the user changing their email address.
+  // emailVerified records whether the address was verified by the IdP; accounts
+  // are only auto-linked by email when it was.
+  provider      String?
+  externalId    String?
+  emailVerified Boolean @default(false)
 
   // Relations
   applications CandidateApplication[] @relation("CandidateApps")
@@ -52,6 +67,11 @@ model User {
   references             UserReference[]
   comments               ApplicationComment[]
   discoveryProfile       AnonymousDiscoveryProfile?
+
+  @@unique([provider, externalId])
+  @@index([companyId])
+  @@index([role, d_status])
+  @@index([d_status])
 }
 
 model Company {
@@ -67,6 +87,8 @@ model Company {
 
   users User[]
   jobs  Job[]
+
+  @@index([d_status])
 }
 
 model Job {
@@ -96,6 +118,10 @@ model Job {
   payments     Payment[]              @relation("JobPayments")
   formColumns  JobFormColumn[]
   skills       JobSkill[]
+
+  @@index([companyId])
+  @@index([jobRoleId])
+  @@index([d_status, createdAt])
 }
 
 model JobRole {
@@ -108,32 +134,35 @@ model JobRole {
   jobRoleSkills JobRoleSkill[]
   jobs          Job[]
   userJobRoles  UserJobRole[]
+
+  @@index([d_status])
+  @@index([status])
 }
 
 model CandidateApplication {
-  id                Int       @id @default(autoincrement())
-  userId            Int
-  jobId             Int?
-  scholarshipId     Int?
-  staffId           Int?
-  fitScore          Float?
-  successRate       Float?
-  reason            String?
-  status            String    @default("pending_approval")
-  candidateApproval Boolean   @default(false)
-  qcApproval        Boolean   @default(false)
-  proof             String?
-  proofRef          String?
-  internalNotes     String?
-  appliedAt         DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id                      Int       @id @default(autoincrement())
+  userId                  Int
+  jobId                   Int?
+  scholarshipId           Int?
+  staffId                 Int?
+  fitScore                Float?
+  successRate             Float?
+  reason                  String?
+  status                  String    @default("pending_approval")
+  candidateApproval       Boolean   @default(false)
+  qcApproval              Boolean   @default(false)
+  proof                   String?
+  proofRef                String?
+  internalNotes           String?
+  appliedAt               DateTime?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
   candidateComment        String?   @db.Text
   operatorDocNotes        String?   @db.Text
   candidateFeedback       String?   @db.Text
   candidateFeedbackRating Int?
-  jobLinkRequest          String?   @db.Text  // candidate-submitted external job URL for link-review flow
-  operatorFitNote         String?   @db.Text  // operator's written fit assessment for link requests
+  jobLinkRequest          String?   @db.Text // candidate-submitted external job URL for link-review flow
+  operatorFitNote         String?   @db.Text // operator's written fit assessment for link requests
   d_status                String    @default("active")
 
   user        User                 @relation("CandidateApps", fields: [userId], references: [id])
@@ -142,6 +171,12 @@ model CandidateApplication {
   staff       User?                @relation("StaffedApps", fields: [staffId], references: [id])
   formValues  JobFormValue[]
   comments    ApplicationComment[]
+
+  @@index([userId, d_status])
+  @@index([jobId])
+  @@index([scholarshipId])
+  @@index([staffId])
+  @@index([status])
 }
 
 model Payment {
@@ -163,6 +198,10 @@ model Payment {
 
   jobId Int?
   job   Job? @relation("JobPayments", fields: [jobId], references: [id])
+
+  @@index([userId, d_status])
+  @@index([jobId])
+  @@index([status])
 }
 
 model PaymentOption {
@@ -180,7 +219,6 @@ model PaymentOption {
   d_status    String   @default("active")
 }
 
-
 model Notification {
   id        Int      @id @default(autoincrement())
   userId    Int
@@ -190,18 +228,23 @@ model Notification {
   unread    Boolean  @default(true)
   createdAt DateTime @default(now())
   d_status  String   @default("active")
+
+  @@index([userId, unread])
+  @@index([userId, createdAt])
 }
 
 model Scholarship {
-  id           Int                  @id @default(autoincrement())
+  id           Int                    @id @default(autoincrement())
   title        String
   provider     String
   amount       Float?
   deadline     DateTime?
   description  String?
-  createdAt    DateTime             @default(now())
-  d_status     String               @default("active")
+  createdAt    DateTime               @default(now())
+  d_status     String                 @default("active")
   applications CandidateApplication[]
+
+  @@index([d_status])
 }
 
 model LogEntry {
@@ -215,6 +258,7 @@ model LogEntry {
   d_status  String   @default("active")
 
   @@index([category, createdAt])
+  @@index([userId])
 }
 
 model ChangeRequest {
@@ -229,6 +273,10 @@ model ChangeRequest {
   d_status    String   @default("active")
 
   createdBy User @relation("CreatedRequests", fields: [createdById], references: [id])
+
+  @@index([createdById])
+  @@index([targetId])
+  @@index([status])
 }
 
 model ProfileColumn {
@@ -259,6 +307,7 @@ model ProfileValue {
   column ProfileColumn @relation(fields: [columnId], references: [id])
 
   @@unique([userId, columnId])
+  @@index([columnId])
 }
 
 model JobFormColumn {
@@ -276,6 +325,8 @@ model JobFormColumn {
 
   job    Job            @relation(fields: [jobId], references: [id])
   values JobFormValue[]
+
+  @@index([jobId])
 }
 
 model JobFormValue {
@@ -291,6 +342,7 @@ model JobFormValue {
   column      JobFormColumn        @relation(fields: [columnId], references: [id])
 
   @@unique([applicationId, columnId])
+  @@index([columnId])
 }
 
 model Skill {
@@ -318,6 +370,7 @@ model UserSkill {
   skill Skill @relation(fields: [skillId], references: [id])
 
   @@unique([userId, skillId])
+  @@index([skillId])
 }
 
 model JobSkill {
@@ -332,6 +385,7 @@ model JobSkill {
   skill Skill @relation(fields: [skillId], references: [id])
 
   @@unique([jobId, skillId])
+  @@index([skillId])
 }
 
 model JobRoleSkill {
@@ -345,6 +399,7 @@ model JobRoleSkill {
   skill   Skill   @relation(fields: [skillId], references: [id])
 
   @@unique([jobRoleId, skillId])
+  @@index([skillId])
 }
 
 model UserJobRole {
@@ -358,21 +413,24 @@ model UserJobRole {
   jobRole JobRole @relation(fields: [jobRoleId], references: [id])
 
   @@unique([userId, jobRoleId])
+  @@index([jobRoleId])
 }
 
 model ApplicationComment {
-  id            Int                  @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   applicationId Int
   senderId      Int
-  text          String               @db.Text
-  type          String               @default("public") // "public" or "internal"
-  createdAt     DateTime             @default(now())
-  d_status      String               @default("active")
+  text          String   @db.Text
+  type          String   @default("public") // "public" or "internal"
+  createdAt     DateTime @default(now())
+  d_status      String   @default("active")
 
-  application   CandidateApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  sender        User                 @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  application CandidateApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  sender      User                 @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([applicationId])
+  @@index([senderId])
 }
-
 
 model UserProfile {
   id                     Int       @id @default(autoincrement())
@@ -408,6 +466,8 @@ model UserPhone {
   d_status    String   @default("active")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model UserAddress {
@@ -424,6 +484,8 @@ model UserAddress {
   d_status   String   @default("active")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model UserAcademicQualification {
@@ -440,6 +502,8 @@ model UserAcademicQualification {
   d_status        String   @default("active")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model UserLanguage {
@@ -452,6 +516,8 @@ model UserLanguage {
   d_status  String   @default("active")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model UserItSkill {
@@ -463,6 +529,8 @@ model UserItSkill {
   d_status    String   @default("active")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model UserDocument {
@@ -477,6 +545,8 @@ model UserDocument {
   d_status  String   @default("active")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model UserOtherQualification {
@@ -488,6 +558,8 @@ model UserOtherQualification {
   d_status    String   @default("active")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model UserExperience {
@@ -496,7 +568,7 @@ model UserExperience {
   jobTitle         String
   employer         String
   location         String?
-  employmentType   String?   // Full-time, Part-time, Contract, Internship, Freelance
+  employmentType   String? // Full-time, Part-time, Contract, Internship, Freelance
   startDate        DateTime
   endDate          DateTime?
   isCurrent        Boolean   @default(false)
@@ -507,13 +579,15 @@ model UserExperience {
   d_status         String    @default("active")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model UserReference {
   id           Int      @id @default(autoincrement())
   userId       Int
   refName      String
-  relationship String   // e.g., Manager, Colleague, Professor
+  relationship String // e.g., Manager, Colleague, Professor
   organization String?
   position     String?
   email        String?
@@ -523,56 +597,126 @@ model UserReference {
   d_status     String   @default("active")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model AnonymousDiscoveryProfile {
-  id               Int                 @id @default(autoincrement())
-  userId           Int                 @unique
+  id               Int      @id @default(autoincrement())
+  userId           Int      @unique
   industry         String?
   targetRole       String?
-  remotePreference String?             // remote, hybrid, onsite, any
+  remotePreference String? // remote, hybrid, onsite, any
   salaryMin        Float?
   salaryMax        Float?
-  skillsKeywords   String?             @db.Text // e.g. "React, Node.js, AWS"
+  skillsKeywords   String?  @db.Text // e.g. "React, Node.js, AWS"
   experienceYears  Int?
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
-  d_status         String              @default("active")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  d_status         String   @default("active")
 
-  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  operators        AIOperator[]
-  matches          AnonymousJobMatch[]
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  operators AIOperator[]
+  matches   AnonymousJobMatch[]
 }
 
 model AIOperator {
-  id           Int                       @id @default(autoincrement())
+  id           Int       @id @default(autoincrement())
   profileId    Int
   name         String
-  isActive     Boolean                   @default(true)
-  runFrequency String                    @default("daily") // hourly, daily, weekly, manual
+  isActive     Boolean   @default(true)
+  runFrequency String    @default("daily") // hourly, daily, weekly, manual
   lastRunAt    DateTime?
-  createdAt    DateTime                  @default(now())
-  updatedAt    DateTime                  @updatedAt
-  d_status     String                    @default("active")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  d_status     String    @default("active")
 
-  profile      AnonymousDiscoveryProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profile AnonymousDiscoveryProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
 }
 
 model AnonymousJobMatch {
-  id           Int                       @id @default(autoincrement())
-  profileId    Int
-  jobTitle     String
-  companyName  String?
-  location     String?
-  jobUrl       String?                   @db.Text
-  description  String?                   @db.Text
-  fitScore     Float
-  fitReason    String?                   @db.Text
-  status       String                    @default("new") // new, bookmarked, applied, ignored
-  createdAt    DateTime                  @default(now())
-  updatedAt    DateTime                  @updatedAt
-  d_status     String                    @default("active")
+  id          Int      @id @default(autoincrement())
+  profileId   Int
+  jobTitle    String
+  companyName String?
+  location    String?
+  jobUrl      String?  @db.Text
+  description String?  @db.Text
+  fitScore    Float
+  fitReason   String?  @db.Text
+  status      String   @default("new") // new, bookmarked, applied, ignored
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  d_status    String   @default("active")
 
-  profile      AnonymousDiscoveryProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  profile AnonymousDiscoveryProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+  @@index([profileId, createdAt])
 }
 
+// ─── Content management ──────────────────────────────────────────────────────
+// Everything below exists so an admin can change what the app says without a
+// code deploy. Values are stored and rendered as plain text or Markdown, never
+// raw HTML: the public site renders them without dangerouslySetInnerHTML, so a
+// compromised admin account cannot turn a content field into stored XSS.
+
+// Key/value configuration: branding, contact details, social links, and the
+// numeric defaults that were previously constants or environment variables.
+model SiteSetting {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique
+  value       String   @db.Text
+  valueType   String   @default("text") // text, longtext, number, boolean, url, email, color
+  group       String   @default("general") // general, branding, contact, social, limits
+  label       String
+  description String?  @db.Text
+  // Only rows flagged public are served on the unauthenticated endpoint the
+  // marketing site reads. Anything operational stays admin-only.
+  isPublic    Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  d_status    String   @default("active")
+
+  @@index([group, sortOrder])
+}
+
+// Copy for the public marketing pages, addressed by page + key so a page can
+// gain a field without a migration.
+model ContentBlock {
+  id        Int      @id @default(autoincrement())
+  page      String // landing, pricing, how-it-works, privacy, terms, contact
+  key       String // hero.title, hero.subtitle, section.1.body, …
+  value     String   @db.Text
+  valueType String   @default("text") // text, longtext, markdown, url, image
+  label     String
+  helpText  String?  @db.Text
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  d_status  String   @default("active")
+
+  @@unique([page, key])
+  @@index([page, sortOrder])
+}
+
+// Subject/body for the transactional mail the services send. Bodies are plain
+// text with {{placeholder}} substitution — see modules/notifications/email.service.js.
+model EmailTemplate {
+  id          Int      @id @default(autoincrement())
+  key         String   @unique // welcome, password_reset, application_status, notification, contact
+  name        String
+  subject     String
+  body        String   @db.Text
+  description String?  @db.Text
+  // JSON array of the placeholders this template may use. The editor shows them
+  // and the service refuses to substitute anything outside the list.
+  variables   String?  @db.Text
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  d_status    String   @default("active")
+}

@@ -15,6 +15,7 @@ import toast from 'react-hot-toast';
 import { userProfileApi } from '../../api/userProfileApi';
 import type { FullUserProfile } from '../../api/userProfileApi';
 import { Download, X, FileText, Clock, TrendingUp, Users } from 'lucide-react';
+import { getFileUrl } from '../../utils/fileUrl';
 
 // ─── Experience Calculator Helpers ──────────────────────────────────────────
 function calcMonths(startDate: string, endDate?: string, isCurrent?: boolean): number {
@@ -86,11 +87,6 @@ export default function OperatorUsers() {
   const [fullProfile, setFullProfile] = useState<FullUserProfile | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [viewDoc, setViewDoc] = useState<any>(null);
-
-  const getFileUrl = (url: string) => {
-    const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '');
-    return `${base}${url}`;
-  };
 
   useEffect(() => {
     if (viewUser && viewUser.role === 'candidate') {

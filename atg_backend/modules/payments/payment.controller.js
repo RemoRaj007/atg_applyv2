@@ -2,6 +2,7 @@ const asyncHandler = require("../../utils/asyncHandler");
 const { sendSuccess } = require("../../utils/apiResponse");
 const paymentService = require("./payment.service");
 const { toCsv } = require("../../utils/csv");
+const resolveFileUrl = require("../../utils/fileUrl");
 
 const list = asyncHandler(async (req, res) => {
   const payments = await paymentService.list(req.user);
@@ -16,7 +17,7 @@ const getById = asyncHandler(async (req, res) => {
 const create = asyncHandler(async (req, res) => {
   const data = { ...req.body };
   if (req.file) {
-    data.slipUrl = `/uploads/${req.file.filename}`;
+    data.slipUrl = resolveFileUrl(req.file);
   }
   const payment = await paymentService.create(data, req.user);
   sendSuccess(res, { statusCode: 201, message: "Payment created", data: { payment } });

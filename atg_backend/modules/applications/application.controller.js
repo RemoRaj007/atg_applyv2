@@ -2,6 +2,7 @@ const asyncHandler = require("../../utils/asyncHandler");
 const { sendSuccess } = require("../../utils/apiResponse");
 const { toCsv } = require("../../utils/csv");
 const applicationService = require("./application.service");
+const resolveFileUrl = require("../../utils/fileUrl");
 
 const list = asyncHandler(async (req, res) => {
   const applications = await applicationService.list(req.user, req.query);
@@ -53,10 +54,10 @@ const book = asyncHandler(async (req, res) => {
 
 const updateStatus = asyncHandler(async (req, res) => {
   if (req.files && req.files.length > 0) {
-    req.body.proof = req.files.map(f => `/uploads/${f.filename}`).join(",");
+    req.body.proof = req.files.map((f) => resolveFileUrl(f)).join(",");
     req.body.proofRef = req.files.map(f => f.originalname).join(",");
   } else if (req.file) {
-    req.body.proof = `/uploads/${req.file.filename}`;
+    req.body.proof = resolveFileUrl(req.file);
     req.body.proofRef = req.file.originalname;
   }
   
@@ -85,7 +86,10 @@ const remove = asyncHandler(async (req, res) => {
 });
 
 const exportCsv = asyncHandler(async (req, res) => {
-  const applications = await applicationService.exportAll();
+  // The requester must be passed through: exportAll narrows an operator to the
+  // applications they are staffed on, and without it every operator exported
+  // every candidate's record.
+  const applications = await applicationService.exportAll(req.user);
   const csv = toCsv(applications, [
     { label: "ID", value: (a) => a.id },
     { label: "Candidate", value: (a) => a.user.name },

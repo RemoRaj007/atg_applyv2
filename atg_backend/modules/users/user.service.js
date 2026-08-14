@@ -2,8 +2,11 @@ const argon2 = require("argon2");
 const { prisma } = require("../../config/db");
 const ApiError = require("../../utils/ApiError");
 const sanitizeUser = require("../../utils/sanitizeUser");
-const { activityLogger } = require("../../config/atg_logger");
+const { activityLogger, securityLogger } = require("../../config/atg_logger");
 const { isValidEmail, validatePasswordStrength, isValidPhone } = require("../../utils/validators");
+// Aliased: this module already exports a `verifyPassword` of its own (the
+// /me/verify-password handler), which shadowed the import outright.
+const { verifyPassword: checkPassword, isVerifiableHash } = require("../../utils/passwordHash");
 
 const list = async () => {
   const users = await prisma.user.findMany({ where: { d_status: "active" }, orderBy: { createdAt: "desc" } });
@@ -16,7 +19,26 @@ const getById = async (id) => {
   return sanitizeUser(user);
 };
 
-const create = async (data) => {
+// Roles an operator is allowed to touch. Operators sit below admins, so letting
+// them mint or edit admin/operator accounts would make the distinction
+// meaningless: an operator could create an admin, or reset a sitting admin's
+// password, and take over the platform.
+const OPERATOR_MANAGEABLE_ROLES = ["candidate", "company", "visitor"];
+
+const assertOperatorMayManage = (requester, targetRole, action) => {
+  if (requester?.role !== "operator") return;
+  if (!OPERATOR_MANAGEABLE_ROLES.includes(targetRole)) {
+    securityLogger.security(`Operator blocked from ${action} a privileged account`, {
+      operatorId: requester.id,
+      targetRole,
+    });
+    throw ApiError.forbidden("Operators cannot manage admin or operator accounts");
+  }
+};
+
+const create = async (data, requester) => {
+  assertOperatorMayManage(requester, data.role || "candidate", "creating");
+
   if (!isValidEmail(data.email)) {
     throw ApiError.badRequest("Invalid email address format (e.g. user@example.com)");
   }
@@ -37,13 +59,47 @@ const create = async (data) => {
   return sanitizeUser(user);
 };
 
-// requester may update their own profile; admin & operators may update any user's profile
+// requester may update their own profile; admins may update anyone; operators
+// may update the non-privileged accounts they support, but may not change roles
+// or reset another account's password.
 const update = async (id, data, requester) => {
   const target = await prisma.user.findFirst({ where: { id, d_status: "active" } });
   if (!target) throw ApiError.notFound("User not found");
 
-  if (requester.role !== "admin" && requester.role !== "operator" && requester.id !== id) {
+  const isSelf = requester.id === id;
+  if (requester.role !== "admin" && requester.role !== "operator" && !isSelf) {
     throw ApiError.forbidden("You can only update your own profile");
+  }
+
+  if (requester.role === "operator" && !isSelf) {
+    assertOperatorMayManage(requester, target.role, "editing");
+
+    if (data.role !== undefined) {
+      securityLogger.security("Operator blocked from changing a role", {
+        operatorId: requester.id,
+        targetId: id,
+        attemptedRole: data.role,
+      });
+      throw ApiError.forbidden("Only an admin can change a user's role");
+    }
+
+    if (data.password !== undefined) {
+      securityLogger.security("Operator blocked from resetting another account's password", {
+        operatorId: requester.id,
+        targetId: id,
+      });
+      throw ApiError.forbidden("Only an admin can set another user's password");
+    }
+  }
+
+  // Admins carry the broader schema, which permits setting someone else's
+  // password. That must not become a way to reset your *own* password without
+  // proving you know the current one — PUT /me/password exists for that.
+  if (isSelf && data.password !== undefined) {
+    securityLogger.security("Password change attempted through the profile endpoint", {
+      userId: requester.id,
+    });
+    throw ApiError.forbidden("Use the change-password endpoint to change your own password");
   }
 
   const updateData = { ...data };
@@ -64,9 +120,11 @@ const update = async (id, data, requester) => {
   return sanitizeUser(user);
 };
 
-const remove = async (id) => {
+const remove = async (id, requester) => {
   const target = await prisma.user.findFirst({ where: { id, d_status: "active" } });
   if (!target) throw ApiError.notFound("User not found");
+
+  assertOperatorMayManage(requester, target.role, "deleting");
 
   const dependentApplications = await prisma.candidateApplication.count({
     where: { OR: [{ userId: id }, { staffId: id }], d_status: "active" },
@@ -103,7 +161,29 @@ const changePassword = async (id, { oldPassword, newPassword }) => {
   const user = await prisma.user.findFirst({ where: { id, d_status: "active" } });
   if (!user) throw ApiError.notFound("User not found");
 
-  const valid = await argon2.verify(user.password, oldPassword);
+  // SSO-only accounts have no hash; argon2.verify throws on null, which
+  // surfaced as an opaque 500 instead of telling the user what to do.
+  if (!user.password) {
+    throw ApiError.badRequest(
+      "This account signs in through a provider and has no password yet. Use “Forgot password” to set one."
+    );
+  }
+
+  // A stored value argon2 cannot parse — a plaintext password, a truncated
+  // hash — made this endpoint answer 500 on the old-password check, which is
+  // what an admin changing their own password actually hit. It is a dead end
+  // rather than a mistyped password, so say so and point at the flow that can
+  // set a fresh hash.
+  if (!isVerifiableHash(user.password)) {
+    securityLogger.security("Change password blocked: stored password is not a usable hash", {
+      userId: user.id,
+    });
+    throw ApiError.badRequest(
+      "This account's stored password cannot be verified. Use “Forgot password” to set a new one."
+    );
+  }
+
+  const valid = await checkPassword(user.password, oldPassword, { userId: user.id });
   if (!valid) {
     throw ApiError.badRequest("Incorrect old password");
   }
@@ -119,7 +199,8 @@ const changePassword = async (id, { oldPassword, newPassword }) => {
 const verifyPassword = async (id, password) => {
   const user = await prisma.user.findFirst({ where: { id, d_status: "active" } });
   if (!user) throw ApiError.notFound("User not found");
-  return await argon2.verify(user.password, password);
+  if (!user.password) return false;
+  return await checkPassword(user.password, password, { userId: user.id });
 };
 
 module.exports = { list, getById, create, update, remove, exportAll, changePassword, verifyPassword };

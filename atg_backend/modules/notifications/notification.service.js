@@ -1,7 +1,7 @@
 const { prisma } = require("../../config/db");
 const ApiError = require("../../utils/ApiError");
 const { activityLogger } = require("../../config/atg_logger");
-const { sendEmail } = require("./email.service");
+const { sendTemplatedEmail } = require("./email.service");
 
 // Notifications are always scoped to the requester, even for admin/operator
 const list = async (requester) => {
@@ -23,10 +23,14 @@ const create = async (data) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: notification.userId } });
     if (user && user.email) {
-      await sendEmail({
+      await sendTemplatedEmail({
         to: user.email,
-        subject: `[ATG Apply] ${notification.title}`,
-        body: `Hello ${user.name},\n\n${notification.body}\n\nBest regards,\nATG Apply Team`,
+        templateKey: "notification",
+        vars: { name: user.name, title: notification.title, body: notification.body },
+        fallback: {
+          subject: `[ATG Apply] ${notification.title}`,
+          body: `Hello ${user.name},\n\n${notification.body}\n\nBest regards,\nATG Apply Team`,
+        },
       });
     }
   } catch (err) {
