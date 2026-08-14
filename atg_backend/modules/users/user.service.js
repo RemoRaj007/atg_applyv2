@@ -7,10 +7,44 @@ const { isValidEmail, validatePasswordStrength, isValidPhone } = require("../../
 // Aliased: this module already exports a `verifyPassword` of its own (the
 // /me/verify-password handler), which shadowed the import outright.
 const { verifyPassword: checkPassword, isVerifiableHash } = require("../../utils/passwordHash");
+const { parsePagination, paginated } = require("../../utils/pagination");
 
-const list = async () => {
-  const users = await prisma.user.findMany({ where: { d_status: "active" }, orderBy: { createdAt: "desc" } });
-  return users.map(sanitizeUser);
+const ROLES = ["admin", "operator", "candidate", "visitor", "company"];
+
+const list = async (query = {}) => {
+  const where = { d_status: "active" };
+
+  // Filtering has to happen in the database once the result is paginated:
+  // narrowing a page client-side would drop rows the caller asked for and never
+  // reach the ones on later pages.
+  if (query.role && ROLES.includes(String(query.role))) {
+    where.role = String(query.role);
+  }
+  if (query.search && String(query.search).trim()) {
+    const search = String(query.search).trim();
+    // `contains` is parameterised by Prisma, so this is not concatenated SQL.
+    where.OR = [
+      { name: { contains: search, mode: "insensitive" } },
+      { email: { contains: search, mode: "insensitive" } },
+      { pkg: { contains: search, mode: "insensitive" } },
+    ];
+  }
+
+  const pagination = parsePagination(query);
+
+  const findArgs = { where, orderBy: { createdAt: "desc" } };
+  if (pagination) {
+    findArgs.skip = pagination.skip;
+    findArgs.take = pagination.take;
+  }
+
+  const [users, total] = await Promise.all([
+    prisma.user.findMany(findArgs),
+    pagination ? prisma.user.count({ where }) : Promise.resolve(null),
+  ]);
+
+  const rows = users.map(sanitizeUser);
+  return paginated(rows, total === null ? rows.length : total, pagination);
 };
 
 const getById = async (id) => {

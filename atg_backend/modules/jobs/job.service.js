@@ -3,8 +3,9 @@ const ApiError = require("../../utils/ApiError");
 const { activityLogger } = require("../../config/atg_logger");
 const { annotateJobsWithFitScore } = require("./fitScore.service");
 const notificationService = require("../notifications/notification.service");
+const { parsePagination, paginated } = require("../../utils/pagination");
 
-const list = async (requester) => {
+const list = async (requester, query = {}) => {
   const where = { d_status: "active" };
   
   if (requester) {
@@ -17,7 +18,8 @@ const list = async (requester) => {
     where.status = "approved";
   }
 
-  const jobs = await prisma.job.findMany({
+  const pagination = parsePagination(query);
+  const findArgs = {
     where,
     orderBy: { createdAt: "desc" },
     // skills are included so the operator edit modal can prefill them
@@ -29,14 +31,25 @@ const list = async (requester) => {
         include: { skill: true },
       },
     },
-  });
-
-  // If candidate requesting, compute and attach comprehensive fitScore
-  if (requester && requester.role === "candidate") {
-    return await annotateJobsWithFitScore(jobs, requester.id);
+  };
+  if (pagination) {
+    findArgs.skip = pagination.skip;
+    findArgs.take = pagination.take;
   }
 
-  return jobs;
+  const [rows, total] = await Promise.all([
+    prisma.job.findMany(findArgs),
+    pagination ? prisma.job.count({ where }) : Promise.resolve(null),
+  ]);
+
+  // If candidate requesting, compute and attach comprehensive fitScore. Scoring
+  // only the current page is the point of paginating here — it loads candidate
+  // data per job.
+  const jobs = requester && requester.role === "candidate"
+    ? await annotateJobsWithFitScore(rows, requester.id)
+    : rows;
+
+  return paginated(jobs, total === null ? jobs.length : total, pagination);
 };
 
 const getById = async (id, requester) => {

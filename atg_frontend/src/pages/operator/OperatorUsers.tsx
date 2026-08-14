@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { userApi } from '../../api/userApi';
 import { requestApi } from '../../api/requestApi';
 import type { User } from '../../types/user.types';
@@ -47,10 +47,18 @@ function calcExperienceSummary(experiences: any[]) {
   return { totalMonths, byRole, currentJobs };
 }
 
+const PAGE_SIZE = 8;
+
 export default function OperatorUsers() {
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Paging and search are the server's job now: the list endpoint returns one
+  // page at a time, so filtering here would only ever see the current page.
+  const [page, setPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [pageMeta, setPageMeta] = useState({ total: 0, page: 1, pageSize: PAGE_SIZE, totalPages: 1 });
 
   // CRUD Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -104,20 +112,24 @@ export default function OperatorUsers() {
     }
   }, [viewUser]);
 
-  const fetchUsers = () => {
+  const fetchUsers = useCallback(() => {
     setLoading(true);
+    setError(null);
     userApi
-      .list()
-      .then((data) => {
-        setUsers(data.filter((u: User) => u.role === 'candidate'));
+      .listPaged({ page, pageSize: PAGE_SIZE, role: 'candidate', search: searchQuery || undefined })
+      .then((result) => {
+        setUsers(result.items);
+        setPageMeta(result.pagination);
       })
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  };
+  }, [page, searchQuery]);
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    // Debounced so typing in the search box does not fire a request per keystroke.
+    const timer = setTimeout(fetchUsers, searchQuery ? 300 : 0);
+    return () => clearTimeout(timer);
+  }, [fetchUsers, searchQuery]);
 
   const handleExportZip = async () => {
     if (!fullProfile) {
@@ -682,17 +694,28 @@ export default function OperatorUsers() {
         </Button>
       </div>
  
-      {loading && <p className="p-8 text-sm text-slate-400">Loading candidate catalog...</p>}
       {error && <p className="p-8 text-sm text-red-400 bg-red-950/40 border-b border-red-800/60">{error}</p>}
  
-      {!loading && !error && (
+      {!error && (
         <ReusableTable
           columns={columns}
           data={users}
-          searchPlaceholder="Search candidates by name, email, role or package..."
-          searchKeys={['name', 'email', 'role', 'pkg']}
-          itemsPerPage={8}
+          searchPlaceholder="Search candidates by name, email or package..."
           emptyMessage="No accounts found in catalog."
+          server={{
+            page: pageMeta.page,
+            pageSize: pageMeta.pageSize,
+            total: pageMeta.total,
+            totalPages: pageMeta.totalPages,
+            onPageChange: setPage,
+            searchQuery,
+            onSearchChange: (query) => {
+              // A new query invalidates the current offset.
+              setSearchQuery(query);
+              setPage(1);
+            },
+            loading,
+          }}
         />
       )}
  

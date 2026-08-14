@@ -177,6 +177,7 @@ app.use("/api/user-profile", userProfileRoutes);
 app.use("/api/anonymous-discovery", require("./modules/anonymous-discovery/anonymous-discovery.routes"));
 app.use("/api/contact", require("./modules/contact/contact.routes"));
 app.use("/api/logs", require("./modules/logs/log.routes"));
+app.use("/api/stats", require("./modules/stats/stats.routes"));
 app.use("/api/content", require("./modules/content/content.routes"));
 
 app.use(notFound);

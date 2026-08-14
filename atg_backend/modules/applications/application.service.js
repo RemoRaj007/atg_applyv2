@@ -6,6 +6,7 @@ const { sendSms } = require("../notifications/sms.service");
 const { matchResumeToJob } = require("../../utils/apify.service");
 const { calculateFitScore, loadCandidateData } = require("../jobs/fitScore.service");
 const notificationService = require("../notifications/notification.service");
+const { parsePagination, paginated } = require("../../utils/pagination");
 
 const QUOTA_EXHAUSTED =
   "You have reached your application limit. Please upgrade or subscribe to apply for more roles.";
@@ -56,7 +57,22 @@ const list = async (requester, query = {}) => {
       }
     }
   }
-  return prisma.candidateApplication.findMany({ where, include: getInclude(requester), orderBy: { createdAt: "desc" } });
+  const pagination = parsePagination(query);
+  const findArgs = { where, include: getInclude(requester), orderBy: { createdAt: "desc" } };
+  if (pagination) {
+    findArgs.skip = pagination.skip;
+    findArgs.take = pagination.take;
+  }
+
+  const [rows, total] = await Promise.all([
+    prisma.candidateApplication.findMany(findArgs),
+    // Only worth a second round trip when the caller can't infer it from rows.
+    pagination
+      ? prisma.candidateApplication.count({ where })
+      : Promise.resolve(null),
+  ]);
+
+  return paginated(rows, total === null ? rows.length : total, pagination);
 };
 
 const getById = async (id, requester) => {

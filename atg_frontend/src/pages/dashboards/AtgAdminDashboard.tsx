@@ -3,12 +3,9 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { Users, Briefcase, DollarSign, Building, AlertCircle, CheckCircle, XCircle, TrendingUp, Layers, UserCheck } from 'lucide-react';
 import { useSession } from '../../hooks/useSession';
-import { userApi } from '../../api/userApi';
-import { jobApi } from '../../api/jobApi';
-import { paymentApi } from '../../api/paymentApi';
 import { companyApi } from '../../api/companyApi';
 import { requestApi, type ChangeRequest } from '../../api/requestApi';
-import { applicationApi } from '../../api/applicationApi';
+import { statsApi } from '../../api/statsApi';
 import { safeExternalUrl } from '../../utils/validation';
 
 // Recharts imports for beautiful visualizations
@@ -65,94 +62,41 @@ export default function AdminDashboard() {
   const fetchDashboardData = async () => {
     try {
       setError(null);
-      const [allUsers, allJobs, allPayments, allCompanies, allRequests, allApplications] = await Promise.all([
-        userApi.list(),
-        jobApi.list(),
-        paymentApi.list(),
+      // The counts, distributions and workloads are aggregated in the database
+      // (GET /stats/admin/overview). This page used to fetch users, jobs,
+      // payments and applications in full and reduce the arrays here, which was
+      // four unbounded table scans per load — and it is what kept those list
+      // endpoints from being paginated.
+      const [overview, trend, allCompanies, allRequests] = await Promise.all([
+        statsApi.adminOverview(),
+        statsApi.revenueTrend(),
         companyApi.list(),
         requestApi.list(),
-        applicationApi.list().catch(() => []),
       ]);
 
-      setUsersCount(allUsers.length);
-      setJobsCount(allJobs.filter((j) => j.status === 'approved').length);
-      setCompaniesCount(allCompanies.length);
-      
-      // Calculate revenue from paid transactions
-      const revenue = allPayments
-        .filter((p) => p.paid || p.status === 'completed')
-        .reduce((sum, p) => sum + p.amount, 0);
-      setTotalRevenue(revenue);
+      setUsersCount(overview.usersCount);
+      setJobsCount(overview.jobsCount);
+      setCompaniesCount(overview.companiesCount);
+      setTotalRevenue(overview.totalRevenue);
+      setRoleCounts(overview.roleCounts);
+      setPackageCounts(overview.packageCounts);
+      setStatusCounts(overview.statusCounts);
+      setOperatorWorkloads(overview.operatorWorkloads);
+      setRevenueByPackage(overview.revenueByPackage);
 
-      // Filter queues
+      setRevenueTrend(
+        trend.map((point, idx) => ({
+          label:
+            new Date(point.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' }) ||
+            `Tx ${idx + 1}`,
+          Revenue: point.cumulative,
+        }))
+      );
+
+      // Both queues render full rows and are small by nature, so they stay list
+      // fetches — filtered here to the pending items each panel shows.
       setChangeRequests(allRequests.filter((r) => r.status === 'pending'));
       setPendingCompanies(allCompanies.filter((c) => c.status === 'pending'));
-
-      // 1. Calculate role-wise counts
-      const roles = allUsers.reduce((acc, u) => {
-        const r = u.role || 'candidate';
-        acc[r] = (acc[r] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
-      setRoleCounts(roles);
-
-      // 2. Calculate packages
-      const pkgs = allUsers.reduce((acc, u) => {
-        const p = u.pkg || 'Trial';
-        acc[p] = (acc[p] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
-      setPackageCounts(pkgs);
-
-      // 3. Calculate application status distribution
-      const statuses = allApplications.reduce((acc, app) => {
-        const s = app.status || 'pending_approval';
-        acc[s] = (acc[s] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
-      setStatusCounts(statuses);
-
-      // 4. Calculate workloads operator by operator
-      const ops = allUsers.filter(u => u.role === 'operator');
-      const workloads = ops.map(op => {
-        const assignedApps = allApplications.filter(app => app.staffId === op.id);
-        const activeAssigned = assignedApps.filter(app => ['pending_approval', 'approved'].includes(app.status)).length;
-        return {
-          id: op.id,
-          name: op.name,
-          active: activeAssigned,
-          capacity: op.capacity || 10,
-          total: assignedApps.length,
-        };
-      });
-      setOperatorWorkloads(workloads);
-
-      // 5. Calculate revenue by package type
-      const revByPkg = allPayments
-        .filter((p) => p.paid || p.status === 'completed')
-        .reduce((acc, p) => {
-          const pkg = p.pkg || 'Trial';
-          acc[pkg] = (acc[pkg] || 0) + p.amount;
-          return acc;
-        }, {} as Record<string, number>);
-      setRevenueByPackage(revByPkg);
-
-      // 6. Calculate cumulative revenue trend over time
-      const sortedPayments = [...allPayments]
-        .filter((p) => p.paid || p.status === 'completed')
-        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-
-      let runningTotal = 0;
-      const trend = sortedPayments.map((p, idx) => {
-        runningTotal += p.amount;
-        const dateLabel = new Date(p.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' });
-        return {
-          label: dateLabel || `Tx ${idx + 1}`,
-          Revenue: runningTotal,
-        };
-      });
-      setRevenueTrend(trend);
-
     } catch (err: any) {
       setError(err.message || 'Failed to fetch dashboard intelligence.');
     } finally {

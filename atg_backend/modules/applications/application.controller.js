@@ -5,8 +5,13 @@ const applicationService = require("./application.service");
 const resolveFileUrl = require("../../utils/fileUrl");
 
 const list = asyncHandler(async (req, res) => {
-  const applications = await applicationService.list(req.user, req.query);
-  sendSuccess(res, { message: "Applications retrieved", data: { applications } });
+  const { data, total, page, pageSize, totalPages } = await applicationService.list(req.user, req.query);
+  // `applications` stays the array it has always been so unpaginated callers
+  // keep working; `pagination` is additive for the callers that opt in.
+  sendSuccess(res, {
+    message: "Applications retrieved",
+    data: { applications: data, pagination: { total, page, pageSize, totalPages } },
+  });
 });
 
 const getById = asyncHandler(async (req, res) => {
