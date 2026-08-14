@@ -16,30 +16,36 @@ const list = async () => {
     orderBy: { createdAt: "desc" },
   });
 
-  const updatedRequests = [];
-  for (const req of requests) {
-    const targetUser = await prisma.user.findFirst({
-      where: { id: req.targetId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        pkg: true,
-        phone: true,
-        country: true,
-        city: true,
-        isLegendary: true,
-        appsTotal: true,
-        capacity: true,
-      },
-    });
-    updatedRequests.push({
-      ...req,
-      targetUser: targetUser || null,
-    });
-  }
-  return updatedRequests;
+  // ChangeRequest.targetId is a loose foreign key — there is no relation to
+  // include, because the target user may already be gone by the time a
+  // delete_user request is reviewed. Fetching them in one batched query still
+  // collapses what was a query per request row.
+  const targetIds = [...new Set(requests.map((req) => req.targetId))];
+  const targetUsers = targetIds.length
+    ? await prisma.user.findMany({
+        where: { id: { in: targetIds } },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          pkg: true,
+          phone: true,
+          country: true,
+          city: true,
+          isLegendary: true,
+          appsTotal: true,
+          capacity: true,
+        },
+      })
+    : [];
+
+  const byId = new Map(targetUsers.map((user) => [user.id, user]));
+  return requests.map((req) => ({
+    ...req,
+    // Still null when the target no longer exists, exactly as before.
+    targetUser: byId.get(req.targetId) || null,
+  }));
 };
 
 const create = async (data, operatorId) => {
