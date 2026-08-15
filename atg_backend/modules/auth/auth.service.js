@@ -32,9 +32,18 @@ const register = async (data) => {
     throw ApiError.badRequest("Invalid phone number format");
   }
 
-  const existing = await prisma.user.findFirst({ where: { email, d_status: "active" } });
+  // Not filtered by d_status: the email column is globally unique, so a
+  // soft-deleted account still holds the address. Checking only active rows let
+  // registration past this point and into the unique constraint, which surfaced
+  // as a 500 rather than something the applicant could act on. Same reasoning as
+  // the deactivated-account branch in socialLogin.
+  const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    throw ApiError.conflict("An account with this email already exists");
+    throw ApiError.conflict(
+      existing.d_status === "active"
+        ? "An account with this email already exists"
+        : "An account for this email address has been deactivated. Contact support to restore it."
+    );
   }
 
   const hashed = await argon2.hash(password);

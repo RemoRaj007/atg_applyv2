@@ -1,3 +1,4 @@
+const COLUMN_FIELD = /^column_(\d+)$/;
 const asyncHandler = require("../../utils/asyncHandler");
 const { sendSuccess } = require("../../utils/apiResponse");
 const profileValueService = require("./profile-value.service");
@@ -29,11 +30,18 @@ const saveValues = asyncHandler(async (req, res) => {
   
   const valuesToSave = [];
 
-  // Parse files if any
-  const filesMap = {};
+  // A Map keyed by the column id, not an object keyed by the field name.
+  // `file.fieldname` is chosen by whoever built the multipart request, so using
+  // it as a property name lets `__proto__`/`constructor` reach Object.prototype
+  // (js/remote-property-injection). Parsing the id out and storing it as a
+  // number means no attacker-controlled string is ever used as a key, and a
+  // field that is not `column_<id>` is dropped rather than stored.
+  const filesMap = new Map();
   if (req.files && Array.isArray(req.files)) {
-    req.files.forEach(file => {
-      filesMap[file.fieldname] = resolveFileUrl(file);
+    req.files.forEach((file) => {
+      const match = COLUMN_FIELD.exec(String(file.fieldname));
+      if (!match) return;
+      filesMap.set(Number(match[1]), resolveFileUrl(file));
     });
   }
 
@@ -43,8 +51,8 @@ const saveValues = asyncHandler(async (req, res) => {
     let val = null;
 
     if (col.inputType === "file") {
-      if (filesMap[key]) {
-        val = filesMap[key];
+      if (filesMap.has(col.id)) {
+        val = filesMap.get(col.id);
       }
     } else {
       if (req.body[key] !== undefined) {

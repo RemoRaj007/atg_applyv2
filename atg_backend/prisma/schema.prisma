@@ -111,6 +111,18 @@ model Job {
   locationType String?
   description  String? @db.Text
 
+  // Set only on imported postings (see modules/jobs/jobImport.service.js).
+  // externalSource + externalId is the dedupe key across re-runs; jobUrl is not
+  // stable enough to serve as one.
+  externalSource String?
+  externalId     String?
+  isRemote       Boolean   @default(false)
+  datePosted     DateTime?
+  salaryMin      Decimal?  @db.Decimal(12, 2)
+  salaryMax      Decimal?  @db.Decimal(12, 2)
+  salaryCurrency String?
+  salaryInterval String?
+
   jobRoleId Int?
   jobRole   JobRole? @relation(fields: [jobRoleId], references: [id])
 
@@ -122,6 +134,7 @@ model Job {
   @@index([companyId])
   @@index([jobRoleId])
   @@index([d_status, createdAt])
+  @@index([externalSource, externalId])
 }
 
 model JobRole {

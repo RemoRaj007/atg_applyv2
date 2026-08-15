@@ -87,6 +87,13 @@ FRONTEND_URL=http://localhost:5173,http://localhost:5174
 
 APIFY_API_KEY=
 
+# Job importing. Ever Jobs (https://github.com/ever-jobs/ever-jobs) aggregates
+# 160+ job boards behind one API and is self-hosted — point this at your own
+# instance (it listens on 3001). Leave it unset and POST /api/jobs/import simply
+# reports that it is not configured. See atg_backend/docs/JOB_IMPORT.md.
+EVER_JOBS_URL=
+EVER_JOBS_API_KEY=
+
 SMS_API_URL=
 SMS_SID=
 SMS_USERNAME=

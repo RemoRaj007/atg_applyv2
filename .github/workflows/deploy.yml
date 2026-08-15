@@ -15,8 +15,9 @@ jobs:
   #
   # Requires the MIGRATE_DATABASE_URL secret: the Supabase *session* pooler
   # string (port 5432 — the transaction pooler on 6543 cannot run migrations).
-  # Without the secret the job reports how to set it and passes, so forks and
-  # outside contributors are not blocked.
+  # Without the secret the job warns loudly and passes, so forks and outside
+  # contributors are not blocked — but the run is clearly marked as having
+  # verified nothing, rather than looking like a real green check.
   migrations:
     name: Migration status
     runs-on: ubuntu-latest
@@ -39,8 +40,19 @@ jobs:
           DATABASE_URL: ${{ secrets.MIGRATE_DATABASE_URL }}
         run: |
           if [ -z "$DATABASE_URL" ]; then
-            echo "::notice::MIGRATE_DATABASE_URL is not set, skipping the check."
-            echo "Set it to the Supabase session-pooler string (port 5432) to enable this."
+            # A warning, not a notice, and repeated in the job summary: this job
+            # has been passing without checking anything, and a green tick that
+            # verifies nothing is worse than no check at all — production can
+            # drift behind the migrations here and nothing says so. Every query
+            # touching the missing table or column then answers 500.
+            echo "::warning title=Migration check skipped::MIGRATE_DATABASE_URL is not set, so production migrations were NOT verified. This check passed without checking anything."
+            {
+              echo "### ⚠️ Migration status not verified"
+              echo
+              echo "\`MIGRATE_DATABASE_URL\` is not set, so this job passed **without checking production**."
+              echo "Set it to the Supabase *session* pooler string (port 5432 — the transaction"
+              echo "pooler on 6543 cannot run migrations) to make this check real."
+            } >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
           # `migrate status` exits non-zero when migrations are pending, which

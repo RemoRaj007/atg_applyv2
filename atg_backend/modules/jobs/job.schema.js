@@ -43,4 +43,24 @@ const approveJobSchema = Joi.object({
   status: Joi.string().valid("pending_payment", "pending", "approved", "rejected").required(),
 });
 
-module.exports = { createJobSchema, updateJobSchema, approveJobSchema };
+// POST /jobs/import — the query handed to the Ever Jobs aggregator. Only the
+// fields the importer actually uses are accepted: the upstream DTO has ~34,
+// including proxy and user-agent settings that belong to that deployment's
+// configuration rather than to a caller of this API.
+const importJobsSchema = Joi.object({
+  searchTerm: Joi.string().min(2).max(200).required(),
+  // Free-form on purpose: Ever Jobs adds sources continuously, and pinning an
+  // enum here would silently reject a source the instance already supports.
+  siteType: Joi.array().items(Joi.string().max(50)).min(1).max(20).required(),
+  location: Joi.string().max(150).allow(null, ""),
+  country: Joi.string().max(100).allow(null, ""),
+  isRemote: Joi.boolean(),
+  jobType: Joi.array().items(Joi.string().max(30)).max(10),
+  // Bounded again in the service; the ceiling is here so an absurd request is
+  // rejected before the aggregator is asked to do the work.
+  resultsWanted: Joi.number().integer().min(1).max(200).default(20),
+  hoursOld: Joi.number().integer().min(1).max(24 * 365),
+  descriptionFormat: Joi.string().valid("markdown", "html", "plain").default("markdown"),
+});
+
+module.exports = { createJobSchema, updateJobSchema, approveJobSchema, importJobsSchema };

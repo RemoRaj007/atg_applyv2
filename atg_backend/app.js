@@ -2,7 +2,6 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
-const cookieParser = require("cookie-parser");
 const path = require("path");
 
 const { prisma } = require("./config/db");
@@ -12,6 +11,7 @@ const { assertAuthConfig, authConfigStatus } = require("./config/authConfig");
 const notFound = require("./middlewares/notFound.middleware");
 const rateLimit = require("./middlewares/rateLimit.middleware");
 const errorHandler = require("./middlewares/error.middleware");
+const requireTrustedOrigin = require("./middlewares/csrf.middleware");
 
 const authRoutes = require("./modules/auth/auth.routes");
 const userRoutes = require("./modules/users/atg_user.routes");
@@ -41,7 +41,12 @@ assertAuthConfig();
 app.use(helmet({
   crossOriginResourcePolicy: false
 }));
-app.use(cookieParser());
+// No cookie-parsing middleware anywhere. Exactly one handler reads a cookie —
+// POST /auth/refresh, for the refresh token — and it reads that one header value
+// itself through utils/readCookie.js. Everything else authenticates with a
+// Bearer header, so running a cookie parser in front of every request was both
+// wasted work and misleading: it made every mutating route look
+// cookie-authenticated (js/missing-token-validation reported precisely that).
 // Bounded so a single request cannot force the process to buffer an arbitrary
 // payload. The largest legitimate JSON body is a job description plus its
 // requirements, which is well inside this; file uploads go through multer.
@@ -106,6 +111,23 @@ app.get("/", rateLimit({ name: "root", windowMs: 60 * 1000, max: 60 }), async (r
     res.status(500).send("Database connection error");
   }
 });
+
+// CSRF defence for every state-changing request, not just the two routes that
+// authenticate with the refresh cookie.
+//
+// Those two are the only ones that strictly need it — everything else carries a
+// Bearer token, which a browser never attaches on an attacker's behalf. Applying
+// the check to every mutating request costs nothing and means a future route
+// that does read a cookie is covered the day it is added, rather than the day
+// someone remembers to add the middleware.
+//
+// Safe requests are exempt, and so are requests with no Origin or Referer at all
+// — curl, health probes, server-to-server. A browser always sends one here, and
+// a browser is the entire threat model. See middlewares/csrf.middleware.js.
+const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+app.use((req, res, next) =>
+  SAFE_METHODS.has(req.method) ? next() : requireTrustedOrigin(req, res, next)
+);
 
 // A ceiling for the whole API. Until now only the auth endpoints and the
 // contact form were limited, so every other router — applications, payments,

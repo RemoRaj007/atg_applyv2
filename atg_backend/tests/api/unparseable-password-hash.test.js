@@ -136,3 +136,47 @@ describe("500 responses", () => {
     expect(res.body.message).not.toContain("emailVerified");
   });
 });
+
+// The admin "Create User Account" form. `email` is globally unique but every
+// lookup filters on d_status, so a soft-deleted row holds the address while
+// being invisible to an active-only check — the create then hit the unique
+// constraint and answered 500.
+describe("creating a user whose email is already held", () => {
+  const ADMIN = { id: 1, role: "admin" };
+
+  const payload = {
+    email: "test2@gmail.com",
+    name: "Test Two",
+    password: "Password123!",
+    role: "candidate",
+  };
+
+  it("409s with the reason when an active account holds the email", async () => {
+    prisma.user.findUnique.mockResolvedValue({ id: 9, email: payload.email, d_status: "active" });
+
+    const res = await request(app).post("/api/users").set(authHeader(ADMIN)).send(payload);
+
+    expect(res.status).toBe(409);
+    expect(res.body.message).toMatch(/already exists/i);
+    expect(prisma.user.create).not.toHaveBeenCalled();
+  });
+
+  it("409s, not 500, when a deactivated account holds the email", async () => {
+    prisma.user.findUnique.mockResolvedValue({ id: 9, email: payload.email, d_status: "inactive" });
+
+    const res = await request(app).post("/api/users").set(authHeader(ADMIN)).send(payload);
+
+    expect(res.status).toBe(409);
+    expect(res.body.message).toMatch(/deactivated/i);
+    expect(prisma.user.create).not.toHaveBeenCalled();
+  });
+
+  it("creates the account when the email is free", async () => {
+    prisma.user.findUnique.mockResolvedValue(null);
+    prisma.user.create.mockResolvedValue({ id: 9, ...payload, d_status: "active" });
+
+    const res = await request(app).post("/api/users").set(authHeader(ADMIN)).send(payload);
+
+    expect(res.status).toBe(201);
+  });
+});
