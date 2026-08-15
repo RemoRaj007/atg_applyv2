@@ -3,8 +3,10 @@ const ApiError = require("../../utils/ApiError");
 const { activityLogger } = require("../../config/atg_logger");
 const { annotateJobsWithFitScore } = require("./fitScore.service");
 const notificationService = require("../notifications/notification.service");
+const { parsePagination, paginated } = require("../../utils/pagination");
+const { logNotifyFailure } = require("../../utils/fireAndForget");
 
-const list = async (requester) => {
+const list = async (requester, query = {}) => {
   const where = { d_status: "active" };
   
   if (requester) {
@@ -17,7 +19,8 @@ const list = async (requester) => {
     where.status = "approved";
   }
 
-  const jobs = await prisma.job.findMany({
+  const pagination = parsePagination(query);
+  const findArgs = {
     where,
     orderBy: { createdAt: "desc" },
     // skills are included so the operator edit modal can prefill them
@@ -29,14 +32,25 @@ const list = async (requester) => {
         include: { skill: true },
       },
     },
-  });
-
-  // If candidate requesting, compute and attach comprehensive fitScore
-  if (requester && requester.role === "candidate") {
-    return await annotateJobsWithFitScore(jobs, requester.id);
+  };
+  if (pagination) {
+    findArgs.skip = pagination.skip;
+    findArgs.take = pagination.take;
   }
 
-  return jobs;
+  const [rows, total] = await Promise.all([
+    prisma.job.findMany(findArgs),
+    pagination ? prisma.job.count({ where }) : Promise.resolve(null),
+  ]);
+
+  // If candidate requesting, compute and attach comprehensive fitScore. Scoring
+  // only the current page is the point of paginating here — it loads candidate
+  // data per job.
+  const jobs = requester && requester.role === "candidate"
+    ? await annotateJobsWithFitScore(rows, requester.id)
+    : rows;
+
+  return paginated(jobs, total === null ? jobs.length : total, pagination);
 };
 
 const getById = async (id, requester) => {
@@ -123,20 +137,20 @@ const create = async (data, requester) => {
       type: "job_created",
       title: "Job Submitted",
       body: `Your job post for "${job.title}" has been created and is pending payment/approval.`,
-    }).catch(() => {});
+    }).catch(logNotifyFailure("job_created"));
     notificationService.notifyRoles({
       roles: ["admin", "operator"],
       type: "job_created",
       title: "New Job Submitted",
       body: `Company ${job.company} submitted a new job: "${job.title}".`,
-    }).catch(() => {});
+    }).catch(logNotifyFailure("job_created"));
   } else {
     notificationService.notifyRoles({
       roles: ["candidate"],
       type: "job_created",
       title: `New Job Opening: ${job.title}`,
       body: `A new job "${job.title}" at ${job.company} has been published.`,
-    }).catch(() => {});
+    }).catch(logNotifyFailure("job_created"));
   }
 
   return job;
@@ -182,14 +196,14 @@ const approve = async (id, status) => {
         type: "job_approved",
         title: "Job Approved",
         body: `Your job posting "${job.title}" has been approved and is now live!`,
-      }).catch(() => {});
+      }).catch(logNotifyFailure("job_approved"));
     }
     notificationService.notifyRoles({
       roles: ["candidate"],
       type: "job_approved",
       title: `New Job Opening: ${job.title}`,
       body: `A new job "${job.title}" at ${job.company} is now open for applications.`,
-    }).catch(() => {});
+    }).catch(logNotifyFailure("job_approved"));
   }
 
   return updatedJob;

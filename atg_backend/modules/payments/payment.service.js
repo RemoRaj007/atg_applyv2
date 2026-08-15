@@ -2,6 +2,7 @@ const { prisma } = require("../../config/db");
 const ApiError = require("../../utils/ApiError");
 const { activityLogger } = require("../../config/atg_logger");
 const notificationService = require("../notifications/notification.service");
+const { logNotifyFailure } = require("../../utils/fireAndForget");
 
 // Admin/operator need platform-wide visibility for revenue reporting & reconciliation;
 // candidates only ever see their own payments.
@@ -54,14 +55,14 @@ const create = async (data, requester) => {
     type: "payment_created",
     title: "Payment Recorded",
     body: `Payment of ${payment.amount} ${payment.currency || "USD"} recorded with status: ${payment.status}.`
-  }).catch(() => {});
+  }).catch(logNotifyFailure("payment_created"));
 
   notificationService.notifyRoles({
     roles: ["admin"],
     type: "payment_created",
     title: "New Payment Recorded",
     body: `Payment of ${payment.amount} recorded for User ID ${userId}.`
-  }).catch(() => {});
+  }).catch(logNotifyFailure("payment_created"));
 
   return payment;
 };
@@ -101,7 +102,7 @@ const update = async (id, data) => {
       type: "payment_confirmed",
       title: "Payment Confirmed",
       body: `Your payment of ${updated.amount} has been confirmed!`
-    }).catch(() => {});
+    }).catch(logNotifyFailure("payment_confirmed"));
   }
   return updated;
 };

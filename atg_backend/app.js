@@ -199,7 +199,13 @@ app.use("/api/user-profile", userProfileRoutes);
 app.use("/api/anonymous-discovery", require("./modules/anonymous-discovery/anonymous-discovery.routes"));
 app.use("/api/contact", require("./modules/contact/contact.routes"));
 app.use("/api/logs", require("./modules/logs/log.routes"));
+app.use("/api/stats", require("./modules/stats/stats.routes"));
 app.use("/api/content", require("./modules/content/content.routes"));
+// Both routers were required above but never mounted, so every endpoint behind
+// them answered 404 while atg_frontend/src/api/{university,document}ApplicationApi.ts
+// called them in earnest — two features dead in production, not disabled ones.
+app.use("/api/university-applications", universityApplicationRoutes);
+app.use("/api/document-applications", documentApplicationRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

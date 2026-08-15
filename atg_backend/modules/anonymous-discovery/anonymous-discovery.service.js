@@ -1,6 +1,7 @@
 const { prisma } = require("../../config/db");
 const { systemLogger } = require("../../config/atg_logger");
 const axios = require("axios");
+const { sanitizeForLog } = require("../../utils/sanitizeForLog");
 
 /**
  * Dynamically extract search profile bounds from a candidate's actual registered DB profile
@@ -203,6 +204,7 @@ const runJobDiscovery = async (profileId) => {
 
   // Fetch jobs using Apify or fallback
   let marketJobs = [];
+  let marketSearchUnavailable = false;
   let apiKey = process.env.APIFY_API_KEY;
   if (apiKey) {
     apiKey = apiKey.replace(/^["']|["']$/g, "").trim();
@@ -227,11 +229,15 @@ const runJobDiscovery = async (profileId) => {
       );
 
       const items = Array.isArray(runResponse.data) ? runResponse.data : [];
-      systemLogger.info(`Apify response status: ${runResponse.status}. Received ${items.length} raw items from dataset.`);
-      systemLogger.info(`Apify full response data: ${JSON.stringify(runResponse.data)}`);
-      if (items.length > 0) {
-        systemLogger.info(`Sample raw item keys: ${Object.keys(items[0]).join(", ")}`);
-      }
+      // Counts and key names only. This used to log the entire response body,
+      // which put every scraped listing — third-party text, unbounded in size —
+      // into a log message and, through PrismaLogTransport, into the LogEntry
+      // table on every successful run.
+      systemLogger.info("Apify scrape completed", {
+        status: runResponse.status,
+        itemCount: items.length,
+        sampleKeys: items.length > 0 ? Object.keys(items[0]).map(sanitizeForLog) : [],
+      });
 
       marketJobs = items.map(item => ({
         title: item.title || item.positionName || "",
@@ -241,13 +247,33 @@ const runJobDiscovery = async (profileId) => {
         url: item.url || item.URL || item.jobUrl || ""
       }));
     } catch (err) {
-      const errorDetail = err.response && err.response.data ? JSON.stringify(err.response.data) : err.message;
-      systemLogger.warn("Apify direct API call failed or timed out. Falling back to simulated market search.", { error: errorDetail });
-      marketJobs = getSimulatedMarketJobs(targetRole, industry);
+      // Apify's response body is third-party text heading for a log line and,
+      // via PrismaLogTransport, the LogEntry table — sanitised so it cannot
+      // forge extra log entries.
+      const errorDetail = sanitizeForLog(
+        err.response && err.response.data ? JSON.stringify(err.response.data) : err.message
+      );
+      if (mockDiscoveryAllowed()) {
+        systemLogger.warn("Apify direct API call failed or timed out. Falling back to simulated market search.", { error: errorDetail });
+        marketJobs = getSimulatedMarketJobs(targetRole, industry);
+      } else {
+        systemLogger.error("Apify direct API call failed or timed out; returning no matches.", { error: errorDetail });
+        marketSearchUnavailable = true;
+      }
     }
-  } else {
+  } else if (mockDiscoveryAllowed()) {
     // Simulated market database for demo/mock Apify integration
+    systemLogger.warn("APIFY_API_KEY absent or mock; serving simulated market jobs (ALLOW_MOCK_JOB_DISCOVERY is on).");
     marketJobs = getSimulatedMarketJobs(targetRole, industry);
+  } else {
+    systemLogger.error("APIFY_API_KEY absent or mock and ALLOW_MOCK_JOB_DISCOVERY is off; returning no matches.");
+    marketSearchUnavailable = true;
+  }
+
+  // Nothing was searched, so there is nothing to reconcile — leave the existing
+  // matches alone rather than deleting them in favour of an empty result.
+  if (marketSearchUnavailable) {
+    return { matches: [], marketSearchUnavailable: true };
   }
 
   // Clean old matches before creating new ones, or keep old ones that were bookmarked/applied
@@ -286,8 +312,21 @@ const runJobDiscovery = async (profileId) => {
     data: { lastRunAt: new Date() }
   });
 
-  return createdMatches;
+  return { matches: createdMatches, marketSearchUnavailable: false };
 };
+
+/**
+ * Whether the simulated market database may stand in for a real Apify search.
+ *
+ * These jobs are invented — they point at https://mock-market-jobs.atgapply.com
+ * and the UI links them as real listings, so a candidate can "apply" to a job
+ * that does not exist. Serving them used to be the automatic fallback whenever
+ * the key was missing or the call timed out, which meant a production deploy
+ * with an unset key quietly handed out fiction. It now takes an explicit opt-in
+ * that must never be set in production.
+ */
+const mockDiscoveryAllowed = () =>
+  String(process.env.ALLOW_MOCK_JOB_DISCOVERY || "").toLowerCase() === "true";
 
 /**
  * Generate simulated market jobs based on role & industry

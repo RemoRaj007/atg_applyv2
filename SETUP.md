@@ -87,6 +87,13 @@ FRONTEND_URL=http://localhost:5173,http://localhost:5174
 
 APIFY_API_KEY=
 
+# Local-only. Lets anonymous job discovery serve a canned set of invented
+# listings when APIFY_API_KEY is missing or the scrape fails, so the feature is
+# demoable without a key. The jobs are not real and the UI links them as if they
+# were, so never set this in a deployed environment — without it, a failed
+# search reports itself as unavailable instead.
+ALLOW_MOCK_JOB_DISCOVERY=false
+
 # Job importing. Ever Jobs (https://github.com/ever-jobs/ever-jobs) aggregates
 # 160+ job boards behind one API and is self-hosted — point this at your own
 # instance (it listens on 3001). Leave it unset and POST /api/jobs/import simply

@@ -38,6 +38,37 @@ jobs:
       # No build step: CodeQL analyses JS/TS from source, and building here would
       # only duplicate the build job in deploy.yml.
       - name: Perform CodeQL analysis
+        id: analyze
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:javascript-typescript"
+          output: sarif-results
+
+      # The "CodeQL" check reports only a severity count ("1 high"), and the rule
+      # behind it is readable only in the Security tab. That is fine in a browser
+      # and useless from anywhere else — CI, a terminal, a review bot. Printing
+      # each finding here makes a red run self-describing from the job log alone.
+      - name: Print findings
+        if: always()
+        run: |
+          shopt -s nullglob
+          for f in sarif-results/*.sarif; do
+            echo "=== $f ==="
+            echo "result count: $(jq '[.runs[].results[]?] | length' "$f")"
+            # Rule metadata lives under tool.extensions[].rules for CodeQL query
+            # packs and only sometimes under tool.driver.rules, so the severity
+            # lookup is built from both — and a rule missing from it must still
+            # not suppress the finding itself.
+            jq -r '
+              . as $doc
+              | ([ $doc.runs[].tool
+                   | (.driver.rules[]?), (.extensions[]?.rules[]?) ]
+                 | map({key: .id, value: (.properties["security-severity"] // "n/a")})
+                 | from_entries) as $sev
+              | $doc.runs[].results[]?
+              | "[\($sev[.ruleId] // "n/a")] \(.ruleId)\n" +
+                "  \(.locations[0].physicalLocation.artifactLocation.uri // "?"):" +
+                "\(.locations[0].physicalLocation.region.startLine // 0)\n" +
+                "  \(.message.text)"
+            ' "$f"
+          done

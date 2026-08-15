@@ -5,8 +5,11 @@ const { toCsv } = require("../../utils/csv");
 const resolveFileUrl = require("../../utils/fileUrl");
 
 const list = asyncHandler(async (req, res) => {
-  const users = await userService.list();
-  sendSuccess(res, { message: "Users retrieved", data: { users } });
+  const { data, total, page, pageSize, totalPages } = await userService.list(req.query);
+  sendSuccess(res, {
+    message: "Users retrieved",
+    data: { users: data, pagination: { total, page, pageSize, totalPages } },
+  });
 });
 
 const getSelf = asyncHandler(async (req, res) => {

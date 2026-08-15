@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { readdirSync, statSync } from "node:fs";
+import { readdirSync, statSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { createRequire } from "node:module";
 
@@ -48,5 +48,24 @@ describe("router wiring", () => {
   it("builds the app with every router mounted", async () => {
     const app = await loadApp();
     expect(typeof app).toBe("function");
+  });
+
+  // Loading a router proves it is valid, not that it is reachable. app.js
+  // required documentApplicationRoutes and universityApplicationRoutes and then
+  // never called app.use on either, so twelve endpoints answered 404 while the
+  // frontend called them in earnest — a whole feature dead, with nothing in the
+  // suite to notice. A require with no matching mount is always a mistake.
+  it("mounts every router it requires", () => {
+    const source = readFileSync(join(import.meta.dirname, "../../app.js"), "utf8");
+
+    const required = [...source.matchAll(/const\s+(\w+)\s*=\s*require\("\.\/modules\/[^"]+"\)/g)].map(
+      (m) => m[1]
+    );
+    expect(required.length).toBeGreaterThan(10);
+
+    const unmounted = required.filter(
+      (name) => !new RegExp(`app\\.use\\([^)]*\\b${name}\\b`).test(source)
+    );
+    expect(unmounted).toEqual([]);
   });
 });

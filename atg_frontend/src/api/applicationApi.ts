@@ -1,5 +1,6 @@
 import { apiClient } from './apiClient';
 import type { Application } from '../types/application.types';
+import { toPageMeta, type PageQuery, type Paged } from '../types/pagination.types';
 
 const unwrapOrThrow = <T>(payload: { status: boolean; message: string; data: T }) => {
   if (!payload.status) throw new Error(payload.message || 'Request failed');
@@ -11,6 +12,23 @@ export const applicationApi = {
     try {
       const { data } = await apiClient.get('/applications', { params });
       return unwrapOrThrow<{ applications: Application[] }>(data).applications;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to load applications');
+    }
+  },
+
+  // Paginated variant. list() stays unpaginated because the dashboards depend on
+  // receiving every row; table pages use this instead.
+  listPaged: async (
+    params?: PageQuery & { staffId?: string | number }
+  ): Promise<Paged<Application>> => {
+    try {
+      const { data } = await apiClient.get('/applications', { params });
+      const payload = unwrapOrThrow<{ applications: Application[]; pagination?: any }>(data);
+      return {
+        items: payload.applications,
+        pagination: toPageMeta(payload.pagination, payload.applications.length),
+      };
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Failed to load applications');
     }

@@ -1,11 +1,21 @@
 import { apiClient } from './apiClient';
 import type { Job } from '../types/job.types';
+import { toPageMeta, type PageQuery, type Paged } from '../types/pagination.types';
 
 export const jobApi = {
   list: async (): Promise<Job[]> => {
     const { data } = await apiClient.get('/jobs');
     if (!data.status) throw new Error(data.message || 'Failed to load jobs');
     return data.data.jobs;
+  },
+
+  listPaged: async (params?: PageQuery): Promise<Paged<Job>> => {
+    const { data } = await apiClient.get('/jobs', { params });
+    if (!data.status) throw new Error(data.message || 'Failed to load jobs');
+    return {
+      items: data.data.jobs,
+      pagination: toPageMeta(data.data.pagination, data.data.jobs.length),
+    };
   },
 
   getRecommendations: async (): Promise<{ jobs: Job[]; scholarships: any[] }> => {

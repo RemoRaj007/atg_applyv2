@@ -7,6 +7,25 @@ export interface Column<T> {
   render?: (row: T) => React.ReactNode;
 }
 
+/**
+ * Hands search and paging to the server instead of doing them over `data`.
+ *
+ * Client-side search only ever sees the rows already loaded, so once a list is
+ * fetched a page at a time the two cannot coexist: searching would silently
+ * miss every match outside the current page. Passing this switches the table to
+ * displaying `data` verbatim and reporting intent back to the caller.
+ */
+export interface ServerPagination {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
+  loading?: boolean;
+}
+
 interface ReusableTableProps<T> {
   columns: Column<T>[];
   data: T[];
@@ -14,6 +33,7 @@ interface ReusableTableProps<T> {
   searchKeys?: string[];
   itemsPerPage?: number;
   emptyMessage?: string;
+  server?: ServerPagination;
 }
 
 const getNestedValue = (obj: any, path: string): any => {
@@ -28,11 +48,19 @@ export default function ReusableTable<T extends { id: any }>({
   searchKeys = [],
   itemsPerPage = 10,
   emptyMessage = 'No matching records found.',
+  server,
 }: ReusableTableProps<T>) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [localSearchQuery, setLocalSearchQuery] = useState('');
+  const [localPage, setLocalPage] = useState(1);
+
+  const searchQuery = server ? server.searchQuery : localSearchQuery;
+  const setSearchQuery = server ? server.onSearchChange : setLocalSearchQuery;
+  const currentPage = server ? server.page : localPage;
+  const setCurrentPage = server ? server.onPageChange : setLocalPage;
 
   const filteredData = useMemo(() => {
+    // In server mode `data` is already the filtered page.
+    if (server) return data;
     if (!searchQuery.trim() || searchKeys.length === 0) return data;
     const lowerQuery = searchQuery.toLowerCase();
     return data.filter((row) =>
@@ -42,17 +70,19 @@ export default function ReusableTable<T extends { id: any }>({
         return String(val).toLowerCase().includes(lowerQuery);
       })
     );
-  }, [data, searchQuery, searchKeys]);
+  }, [data, searchQuery, searchKeys, server]);
 
-  const totalItems = filteredData.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const effectivePageSize = server ? server.pageSize : itemsPerPage;
+  const totalItems = server ? server.total : filteredData.length;
+  const totalPages = server ? server.totalPages : Math.ceil(totalItems / itemsPerPage);
   const paginatedData = useMemo(() => {
+    if (server) return filteredData;
     const start = (currentPage - 1) * itemsPerPage;
     return filteredData.slice(start, start + itemsPerPage);
-  }, [filteredData, currentPage, itemsPerPage]);
+  }, [filteredData, currentPage, itemsPerPage, server]);
 
-  const startResult = totalItems === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
-  const endResult = Math.min(currentPage * itemsPerPage, totalItems);
+  const startResult = totalItems === 0 ? 0 : (currentPage - 1) * effectivePageSize + 1;
+  const endResult = Math.min(currentPage * effectivePageSize, totalItems);
 
   const getPageNumbers = () => {
     const pages: number[] = [];
@@ -63,7 +93,7 @@ export default function ReusableTable<T extends { id: any }>({
   return (
     <div className="w-full flex flex-col">
       {/* Search */}
-      {searchKeys.length > 0 && (
+      {(searchKeys.length > 0 || server) && (
         <div className="px-7 pt-5 pb-4 flex items-center border-b border-slate-800/80 bg-slate-900/40">
           <div className="relative w-full max-w-sm">
             <Search
@@ -86,7 +116,9 @@ export default function ReusableTable<T extends { id: any }>({
 
       {/* Table */}
       <div className="overflow-x-auto w-full">
-        {totalItems === 0 ? (
+        {server?.loading ? (
+          <p className="p-10 text-center text-sm font-medium text-slate-400">Loading…</p>
+        ) : totalItems === 0 ? (
           <p className="p-10 text-center text-sm font-medium text-slate-400">
             {emptyMessage}
           </p>
@@ -147,7 +179,7 @@ export default function ReusableTable<T extends { id: any }>({
           </div>
           <div className="flex items-center gap-1">
             <button
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
               className="p-2 rounded-lg transition-colors border border-slate-700/80 bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 disabled:opacity-40 disabled:pointer-events-none"
               title="Previous Page"
@@ -170,7 +202,7 @@ export default function ReusableTable<T extends { id: any }>({
             ))}
 
             <button
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
               disabled={currentPage === totalPages}
               className="p-2 rounded-lg transition-colors border border-slate-700/80 bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 disabled:opacity-40 disabled:pointer-events-none"
               title="Next Page"

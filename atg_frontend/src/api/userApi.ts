@@ -1,11 +1,23 @@
 import { apiClient } from './apiClient';
 import type { User } from '../types/user.types';
+import { toPageMeta, type PageQuery, type Paged } from '../types/pagination.types';
 
 export const userApi = {
   list: async (): Promise<User[]> => {
     const { data } = await apiClient.get('/users');
     if (!data.status) throw new Error(data.message || 'Failed to load users');
     return data.data.users;
+  },
+
+  listPaged: async (
+    params?: PageQuery & { role?: string; search?: string }
+  ): Promise<Paged<User>> => {
+    const { data } = await apiClient.get('/users', { params });
+    if (!data.status) throw new Error(data.message || 'Failed to load users');
+    return {
+      items: data.data.users,
+      pagination: toPageMeta(data.data.pagination, data.data.users.length),
+    };
   },
 
   updateSelf: async (id: number, payload: { name?: string; phone?: string; country?: string; city?: string; password?: string; profilePhoto?: string; bio?: string; department?: string }): Promise<User> => {
