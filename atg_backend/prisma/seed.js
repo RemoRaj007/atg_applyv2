@@ -2,7 +2,8 @@
  * ATG Apply — Seed Script
  *
  * Seeds a realistic dataset: 1 admin, 5 operators, 10 candidates (each with a
- * full profile), 20 jobs (with skills), and 2 scholarships, plus supporting
+ * full profile), 20 jobs (with skills), and the scholarships from
+ * data/scholarships.csv alongside two curated ones, plus supporting
  * companies/job roles/skills and a batch of candidate applications.
  *
  * Safe by default: if the database already has users, seeding is skipped so
@@ -15,8 +16,11 @@
  */
 
 require('dotenv').config();
+const fs = require('fs');
+const path = require('path');
 const argon2 = require('argon2');
 const { prisma } = require('../config/db');
+const { toRecords } = require('../scripts/importScholarships');
 
 const FORCE = process.argv.includes('--force');
 const SEED_PASSWORD = 'Password123!';
@@ -105,10 +109,23 @@ const JOBS = [
   { company: 'Beacon Metrics', title: 'Cybersecurity Analyst', location: 'Remote / London, UK', experience: '3+', locationType: 'Full-time', jobRoleName: 'Cybersecurity Analyst', skills: ['Linux/Bash', 'Python', 'AWS'] },
 ];
 
+// Two curated ATG scholarships, plus every scholarship in data/scholarships.csv
+// (scraped listings — see data/README.md). Re-import the CSV on its own at any
+// time with `npm run db:import:scholarships`.
 const SCHOLARSHIPS = [
   { title: 'STEM Excellence Award 2026', provider: 'ATG Foundation', amount: 2500, description: 'Awarded to outstanding STEM candidates with a verified work history.' },
   { title: 'Global Career Grant', provider: 'Concordia Trust', amount: 1500, description: 'Supports international relocation costs for approved placements.' },
+  ...loadScholarshipCsv(),
 ];
+
+function loadScholarshipCsv() {
+  const csvPath = path.join(__dirname, '..', 'data', 'scholarships.csv');
+  if (!fs.existsSync(csvPath)) {
+    warn(`No scholarship CSV at ${csvPath}; seeding curated scholarships only.`);
+    return [];
+  }
+  return toRecords(fs.readFileSync(csvPath, 'utf8'));
+}
 
 const CANDIDATES = [
   { first: 'Nadeesha', last: 'Wickramasinghe', country: 'Sri Lanka', city: 'Colombo', university: 'University of Colombo', field: 'Computer Science', role: 'Frontend Developer', skills: ['React', 'TypeScript', 'Tailwind CSS'], jobTitle: 'Frontend Developer', employer: 'Codegen Sri Lanka', pkg: 'Premium' },
@@ -233,9 +250,7 @@ async function main() {
   done(`${createdJobs.length} jobs created with skills attached.`);
 
   head('SCHOLARSHIPS');
-  for (const s of SCHOLARSHIPS) {
-    await prisma.scholarship.create({ data: s });
-  }
+  await prisma.scholarship.createMany({ data: SCHOLARSHIPS });
   done(`${SCHOLARSHIPS.length} scholarships created.`);
 
   head('CANDIDATES');
