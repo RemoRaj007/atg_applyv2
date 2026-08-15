@@ -66,7 +66,7 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#090d16] relative overflow-hidden font-sans text-slate-100">
+    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-white relative overflow-hidden font-sans text-[#1D1D1F]">
       {/* Full Screen Background Image */}
       <img 
         src={logfImg} 
@@ -135,7 +135,7 @@ export default function ResetPassword() {
 
       <Link 
         to="/login" 
-        className="absolute top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 rounded-xl text-slate-200 hover:text-white hover:bg-slate-700/80 transition-all font-semibold text-sm border border-slate-700/80 shadow-md bg-slate-800/80 backdrop-blur-md"
+        className="absolute top-6 left-6 z-50 flex items-center gap-2 px-4 py-2 rounded-xl text-[#1D1D1F] hover:text-[#1D1D1F] hover:bg-[#F5F5F7]/80 transition-all font-semibold text-sm border border-[#D2D2D7]/80 shadow-md bg-[#F5F5F7]/80 backdrop-blur-md"
       >
         <ArrowLeft className="w-4 h-4" />
         <span>Back to Login</span>
@@ -144,11 +144,11 @@ export default function ResetPassword() {
       {/* Left Side: Hero Section (Positioned higher up) */}
       <div className="w-full lg:w-[60%] flex flex-col p-8 lg:p-16 xl:p-20 relative z-10 min-h-[300px] lg:min-h-screen justify-start pt-20 lg:pt-28 xl:pt-32 overflow-hidden">
         <div className="relative z-10 max-w-xl animate-fadeIn">
-          <h2 className="text-4xl lg:text-5xl xl:text-6xl font-extrabold text-white leading-tight mb-4 drop-shadow-md">
+          <h2 className="text-4xl lg:text-5xl xl:text-6xl font-extrabold text-[#1D1D1F] leading-tight mb-4 drop-shadow-md">
             Set Your New <br />
-            <span className="text-blue-400 font-black">Password</span>
+            <span className="text-[#0066CC] font-black">Password</span>
           </h2>
-          <p className="text-lg text-slate-300 leading-relaxed font-medium">
+          <p className="text-lg text-[#6E6E73] leading-relaxed font-medium">
             Choose a strong password to protect your account and resume your career journey.
           </p>
         </div>
@@ -156,13 +156,13 @@ export default function ResetPassword() {
 
       {/* Right Side: Form Container */}
       <div className="w-full lg:w-[40%] flex items-center justify-center p-6 lg:p-12 z-20 relative">
-        <div className="w-full max-w-[440px] bg-slate-900/65 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.6)] border border-white/15 p-8 lg:p-12 animate-fadeIn relative z-20">
+        <div className="w-full max-w-[440px] bg-white/65 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.6)] border border-white/15 p-8 lg:p-12 animate-fadeIn relative z-20">
           
           <div className="flex items-center gap-4 mb-8 w-full">
-            <img src={atgLogo} alt="ATG Apply Logo" className="h-16 w-16 object-contain rounded-2xl shadow-lg border border-white/15 bg-slate-950/60 p-2 shrink-0 backdrop-blur-md" />
+            <img src={atgLogo} alt="ATG Apply Logo" className="h-16 w-16 object-contain rounded-2xl shadow-lg border border-white/15 bg-white/60 p-2 shrink-0 backdrop-blur-md" />
             <div className="text-left flex-1">
-              <h2 className="text-3xl font-extrabold text-white tracking-tight leading-tight">New Password</h2>
-              <p className="text-xs text-slate-300 mt-1 font-medium">Please enter your new password below.</p>
+              <h2 className="text-3xl font-extrabold text-[#1D1D1F] tracking-tight leading-tight">New Password</h2>
+              <p className="text-xs text-[#6E6E73] mt-1 font-medium">Please enter your new password below.</p>
             </div>
           </div>
 
@@ -172,14 +172,14 @@ export default function ResetPassword() {
                 <CheckCircle className="w-10 h-10" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-white">Success!</h3>
-                <p className="text-sm text-slate-300 mt-2 font-medium leading-relaxed">
+                <h3 className="text-xl font-bold text-[#1D1D1F]">Success!</h3>
+                <p className="text-sm text-[#6E6E73] mt-2 font-medium leading-relaxed">
                   Your password has been successfully reset.
                 </p>
               </div>
               <Link
                 to="/login"
-                className="block w-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold py-4 px-4 rounded-2xl shadow-lg shadow-blue-600/30 transition-all text-center text-sm"
+                className="block w-full bg-[#0066CC] hover:bg-[#0055AA] active:bg-blue-700 text-white font-bold py-4 px-4 rounded-2xl shadow-lg shadow-blue-600/30 transition-all text-center text-sm"
               >
                 Go to Sign In
               </Link>
@@ -187,21 +187,21 @@ export default function ResetPassword() {
           ) : (
             <form noValidate onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-2">New Password</label>
+                <label className="block text-xs font-bold text-[#6E6E73] mb-2">New Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#6E6E73]" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="At least 8 characters with upper, lower, number, special char"
-                    className="w-full pl-12 pr-12 py-3.5 border border-white/15 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-400 outline-none transition-all text-sm bg-white/5 backdrop-blur-md text-white placeholder-slate-400 font-medium hover:bg-white/10 hover:border-white/25"
+                    className="w-full pl-12 pr-12 py-3.5 border border-white/15 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-400 outline-none transition-all text-sm bg-white/5 backdrop-blur-md text-[#1D1D1F] placeholder-slate-400 font-medium hover:bg-white/10 hover:border-white/25"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#6E6E73] hover:text-[#1D1D1F] transition-colors"
                   >
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
@@ -210,16 +210,16 @@ export default function ResetPassword() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-2">Confirm New Password</label>
+                <label className="block text-xs font-bold text-[#6E6E73] mb-2">Confirm New Password</label>
                 <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#6E6E73]" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Repeat new password"
-                    className="w-full pl-12 pr-12 py-3.5 border border-white/15 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-400 outline-none transition-all text-sm bg-white/5 backdrop-blur-md text-white placeholder-slate-400 font-medium hover:bg-white/10 hover:border-white/25"
+                    className="w-full pl-12 pr-12 py-3.5 border border-white/15 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-400 outline-none transition-all text-sm bg-white/5 backdrop-blur-md text-[#1D1D1F] placeholder-slate-400 font-medium hover:bg-white/10 hover:border-white/25"
                   />
                 </div>
               </div>
@@ -233,7 +233,7 @@ export default function ResetPassword() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white font-bold py-4 px-4 rounded-2xl shadow-lg shadow-blue-600/30 transition-all flex justify-center items-center gap-2 disabled:opacity-60 mt-4 cursor-pointer"
+                className="w-full bg-[#0066CC] hover:bg-[#0055AA] active:bg-blue-700 text-white font-bold py-4 px-4 rounded-2xl shadow-lg shadow-blue-600/30 transition-all flex justify-center items-center gap-2 disabled:opacity-60 mt-4 cursor-pointer"
               >
                 {loading ? 'Resetting...' : 'Reset Password'}
                 {!loading && <ArrowRight className="h-5 w-5" />}
@@ -241,7 +241,7 @@ export default function ResetPassword() {
             </form>
           )}
 
-          <div className="flex items-center justify-center gap-2 text-[11px] text-slate-400 mt-10">
+          <div className="flex items-center justify-center gap-2 text-[11px] text-[#6E6E73] mt-10">
             <ShieldCheck className="h-4 w-4 text-emerald-400" />
             <span className="font-medium">Your data is secure with enterprise-grade encryption</span>
           </div>

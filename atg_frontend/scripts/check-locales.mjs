@@ -21,7 +21,7 @@
  * Run: node scripts/check-locales.mjs [--update-baseline]
  */
 
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -51,7 +51,20 @@ const flatten = (obj, prefix = '') =>
 const source = flatten(load(SOURCE));
 const sourceKeys = Object.keys(source);
 
-const baseline = existsSync(BASELINE_PATH) ? JSON.parse(readFileSync(BASELINE_PATH, 'utf8')) : {};
+// Read directly and treat "not there" as an empty baseline, rather than
+// checking existence first: between the check and the read the file can change,
+// which is the race CodeQL flags. Only ENOENT is swallowed — a malformed
+// baseline must still fail loudly rather than silently disabling the ratchet.
+const readBaseline = () => {
+  try {
+    return JSON.parse(readFileSync(BASELINE_PATH, 'utf8'));
+  } catch (err) {
+    if (err.code === 'ENOENT') return {};
+    throw err;
+  }
+};
+
+const baseline = readBaseline();
 
 const missing = {};
 const extra = {};

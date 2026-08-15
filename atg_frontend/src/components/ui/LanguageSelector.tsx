@@ -21,13 +21,12 @@ export const SUPPORTED_LANGUAGES: LanguageOption[] = [
 
 interface LanguageSelectorProps {
   onChange?: (language: LanguageOption) => void;
-  variant?: 'light' | 'dark';
 }
 
-export default function LanguageSelector({
-  onChange,
-  variant = 'dark',
-}: LanguageSelectorProps) {
+// The `variant` prop and its dark branch are gone: every surface that renders
+// this is light now, no call site ever passed the prop, and a second unused
+// palette is a second thing to keep in sync.
+export default function LanguageSelector({ onChange }: LanguageSelectorProps) {
   const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -53,33 +52,26 @@ export default function LanguageSelector({
     }
   };
 
-  const isDark = variant === 'dark';
-
   return (
     <div className="relative inline-block text-left z-50" ref={dropdownRef}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
-          isDark
-            ? 'bg-slate-800/90 border-slate-700 text-slate-200 hover:bg-slate-700 hover:text-white'
-            : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-        }`}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        className="flex items-center gap-2 min-h-11 px-3 py-1.5 rounded-lg border border-[#D2D2D7] bg-white text-[#1D1D1F] text-sm hover:bg-[#F5F5F7] transition-colors cursor-pointer"
       >
-        <Globe className="w-3.5 h-3.5 text-blue-400" />
+        <Globe className="w-4 h-4 text-[#6E6E73]" />
         <div className="flex flex-col items-start leading-tight text-left">
-          <span className="font-bold">{currentLang.native}</span>
+          <span className="font-medium">{currentLang.native}</span>
         </div>
-        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-4 h-4 text-[#6E6E73] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
         <div
-          className={`absolute right-0 mt-2 w-56 rounded-2xl shadow-2xl border overflow-hidden z-50 animate-fadeIn ${
-            isDark
-              ? 'bg-slate-900/95 border-slate-700 text-slate-100 backdrop-blur-xl'
-              : 'bg-white border-gray-200 text-gray-800'
-          }`}
+          role="listbox"
+          className="absolute right-0 mt-2 w-56 rounded-xl shadow-lg border border-[#D2D2D7] bg-white text-[#1D1D1F] overflow-hidden z-50 animate-fadeIn"
         >
           <div className="max-h-72 overflow-y-auto py-1 custom-scrollbar">
             {SUPPORTED_LANGUAGES.map((lang) => {
@@ -89,27 +81,17 @@ export default function LanguageSelector({
                   key={lang.code}
                   type="button"
                   onClick={() => handleSelect(lang)}
-                  className={`w-full text-left px-4 py-2.5 flex items-center justify-between transition-colors cursor-pointer ${
-                    isSelected
-                      ? isDark
-                        ? 'bg-blue-600/20 text-blue-400 font-bold'
-                        : 'bg-blue-50 text-blue-600 font-bold'
-                      : isDark
-                      ? 'hover:bg-slate-800/80 text-slate-200'
-                      : 'hover:bg-gray-50 text-gray-700'
+                  role="option"
+                  aria-selected={isSelected}
+                  className={`w-full text-left min-h-11 px-4 py-2.5 flex items-center justify-between transition-colors cursor-pointer ${
+                    isSelected ? 'bg-[#F5F5F7] font-semibold' : 'hover:bg-[#F5F5F7] text-[#1D1D1F]'
                   }`}
                 >
                   <div className="flex flex-col">
-                    <span className="text-sm font-bold leading-tight">{lang.native}</span>
-                    <span
-                      className={`text-[11px] leading-tight ${
-                        isDark ? 'text-slate-400' : 'text-gray-400'
-                      }`}
-                    >
-                      {lang.english}
-                    </span>
+                    <span className="text-base leading-tight">{lang.native}</span>
+                    <span className="text-xs leading-tight text-[#6E6E73]">{lang.english}</span>
                   </div>
-                  {isSelected && <Check className="w-4 h-4 text-blue-400 shrink-0" />}
+                  {isSelected && <Check className="w-4 h-4 text-[#F05A28] shrink-0" />}
                 </button>
               );
             })}
