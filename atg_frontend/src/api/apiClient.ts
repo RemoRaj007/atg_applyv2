@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { AxiosResponse } from 'axios';
+import i18n from '../i18n/i18n';
 
 // Vite inlines import.meta.env at build time, so VITE_API_URL must be present in the
 // build environment — it cannot be injected at runtime by the host. When it's absent
@@ -85,6 +86,12 @@ apiClient.interceptors.request.use((config) => {
   if (accessToken && config.headers) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
+  // Tells the API which language to answer errors in. Read from the live i18n
+  // instance on every request rather than captured once, so switching language
+  // takes effect immediately instead of on the next full page load.
+  if (config.headers) {
+    config.headers['Accept-Language'] = i18n.language || 'en';
+  }
   return config;
 });
 
@@ -109,6 +116,17 @@ const AUTH_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/refresh', '/auth
 // Rewriting the message here fixes all 20 of those modules at once, and keeps
 // working for the three that already unwrap the body themselves.
 const applyServerMessage = (error: any) => {
+  // The API's stable identifier for this failure, when it sent one. Kept under
+  // its own name rather than `error.code`, which axios already uses for its own
+  // transport codes ('ECONNABORTED' below) — overwriting it would break the
+  // timeout branch. resolveErrorMessage() in utils/errorMessage.ts turns this
+  // into a translated sentence; the English `message` below stays the fallback,
+  // so a code the client does not recognise still reads as prose.
+  const serverCode = error?.response?.data?.code;
+  if (typeof serverCode === 'string' && serverCode.trim()) {
+    error.apiErrorCode = serverCode;
+  }
+
   const serverMessage = error?.response?.data?.message;
   if (typeof serverMessage === 'string' && serverMessage.trim()) {
     error.message = serverMessage;

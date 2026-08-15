@@ -271,5 +271,20 @@
     "errorSubject": "Veuillez saisir un sujet",
     "errorMessage": "Veuillez saisir un message d'au moins 10 caractères",
     "errorGeneric": "Une erreur s'est produite. Veuillez réessayer."
+  },
+  "errors": {
+    "DB_SCHEMA_MISSING_TABLE": "Une table attendue par cette API est absente de la base de données. Une migration n'a pas été appliquée à cet environnement.",
+    "DB_SCHEMA_MISSING_COLUMN": "Une colonne attendue par cette API est absente de la base de données. Une migration n'a pas été appliquée à cet environnement.",
+    "INTERNAL": "Un problème est survenu de notre côté. Veuillez réessayer.",
+    "AUTH_INVALID_CREDENTIALS": "L'adresse e-mail ou le mot de passe est incorrect.",
+    "AUTH_SESSION_EXPIRED": "Votre session a pris fin. Veuillez vous reconnecter.",
+    "VALIDATION_FAILED": "Certaines informations fournies ne sont pas valides.",
+    "NOT_FOUND": "L'élément demandé est introuvable.",
+    "FORBIDDEN": "Vous n'avez pas l'autorisation d'effectuer cette action.",
+    "CONFLICT_DUPLICATE": "Cet élément existe déjà.",
+    "UPSTREAM_UNAVAILABLE": "Un service dont dépend cette fonctionnalité est indisponible. Veuillez réessayer sous peu.",
+    "TIMEOUT": "Le serveur a mis trop de temps à répondre. Veuillez réessayer.",
+    "NETWORK": "Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.",
+    "UNKNOWN": "Une erreur inattendue s'est produite."
   }
 }

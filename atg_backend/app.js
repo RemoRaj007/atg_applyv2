@@ -129,6 +129,12 @@ app.use((req, res, next) =>
   SAFE_METHODS.has(req.method) ? next() : requireTrustedOrigin(req, res, next)
 );
 
+// Resolves Accept-Language into req.locale for every request, so the error
+// handler can answer in the language the user selected. Mounted before the
+// routers because any of them can throw, and after the security middleware
+// because an unauthenticated request has no business setting up locale state.
+app.use(require("./middlewares/locale.middleware"));
+
 // A ceiling for the whole API. Until now only the auth endpoints and the
 // contact form were limited, so every other router — applications, payments,
 // users, profile values — could be called as fast as the network allowed by

@@ -271,5 +271,20 @@
     "errorSubject": "请输入主题",
     "errorMessage": "请输入至少10个字符的留言",
     "errorGeneric": "出了点问题，请重试。"
+  },
+  "errors": {
+    "DB_SCHEMA_MISSING_TABLE": "数据库缺少此 API 所需的数据表。此环境尚未应用相应的数据库迁移。",
+    "DB_SCHEMA_MISSING_COLUMN": "数据库缺少此 API 所需的字段。此环境尚未应用相应的数据库迁移。",
+    "INTERNAL": "我们这边出了点问题，请重试。",
+    "AUTH_INVALID_CREDENTIALS": "电子邮件地址或密码不正确。",
+    "AUTH_SESSION_EXPIRED": "您的会话已结束，请重新登录。",
+    "VALIDATION_FAILED": "提交的部分信息无效。",
+    "NOT_FOUND": "找不到请求的内容。",
+    "FORBIDDEN": "您没有执行此操作的权限。",
+    "CONFLICT_DUPLICATE": "该内容已存在。",
+    "UPSTREAM_UNAVAILABLE": "此功能依赖的某项服务暂时不可用，请稍后再试。",
+    "TIMEOUT": "服务器响应超时，请重试。",
+    "NETWORK": "无法连接到服务器。请检查您的网络连接后重试。",
+    "UNKNOWN": "发生了意外错误。"
   }
 }

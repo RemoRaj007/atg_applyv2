@@ -271,5 +271,20 @@
     "totalUsers": "Total System Users",
     "activeCompanies": "Active Partner Companies",
     "pendingReviews": "Pending Reviews"
+  },
+  "errors": {
+    "DB_SCHEMA_MISSING_TABLE": "Falta en la base de datos una tabla que esta API espera. No se ha aplicado una migración a este entorno.",
+    "DB_SCHEMA_MISSING_COLUMN": "Falta en la base de datos una columna que esta API espera. No se ha aplicado una migración a este entorno.",
+    "INTERNAL": "Se ha producido un problema por nuestra parte. Inténtalo de nuevo.",
+    "AUTH_INVALID_CREDENTIALS": "El correo electrónico o la contraseña no son correctos.",
+    "AUTH_SESSION_EXPIRED": "Tu sesión ha finalizado. Vuelve a iniciar sesión.",
+    "VALIDATION_FAILED": "Parte de la información proporcionada no es válida.",
+    "NOT_FOUND": "No se ha encontrado el elemento solicitado.",
+    "FORBIDDEN": "No tienes permiso para hacer esto.",
+    "CONFLICT_DUPLICATE": "Este elemento ya existe.",
+    "UPSTREAM_UNAVAILABLE": "Un servicio del que depende esta función no está disponible. Inténtalo de nuevo en breve.",
+    "TIMEOUT": "El servidor ha tardado demasiado en responder. Inténtalo de nuevo.",
+    "NETWORK": "No se ha podido contactar con el servidor. Comprueba tu conexión e inténtalo de nuevo.",
+    "UNKNOWN": "Se ha producido un error inesperado."
   }
 }

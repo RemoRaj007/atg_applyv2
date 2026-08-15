@@ -271,5 +271,20 @@
     "errorSubject": "Please enter a subject",
     "errorMessage": "Please enter a message of at least 10 characters",
     "errorGeneric": "Something went wrong. Please try again."
+  },
+  "errors": {
+    "DB_SCHEMA_MISSING_TABLE": "The database is missing a table this API expects. A migration has not been applied to this environment.",
+    "DB_SCHEMA_MISSING_COLUMN": "The database is missing a column this API expects. A migration has not been applied to this environment.",
+    "INTERNAL": "Something went wrong on our side. Please try again.",
+    "AUTH_INVALID_CREDENTIALS": "The email address or password is incorrect.",
+    "AUTH_SESSION_EXPIRED": "Your session has ended. Please sign in again.",
+    "VALIDATION_FAILED": "Some of the information provided is not valid.",
+    "NOT_FOUND": "The requested item could not be found.",
+    "FORBIDDEN": "You do not have permission to do this.",
+    "CONFLICT_DUPLICATE": "This item already exists.",
+    "UPSTREAM_UNAVAILABLE": "A service this feature depends on is unavailable. Please try again shortly.",
+    "TIMEOUT": "The server took too long to respond. Please try again.",
+    "NETWORK": "Could not reach the server. Check your connection and try again.",
+    "UNKNOWN": "An unexpected error occurred."
   }
 }

@@ -5,8 +5,10 @@ import { applicationApi } from '../../api/applicationApi';
 import type { Scholarship } from '../../types/scholarship.types';
 import type { Application } from '../../types/application.types';
 import Button from '../../components/ui/AtgButton';
+import { useErrorMessage } from '../../hooks/useErrorMessage';
 
 export default function CandidateScholarships() {
+  const toMessage = useErrorMessage();
   const [scholarships, setScholarships] = useState<Scholarship[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +30,7 @@ export default function CandidateScholarships() {
       setScholarships(sList);
       setApplications(aList);
     } catch (err: any) {
-      setError(err.message);
+      setError(toMessage(err));
     } finally {
       setLoading(false);
     }
@@ -52,7 +54,7 @@ export default function CandidateScholarships() {
       setComment('');
       fetchData();
     } catch (err: any) {
-      setSubmitError(err.message || 'Failed to submit application');
+      setSubmitError(toMessage(err, 'Failed to submit application'));
     } finally {
       setSubmitting(false);
     }
