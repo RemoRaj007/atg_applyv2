@@ -8,16 +8,22 @@ const rateLimit = require("../../middlewares/rateLimit.middleware");
 
 const router = express.Router();
 
-// Same budget as university-applications: these handlers authenticate and then
-// read and write application records. app.js now mounts this router under the
-// /api ceiling too, so the per-router limit is the tighter of the two.
-router.use(rateLimit({ name: "document-applications", windowMs: 60 * 1000, max: 60 }));
+// The limiter runs before authentication, not after: work done before the cap
+// is work an unauthenticated caller can make this API do for free. Applied with
+// `router.use` rather than per route so a route added later inherits the cap
+// instead of quietly shipping without one — which is how all six of these
+// handlers came to be unlimited.
+router.use(rateLimit({ name: "documentApplications:all", windowMs: 15 * 60 * 1000, max: 300 }));
+router.use(authenticate);
 
-router.post("/", authenticate, controller.create);
-router.get("/all", authenticate, controller.listAll);
-router.get("/", authenticate, controller.list);
-router.get("/:id", authenticate, controller.getById);
-router.patch("/:id", authenticate, controller.update);
-router.delete("/:id", authenticate, controller.remove);
+// Tighter budget on the writes, each of which creates or mutates a row.
+const writeLimiter = rateLimit({ name: "documentApplications:write", windowMs: 60 * 60 * 1000, max: 60 });
+
+router.post("/", writeLimiter, controller.create);
+router.get("/all", controller.listAll);
+router.get("/", controller.list);
+router.get("/:id", controller.getById);
+router.patch("/:id", writeLimiter, controller.update);
+router.delete("/:id", writeLimiter, controller.remove);
 
 module.exports = router;

@@ -24,6 +24,13 @@ class ApiError extends Error {
   static conflict(message = "Resource already exists") {
     return new ApiError(409, message);
   }
+
+  // For a dependency this API calls out to that failed or could not be reached.
+  // 500 would say "this API is broken", which sends whoever is on call looking
+  // in the wrong place.
+  static badGateway(message = "An upstream service is unavailable") {
+    return new ApiError(502, message);
+  }
 }
 
 module.exports = ApiError;
