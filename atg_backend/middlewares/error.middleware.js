@@ -67,10 +67,18 @@ const errorHandler = (err, req, res, next) => {
 
   // Answer in the language the caller asked for. `req.locale` is set by
   // locale.middleware; if that middleware is not mounted (unit tests
-  // constructing a bare req, for instance) this falls back to English, so the
-  // response is unchanged from before codes existed.
+  // constructing a bare req, for instance) this falls back to English.
+  //
+  // English is deliberately taken from the throw site rather than from the
+  // catalogue, even when a code is attached. The throw site is where the
+  // wording was chosen, sometimes for reasons that matter: the login failure
+  // says "Invalid email or password" identically for an unknown address and a
+  // wrong password, and swapping in a catalogue sentence would quietly rewrite
+  // a message whose exact form is a security property. Attaching a code must
+  // add a translation, never change the English.
   const locale = req.locale || DEFAULT_LOCALE;
-  const localizedMessage = translateErrorCode(code, locale, englishMessage);
+  const localizedMessage =
+    locale === DEFAULT_LOCALE ? englishMessage : translateErrorCode(code, locale, englishMessage);
 
   const body = {
     status: false,

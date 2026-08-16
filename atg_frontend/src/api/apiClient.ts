@@ -1,6 +1,7 @@
 import axios from 'axios';
 import type { AxiosResponse } from 'axios';
 import i18n from '../i18n/i18n';
+import { resolveErrorMessage } from '../utils/errorMessage';
 
 // Vite inlines import.meta.env at build time, so VITE_API_URL must be present in the
 // build environment — it cannot be injected at runtime by the host. When it's absent
@@ -144,6 +145,22 @@ const applyServerMessage = (error: any) => {
   // the user something to report that can actually be traced.
   const errorId = error?.response?.data?.errorId;
   if (errorId) error.message = `${error.message} (ref: ${errorId})`;
+
+  // Translate here rather than at each call site.
+  //
+  // Around 115 places render `err.message` straight into a toast or a banner.
+  // Reaching all of them individually would be a large, error-prone sweep that
+  // would still miss the next one someone writes. Since this function is the
+  // single point where the message is decided, translating it here means every
+  // one of those call sites shows the user's language without being touched —
+  // and a component that wants a specific fallback can still use
+  // useErrorMessage(), which is idempotent over an already-translated string.
+  //
+  // The English text stays on `apiErrorMessageEn` for logging and bug reports:
+  // a stack trace quoting a Tamil sentence is not searchable by an on-call
+  // engineer.
+  error.apiErrorMessageEn = error.message;
+  error.message = resolveErrorMessage(error, i18n.t.bind(i18n));
 
   return error;
 };

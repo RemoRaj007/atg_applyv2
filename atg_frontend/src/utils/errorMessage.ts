@@ -58,12 +58,20 @@ export const resolveErrorMessage = (error: unknown, t: TFunction, fallback?: str
 
   const withRef = (sentence: string) => (ref ? `${sentence} ${ref}` : sentence);
 
+  // A code means the response came from an API that understands Accept-Language,
+  // and this client sends that header on every request — so `text` is already in
+  // the user's language and is the server's own wording. Re-translating it here
+  // would substitute this bundle's phrasing for the server's, which is how the
+  // English login error drifted from "Invalid email or password" to a different
+  // sentence with the same meaning. Trust what the server sent.
+  //
+  // The `errors.*` catalogue below is still the fallback for the case that
+  // motivated it: a bundle talking to an API too old to localize, where `text`
+  // is English regardless of the header.
   const code = err?.apiErrorCode;
+  if (code && text) return withRef(text);
   if (code) {
-    const key = `errors.${code}`;
-    // defaultValue keeps an unrecognised code (a newer API than this bundle
-    // knows about) rendering the server's own sentence rather than the key.
-    const translated = t(key, { defaultValue: text || fallback || '' });
+    const translated = t(`errors.${code}`, { defaultValue: fallback || '' });
     if (translated) return withRef(translated);
   }
 

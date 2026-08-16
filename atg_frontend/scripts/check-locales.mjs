@@ -12,11 +12,15 @@
  *     translation at runtime. This is what left ~93 keys English in ta/si/ru/es
  *     while the files looked complete.
  *
- * (2) is a ratchet, not a hard gate: those keys are being translated in stages,
- * and blocking CI on all of them at once would just mean the check gets
- * disabled. Known-untranslated keys live in locale-baseline.json; the check
- * fails on anything NEW, and on any baseline entry that has since been
- * translated (so the baseline shrinks and cannot rot).
+ * Both are now hard failures. (2) ran as a ratchet against locale-baseline.json
+ * while the 382 known-untranslated keys were worked through in stages; they are
+ * all translated, the baseline file is gone, and the check gates on zero.
+ *
+ * The ratchet machinery is deliberately left in place. The 231 catalogue
+ * question labels are the next body of text to translate, and when they land in
+ * the catalogue they will arrive as English placeholders — at which point
+ * --update-baseline gives a shrinking list to work through rather than a wall
+ * of red that gets the check disabled instead.
  *
  * Run: node scripts/check-locales.mjs [--update-baseline]
  */
@@ -32,10 +36,40 @@ const BASELINE_PATH = join(here, 'locale-baseline.json');
 const SOURCE = 'en';
 const LANGUAGES = ['en', 'ar', 'zh', 'fr', 'ru', 'es', 'ta', 'si'];
 
-// Values that are legitimately identical across languages: proper nouns, and
-// short forms that genuinely do not translate. Flagging these would train
+// Values that are legitimately identical across languages: proper nouns, short
+// forms that genuinely do not translate, and example addresses that stay in
+// Latin script whatever the interface language. Flagging these would train
 // everyone to ignore the output.
-const IDENTICAL_BY_DESIGN = new Set(['ATG Apply', 'ATG', 'Apply', 'LinkedIn', 'GitHub', 'CV', 'Email', 'API', 'URL']);
+const IDENTICAL_BY_DESIGN = new Set([
+  'ATG Apply',
+  'ATG',
+  'Apply',
+  'LinkedIn',
+  'GitHub',
+  'CV',
+  'Email',
+  'API',
+  'URL',
+  'you@example.com',
+]);
+
+// Keys whose translation genuinely coincides with the English, per language.
+// "Contact", "Date" and "Action" really are the French words; "Legal" really is
+// the Spanish one. Listing them by key rather than by value keeps the exception
+// narrow — "Date" is a correct French translation and would be a missing Tamil
+// one, and a single global value list could not tell those apart.
+const COINCIDENTAL_BY_LANGUAGE = {
+  fr: new Set([
+    'nav.contact',
+    'nav.notifications',
+    'footer.colomboLocation',
+    'payments.date',
+    'common.action',
+    'termsPage.sec2Badge',
+    'contactPage.messageLabel',
+  ]),
+  es: new Set(['footer.legal', 'footer.colomboLocation']),
+};
 
 const load = (lang) => JSON.parse(readFileSync(join(LOCALES_DIR, lang, 'translation.json'), 'utf8'));
 
@@ -77,8 +111,13 @@ for (const lang of LANGUAGES) {
 
   missing[lang] = sourceKeys.filter((k) => !targetKeys.has(k));
   extra[lang] = [...targetKeys].filter((k) => !(k in source));
+  const coincidental = COINCIDENTAL_BY_LANGUAGE[lang] ?? new Set();
   untranslated[lang] = sourceKeys.filter(
-    (k) => targetKeys.has(k) && target[k] === source[k] && !IDENTICAL_BY_DESIGN.has(source[k])
+    (k) =>
+      targetKeys.has(k) &&
+      target[k] === source[k] &&
+      !IDENTICAL_BY_DESIGN.has(source[k]) &&
+      !coincidental.has(k)
   );
 }
 
