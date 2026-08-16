@@ -16,7 +16,6 @@ import SkillMultiSelect from '../../components/ui/SkillMultiSelect';
 import { jobRoleApi, type JobRole } from '../../api/jobRoleApi';
 import FormMultiSelect from '../../components/ui/FormMultiSelect';
 import PhoneInput from '../../components/ui/PhoneInput';
-import NicInput from '../../components/ui/NicInput';
 import { getFileUrl, getFileUrlFresh } from '../../utils/fileUrl';
 
 // ─── Experience Time Calculator Helpers ─────────────────────────────────────
@@ -571,12 +570,19 @@ export default function CandidateProfile() {
                     onChange={(e: any) => handlePersonalChange('correspondenceLanguage', e.target.value)}
                   />
                 </div>
-                <div className="pt-4 border-t border-slate-700/60">
-                  <NicInput
-                    nicValue={profileData?.profile?.legalResidency || ''}
-                    countryValue={profileData?.profile?.currentNationality || ''}
-                    onNicChange={(val) => handlePersonalChange('legalResidency', val)}
-                    onCountryChange={(val) => handlePersonalChange('currentNationality', val)}
+                {/* The National Identity Card field that used to sit here is
+                    gone. It wrote the identity number into `legalResidency`, so
+                    the master profile really was storing national-ID numbers —
+                    which the privacy rules forbid outright. Legal residency is
+                    a country/status, and that is all this asks for now. If a
+                    named application ever needs identity evidence, it is
+                    requested just in time, for that application, with the
+                    candidate's approval. */}
+                <div className="pt-4 border-t border-[#D2D2D7]">
+                  <InputField
+                    label="Legal residency status"
+                    value={profileData?.profile?.legalResidency}
+                    onChange={(e: any) => handlePersonalChange('legalResidency', e.target.value)}
                   />
                 </div>
                 <div className="pt-4 border-t space-y-4">

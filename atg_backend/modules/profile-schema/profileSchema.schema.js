@@ -32,4 +32,15 @@ const reviewSchema = Joi.object({
   notes: Joi.string().allow("", null).max(5000),
 }).required();
 
-module.exports = { patchFieldsSchema, reviewSchema, FIELD_CODE };
+// An operator asks the candidate to correct a value; they never edit it.
+const correctionSchema = Joi.object({
+  code: Joi.string().pattern(FIELD_CODE).required(),
+  reason: Joi.string().min(3).max(1000).required(),
+}).required();
+
+const noteSchema = Joi.object({
+  fieldCode: Joi.string().pattern(FIELD_CODE).allow(null, ""),
+  body: Joi.string().min(1).max(5000).required(),
+}).required();
+
+module.exports = { patchFieldsSchema, reviewSchema, correctionSchema, noteSchema, FIELD_CODE };

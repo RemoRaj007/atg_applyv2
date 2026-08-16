@@ -377,36 +377,6 @@
     "statusNotStarted": "Not started"
   },
   "profileChapters": {
-    "00": {
-      "title": "Welcome & informed choice"
-    },
-    "01": {
-      "title": "Identity, contact & professional presence"
-    },
-    "02": {
-      "title": "Work authorization, mobility & availability"
-    },
-    "03": {
-      "title": "Career direction & opportunity rules"
-    },
-    "04": {
-      "title": "Professional identity & career narrative"
-    },
-    "05": {
-      "title": "School, secondary education & early development"
-    },
-    "06": {
-      "title": "Higher education"
-    },
-    "07": {
-      "title": "Certifications, licences, memberships & training"
-    },
-    "08": {
-      "title": "Employment history"
-    },
-    "09": {
-      "title": "Internships, apprenticeships, volunteering & career breaks"
-    },
     "10": {
       "title": "Projects, products & portfolio work"
     },
@@ -436,6 +406,49 @@
     },
     "19": {
       "title": "Final review & declaration"
+    },
+    "00": {
+      "title": "Welcome & informed choice"
+    },
+    "01": {
+      "title": "Identity, contact & professional presence"
+    },
+    "02": {
+      "title": "Work authorization, mobility & availability"
+    },
+    "03": {
+      "title": "Career direction & opportunity rules"
+    },
+    "04": {
+      "title": "Professional identity & career narrative"
+    },
+    "05": {
+      "title": "School, secondary education & early development"
+    },
+    "06": {
+      "title": "Higher education"
+    },
+    "07": {
+      "title": "Certifications, licences, memberships & training"
+    },
+    "08": {
+      "title": "Employment history"
+    },
+    "09": {
+      "title": "Internships, apprenticeships, volunteering & career breaks"
     }
+  },
+  "operatorProfile": {
+    "noteSaved": "Note saved.",
+    "correctionSent": "Correction requested.",
+    "missingHeading": "Missing required facts",
+    "noAi": "no external AI",
+    "restricted": "Restricted — request just-in-time for a named application.",
+    "requestCorrection": "Request correction",
+    "correctionFor": "Ask the candidate to correct {{code}}",
+    "sendCorrection": "Send request",
+    "notesHeading": "Private operator notes",
+    "notesHint": "Only staff can see these. The candidate cannot.",
+    "saveNote": "Save note"
   }
 }

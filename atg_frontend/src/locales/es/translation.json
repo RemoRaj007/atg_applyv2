@@ -377,36 +377,6 @@
     "statusNotStarted": "Sin empezar"
   },
   "profileChapters": {
-    "00": {
-      "title": "Bienvenida y elección informada"
-    },
-    "01": {
-      "title": "Identidad, contacto y presencia profesional"
-    },
-    "02": {
-      "title": "Autorización de trabajo, movilidad y disponibilidad"
-    },
-    "03": {
-      "title": "Dirección profesional y reglas de oportunidad"
-    },
-    "04": {
-      "title": "Identidad profesional y narrativa de carrera"
-    },
-    "05": {
-      "title": "Escuela, educación secundaria y desarrollo temprano"
-    },
-    "06": {
-      "title": "Educación superior"
-    },
-    "07": {
-      "title": "Certificaciones, licencias, afiliaciones y formación"
-    },
-    "08": {
-      "title": "Historial laboral"
-    },
-    "09": {
-      "title": "Prácticas, aprendizajes, voluntariado y pausas profesionales"
-    },
     "10": {
       "title": "Proyectos, productos y portafolio"
     },
@@ -436,6 +406,49 @@
     },
     "19": {
       "title": "Revisión final y declaración"
+    },
+    "00": {
+      "title": "Bienvenida y elección informada"
+    },
+    "01": {
+      "title": "Identidad, contacto y presencia profesional"
+    },
+    "02": {
+      "title": "Autorización de trabajo, movilidad y disponibilidad"
+    },
+    "03": {
+      "title": "Dirección profesional y reglas de oportunidad"
+    },
+    "04": {
+      "title": "Identidad profesional y narrativa de carrera"
+    },
+    "05": {
+      "title": "Escuela, educación secundaria y desarrollo temprano"
+    },
+    "06": {
+      "title": "Educación superior"
+    },
+    "07": {
+      "title": "Certificaciones, licencias, afiliaciones y formación"
+    },
+    "08": {
+      "title": "Historial laboral"
+    },
+    "09": {
+      "title": "Prácticas, aprendizajes, voluntariado y pausas profesionales"
     }
+  },
+  "operatorProfile": {
+    "noteSaved": "Nota guardada.",
+    "correctionSent": "Corrección solicitada.",
+    "missingHeading": "Faltan datos obligatorios",
+    "noAi": "sin IA externa",
+    "restricted": "Restringido: solicítalo en el momento para una candidatura concreta.",
+    "requestCorrection": "Solicitar corrección",
+    "correctionFor": "Pide al candidato que corrija {{code}}",
+    "sendCorrection": "Enviar solicitud",
+    "notesHeading": "Notas privadas del operador",
+    "notesHint": "Solo el personal puede verlas; el candidato no.",
+    "saveNote": "Guardar nota"
   }
 }

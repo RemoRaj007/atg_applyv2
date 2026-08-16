@@ -66,6 +66,42 @@ const getUserProfileForStaff = asyncHandler(async (req, res) => {
   sendSuccess(res, { message: "Candidate profile retrieved", data: profile });
 });
 
+const requestCorrection = asyncHandler(async (req, res) => {
+  const request = await profileSchemaService.requestCorrection({
+    userId: Number(req.params.userId),
+    operatorId: req.user.id,
+    code: req.body.code,
+    reason: req.body.reason,
+  });
+  sendSuccess(res, { statusCode: 201, message: "Correction requested", data: { request } });
+});
+
+const listCorrections = asyncHandler(async (req, res) => {
+  const requests = await profileSchemaService.listCorrections(Number(req.params.userId));
+  sendSuccess(res, { message: "Correction requests retrieved", data: { requests } });
+});
+
+const addNote = asyncHandler(async (req, res) => {
+  const note = await profileSchemaService.addNote({
+    userId: Number(req.params.userId),
+    authorId: req.user.id,
+    fieldCode: req.body.fieldCode,
+    body: req.body.body,
+  });
+  sendSuccess(res, { statusCode: 201, message: "Note saved", data: { note } });
+});
+
+const listNotes = asyncHandler(async (req, res) => {
+  const notes = await profileSchemaService.listNotes(Number(req.params.userId));
+  sendSuccess(res, { message: "Notes retrieved", data: { notes } });
+});
+
+/** The candidate's own view of corrections asked of them. */
+const myCorrections = asyncHandler(async (req, res) => {
+  const requests = await profileSchemaService.listCorrections(req.user.id);
+  sendSuccess(res, { message: "Correction requests retrieved", data: { requests } });
+});
+
 module.exports = {
   getSchema,
   getMyProfile,
@@ -73,4 +109,9 @@ module.exports = {
   removeMyEntry,
   submitForReview,
   getUserProfileForStaff,
+  requestCorrection,
+  listCorrections,
+  addNote,
+  listNotes,
+  myCorrections,
 };

@@ -377,36 +377,6 @@
     "statusNotStarted": "Non commencé"
   },
   "profileChapters": {
-    "00": {
-      "title": "Bienvenue et choix éclairé"
-    },
-    "01": {
-      "title": "Identité, contact et présence professionnelle"
-    },
-    "02": {
-      "title": "Autorisation de travail, mobilité et disponibilité"
-    },
-    "03": {
-      "title": "Orientation de carrière et règles d'opportunité"
-    },
-    "04": {
-      "title": "Identité professionnelle et récit de carrière"
-    },
-    "05": {
-      "title": "École, enseignement secondaire et développement précoce"
-    },
-    "06": {
-      "title": "Enseignement supérieur"
-    },
-    "07": {
-      "title": "Certifications, licences, adhésions et formations"
-    },
-    "08": {
-      "title": "Parcours professionnel"
-    },
-    "09": {
-      "title": "Stages, apprentissages, bénévolat et interruptions de carrière"
-    },
     "10": {
       "title": "Projets, produits et portfolio"
     },
@@ -436,6 +406,49 @@
     },
     "19": {
       "title": "Vérification finale et déclaration"
+    },
+    "00": {
+      "title": "Bienvenue et choix éclairé"
+    },
+    "01": {
+      "title": "Identité, contact et présence professionnelle"
+    },
+    "02": {
+      "title": "Autorisation de travail, mobilité et disponibilité"
+    },
+    "03": {
+      "title": "Orientation de carrière et règles d'opportunité"
+    },
+    "04": {
+      "title": "Identité professionnelle et récit de carrière"
+    },
+    "05": {
+      "title": "École, enseignement secondaire et développement précoce"
+    },
+    "06": {
+      "title": "Enseignement supérieur"
+    },
+    "07": {
+      "title": "Certifications, licences, adhésions et formations"
+    },
+    "08": {
+      "title": "Parcours professionnel"
+    },
+    "09": {
+      "title": "Stages, apprentissages, bénévolat et interruptions de carrière"
     }
+  },
+  "operatorProfile": {
+    "noteSaved": "Note enregistrée.",
+    "correctionSent": "Correction demandée.",
+    "missingHeading": "Informations obligatoires manquantes",
+    "noAi": "pas d'IA externe",
+    "restricted": "Restreint — à demander au moment voulu pour une candidature nommée.",
+    "requestCorrection": "Demander une correction",
+    "correctionFor": "Demander au candidat de corriger {{code}}",
+    "sendCorrection": "Envoyer la demande",
+    "notesHeading": "Notes privées de l'opérateur",
+    "notesHint": "Visibles par l'équipe uniquement, pas par le candidat.",
+    "saveNote": "Enregistrer la note"
   }
 }

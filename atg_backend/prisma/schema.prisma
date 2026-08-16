@@ -292,6 +292,27 @@ model ChangeRequest {
   @@index([status])
 }
 
+// An operator's private working note about a candidate's profile.
+//
+// Deliberately a separate table from ProfileValue rather than a column on it.
+// Candidate facts and staff opinion must not share a row: an operator must
+// never be able to overwrite what the candidate said, and a note is not a fact
+// about the candidate — it is a note about the work. The candidate does not see
+// these; corrections they should act on go through ChangeRequest instead.
+model ProfileNote {
+  id        Int      @id @default(autoincrement())
+  userId    Int // the candidate the note is about
+  authorId  Int // the operator who wrote it
+  fieldCode String? // optional: the field it concerns
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  d_status  String   @default("active")
+
+  @@index([userId, createdAt])
+  @@index([authorId])
+}
+
 // One of the 20 canonical chapters of the master profile ("00" — Welcome &
 // informed choice, through "19" — Final review & declaration). The code is the
 // stable key: it is what the candidate builder, the operator view and any

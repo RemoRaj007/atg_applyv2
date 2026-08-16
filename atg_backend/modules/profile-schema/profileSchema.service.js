@@ -276,6 +276,51 @@ const submitForReview = async ({ userId, notes }) => {
 };
 
 /**
+ * Asks the candidate to correct a value, rather than an operator changing it.
+ *
+ * This is the whole point of the flow: candidate facts stay the candidate's.
+ * An operator who believes a date is wrong raises a request the candidate acts
+ * on, which leaves an auditable trail and cannot silently rewrite their history.
+ * Reuses ChangeRequest — the approval plumbing already exists.
+ */
+const requestCorrection = async ({ userId, operatorId, code, reason }) => {
+  const column = await prisma.profileColumn.findFirst({ where: { code, d_status: "active" } });
+  if (!column) throw ApiError.notFound(`Unknown profile field code: ${code}`);
+
+  const request = await prisma.changeRequest.create({
+    data: {
+      type: "profile_correction",
+      targetId: userId,
+      reason,
+      details: JSON.stringify({ fieldCode: code, label: column.label }),
+      createdById: operatorId,
+    },
+  });
+
+  activityLogger.activity("Profile correction requested", { userId, operatorId, code });
+  return request;
+};
+
+const listCorrections = async (userId) =>
+  prisma.changeRequest.findMany({
+    where: { type: "profile_correction", targetId: userId, d_status: "active" },
+    orderBy: { createdAt: "desc" },
+  });
+
+/** Private operator notes. Never returned to the candidate. */
+const addNote = async ({ userId, authorId, fieldCode, body }) => {
+  const note = await prisma.profileNote.create({ data: { userId, authorId, fieldCode: fieldCode || null, body } });
+  activityLogger.activity("Profile note added", { userId, authorId, fieldCode: fieldCode || null });
+  return note;
+};
+
+const listNotes = async (userId) =>
+  prisma.profileNote.findMany({
+    where: { userId, d_status: "active" },
+    orderBy: { createdAt: "desc" },
+  });
+
+/**
  * The fields that may be handed to an external AI service, given a policy.
  *
  * Exists so no caller has to remember the rule: anything marked NO is dropped,
@@ -300,6 +345,10 @@ module.exports = {
   patchFields,
   removeEntry,
   submitForReview,
+  requestCorrection,
+  listCorrections,
+  addNote,
+  listNotes,
   selectAiEligible,
   summarise,
 };

@@ -194,3 +194,97 @@ describe("submitting for review", () => {
     expect(res.status).toBe(200);
   });
 });
+
+describe("operator boundaries", () => {
+  it("gives an operator no write path to a candidate's values", async () => {
+    // The only staff routes are read, correction-request and note. An operator
+    // must never be able to silently rewrite a candidate's history, so there is
+    // no PATCH under /users/:userId at all — it 404s rather than 403s.
+    const res = await request(app)
+      .patch(`/api/profile/users/${CANDIDATE.id}/fields`)
+      .set(authHeader(OPERATOR))
+      .send({ updates: [{ code: "REF1-01", value: "rewritten" }] });
+    expect([403, 404]).toContain(res.status);
+    expect(prisma.profileValue.upsert).not.toHaveBeenCalled();
+  });
+
+  it("records a correction request against the candidate, authored by the operator", async () => {
+    prisma.profileColumn.findFirst.mockResolvedValue({ id: 10, code: "REF1-01", label: "name" });
+    prisma.changeRequest.create.mockResolvedValue({ id: 1 });
+
+    const res = await request(app)
+      .post(`/api/profile/users/${CANDIDATE.id}/corrections`)
+      .set(authHeader(OPERATOR))
+      .send({ code: "REF1-01", reason: "The employer name looks misspelled." });
+
+    expect(res.status).toBe(201);
+    const data = prisma.changeRequest.create.mock.calls[0][0].data;
+    expect(data.type).toBe("profile_correction");
+    expect(data.targetId).toBe(CANDIDATE.id);
+    expect(data.createdById).toBe(OPERATOR.id);
+  });
+
+  it("keeps operator notes out of the candidate's own profile response", async () => {
+    prisma.profileNote.create.mockResolvedValue({ id: 1 });
+    await request(app)
+      .post(`/api/profile/users/${CANDIDATE.id}/notes`)
+      .set(authHeader(OPERATOR))
+      .send({ body: "Chase the 2019 gap before submitting." });
+
+    const res = await request(app).get("/api/profile/me").set(authHeader(CANDIDATE));
+    expect(JSON.stringify(res.body)).not.toContain("Chase the 2019 gap");
+  });
+
+  it("does not let a candidate read notes or corrections written about them", async () => {
+    for (const path of [`/api/profile/users/${CANDIDATE.id}/notes`, `/api/profile/users/${CANDIDATE.id}/corrections`]) {
+      const res = await request(app).get(path).set(authHeader(CANDIDATE));
+      expect(res.status).toBe(403);
+    }
+  });
+});
+
+// The schema-driven endpoint is not the only reader of ProfileValue. The older
+// /api/profile-values route reads the same table, and once candidates began
+// entering restricted answers through the builder it handed them to any
+// operator who opened the candidate directory — the newer endpoint's gating
+// did nothing for it. Found by opening the operator UI and seeing a referee's
+// phone number on screen.
+describe("legacy profile-values endpoint", () => {
+  const row = (columnId, value, sensitivity) => ({
+    id: columnId,
+    userId: CANDIDATE.id,
+    columnId,
+    repeatIndex: 0,
+    value,
+    d_status: "active",
+    column: { id: columnId, code: `X-0${columnId}`, sensitivity, label: "f" },
+  });
+
+  beforeEach(() => {
+    prisma.profileValue.findMany.mockResolvedValue([
+      row(1, "Ordinary career fact", "CAREER"),
+      row(2, "secret-referee@example.com +353 1 999", "RESTRICTED"),
+    ]);
+  });
+
+  it("withholds restricted values from an operator", async () => {
+    const res = await request(app)
+      .get(`/api/profile-values/${CANDIDATE.id}`)
+      .set(authHeader(OPERATOR));
+    expect(res.status).toBe(200);
+    expect(JSON.stringify(res.body)).not.toContain("secret-referee@example.com");
+    expect(JSON.stringify(res.body)).toContain("Ordinary career fact");
+  });
+
+  it("still returns them to the candidate who entered them", async () => {
+    const res = await request(app)
+      .get(`/api/profile-values/${CANDIDATE.id}`)
+      .set(authHeader(CANDIDATE));
+    expect(JSON.stringify(res.body)).toContain("secret-referee@example.com");
+  });
+
+  it("returns them to an admin", async () => {
+    const res = await request(app).get(`/api/profile-values/${CANDIDATE.id}`).set(authHeader(ADMIN));
+    expect(JSON.stringify(res.body)).toContain("secret-referee@example.com");
+  });
+});

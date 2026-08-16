@@ -4,7 +4,7 @@ const authenticate = require("../../middlewares/permissions/atg_authenticate.mid
 const authorize = require("../../middlewares/permissions/authorize.middleware");
 const validate = require("../../middlewares/validations/validate.middleware");
 const numericParam = require("../../middlewares/validations/objectId.middleware");
-const { patchFieldsSchema, reviewSchema } = require("./profileSchema.schema");
+const { patchFieldsSchema, reviewSchema, correctionSchema, noteSchema } = require("./profileSchema.schema");
 
 const router = express.Router();
 
@@ -24,6 +24,8 @@ router.get("/me", controller.getMyProfile);
 router.patch("/me/fields", validate(patchFieldsSchema), controller.patchMyFields);
 router.delete("/me/entries/:code/:repeatIndex", controller.removeMyEntry);
 router.post("/me/review", validate(reviewSchema), controller.submitForReview);
+// Corrections an operator has asked this candidate to make.
+router.get("/me/corrections", controller.myCorrections);
 
 // Staff read-only view. Restricted values are withheld inside the service for
 // anyone who is not the owner or an admin, so this is not the only line
@@ -33,6 +35,39 @@ router.get(
   numericParam("userId"),
   authorize("admin", "operator"),
   controller.getUserProfileForStaff
+);
+
+// Correction requests: the operator's only route to changing a candidate fact
+// is to ask the candidate for it. There is deliberately no staff write path to
+// ProfileValue anywhere in this router.
+router.post(
+  "/users/:userId/corrections",
+  numericParam("userId"),
+  authorize("admin", "operator"),
+  validate(correctionSchema),
+  controller.requestCorrection
+);
+router.get(
+  "/users/:userId/corrections",
+  numericParam("userId"),
+  authorize("admin", "operator"),
+  controller.listCorrections
+);
+
+// Private operator notes, kept apart from candidate facts and never returned
+// on the candidate's own /me routes.
+router.post(
+  "/users/:userId/notes",
+  numericParam("userId"),
+  authorize("admin", "operator"),
+  validate(noteSchema),
+  controller.addNote
+);
+router.get(
+  "/users/:userId/notes",
+  numericParam("userId"),
+  authorize("admin", "operator"),
+  controller.listNotes
 );
 
 module.exports = router;
