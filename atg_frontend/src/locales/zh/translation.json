@@ -229,7 +229,9 @@
     "edit": "编辑",
     "close": "关闭",
     "submit": "提交",
-    "back": "返回"
+    "back": "返回",
+    "retry": "重试",
+    "continue": "继续"
   },
   "howItWorksPage": {
     "title": "ATG Apply 如何运作",
@@ -335,5 +337,105 @@
     "TIMEOUT": "服务器响应超时，请重试。",
     "NETWORK": "无法连接到服务器。请检查您的网络连接后重试。",
     "UNKNOWN": "发生了意外错误。"
+  },
+  "profileBuilder": {
+    "submitted": "档案已提交审阅。",
+    "noSchema": "此环境尚未配置档案问题。",
+    "submit": "提交审阅",
+    "chapterLabel": "章节",
+    "navLabel": "档案章节",
+    "restrictedHidden": "受限——仅在获得批准后，用于特定申请。",
+    "selectPlaceholder": "请选择…",
+    "noteRestricted": "受限。仅在你批准后用于特定申请。",
+    "notePrivateNoAi": "私密。绝不会发送给外部 AI 工具。",
+    "notePrivate": "私密。仅用于求职申请。",
+    "progressLabel": "档案进度",
+    "progressCount": "已开始 {{total}} 章中的 {{started}} 章",
+    "chapterNumber": "第 {{code}} 章",
+    "requiredMissing": "此处仍需填写：{{fields}}",
+    "optionalNote": "此处大多数问题为选填。不适用的可以跳过，稍后再回来补充。",
+    "saveFailed": "未保存",
+    "saving": "保存中…",
+    "saved": "已保存",
+    "errorRequired": "需要填写此项才能使用你的档案。",
+    "errorEmail": "请输入有效的电子邮件地址。",
+    "errorUrl": "请输入以 http:// 或 https:// 开头的完整网址",
+    "errorTooLong": "此回答过长，无法保存。请缩短。",
+    "addEducation": "添加学历",
+    "addRole": "添加职位",
+    "addProject": "添加项目",
+    "addReference": "添加推荐人",
+    "addEntry": "添加条目",
+    "entryEducation": "学历",
+    "entryRole": "职位",
+    "entryProject": "项目",
+    "entryReference": "推荐人",
+    "entry": "条目",
+    "statusComplete": "已完成",
+    "statusInProgress": "进行中",
+    "statusNeedsReview": "需要检查",
+    "statusNotStarted": "未开始"
+  },
+  "profileChapters": {
+    "00": {
+      "title": "欢迎与知情选择"
+    },
+    "01": {
+      "title": "身份、联系方式与职业形象"
+    },
+    "02": {
+      "title": "工作许可、流动性与可入职时间"
+    },
+    "03": {
+      "title": "职业方向与机会规则"
+    },
+    "04": {
+      "title": "职业定位与职业叙述"
+    },
+    "05": {
+      "title": "中小学教育与早期发展"
+    },
+    "06": {
+      "title": "高等教育"
+    },
+    "07": {
+      "title": "证书、执照、会员资格与培训"
+    },
+    "08": {
+      "title": "工作经历"
+    },
+    "09": {
+      "title": "实习、学徒、志愿服务与职业空档"
+    },
+    "10": {
+      "title": "项目、产品与作品集"
+    },
+    "11": {
+      "title": "研究、出版、教学与公共贡献"
+    },
+    "12": {
+      "title": "技能、工具与语言"
+    },
+    "13": {
+      "title": "成就与面试案例库"
+    },
+    "14": {
+      "title": "动机、价值观与写作风格"
+    },
+    "15": {
+      "title": "岗位专项深度模块"
+    },
+    "16": {
+      "title": "推荐人与核实"
+    },
+    "17": {
+      "title": "证明材料与文件链接"
+    },
+    "18": {
+      "title": "申请授权、AI 边界与特殊问题"
+    },
+    "19": {
+      "title": "最终检查与声明"
+    }
   }
 }

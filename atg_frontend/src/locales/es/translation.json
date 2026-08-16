@@ -191,7 +191,9 @@
     "edit": "Edit",
     "close": "Close",
     "submit": "Submit",
-    "back": "Atrás"
+    "back": "Atrás",
+    "retry": "Reintentar",
+    "continue": "Continuar"
   },
   "contactPage": {
     "title": "Ponte en contacto",
@@ -335,5 +337,105 @@
     "TIMEOUT": "El servidor ha tardado demasiado en responder. Inténtalo de nuevo.",
     "NETWORK": "No se ha podido contactar con el servidor. Comprueba tu conexión e inténtalo de nuevo.",
     "UNKNOWN": "Se ha producido un error inesperado."
+  },
+  "profileBuilder": {
+    "submitted": "Perfil enviado para revisión.",
+    "noSchema": "Las preguntas del perfil aún no se han configurado en este entorno.",
+    "submit": "Enviar para revisión",
+    "chapterLabel": "Capítulo",
+    "navLabel": "Capítulos del perfil",
+    "restrictedHidden": "Restringido: se comparte solo para una candidatura concreta y con tu aprobación.",
+    "selectPlaceholder": "Selecciona…",
+    "noteRestricted": "Restringido. Solo se comparte para una candidatura concreta tras tu aprobación.",
+    "notePrivateNoAi": "Privado. Nunca se envía a herramientas de IA externas.",
+    "notePrivate": "Privado. Se usa solo para candidaturas.",
+    "progressLabel": "Progreso del perfil",
+    "progressCount": "{{started}} de {{total}} capítulos iniciados",
+    "chapterNumber": "Capítulo {{code}}",
+    "requiredMissing": "Aún falta aquí: {{fields}}",
+    "optionalNote": "La mayoría de las preguntas aquí son opcionales. Omite lo que no aplique y vuelve más tarde.",
+    "saveFailed": "No guardado",
+    "saving": "Guardando…",
+    "saved": "Guardado",
+    "errorRequired": "Esta respuesta es necesaria para gestionar tu perfil.",
+    "errorEmail": "Introduce un correo electrónico válido.",
+    "errorUrl": "Introduce una dirección completa que empiece por http:// o https://",
+    "errorTooLong": "Esta respuesta es demasiado larga para guardarla. Acórtala.",
+    "addEducation": "Añadir formación",
+    "addRole": "Añadir puesto",
+    "addProject": "Añadir proyecto",
+    "addReference": "Añadir referencia",
+    "addEntry": "Añadir entrada",
+    "entryEducation": "Formación",
+    "entryRole": "Puesto",
+    "entryProject": "Proyecto",
+    "entryReference": "Referencia",
+    "entry": "Entrada",
+    "statusComplete": "Completo",
+    "statusInProgress": "En curso",
+    "statusNeedsReview": "Requiere revisión",
+    "statusNotStarted": "Sin empezar"
+  },
+  "profileChapters": {
+    "00": {
+      "title": "Bienvenida y elección informada"
+    },
+    "01": {
+      "title": "Identidad, contacto y presencia profesional"
+    },
+    "02": {
+      "title": "Autorización de trabajo, movilidad y disponibilidad"
+    },
+    "03": {
+      "title": "Dirección profesional y reglas de oportunidad"
+    },
+    "04": {
+      "title": "Identidad profesional y narrativa de carrera"
+    },
+    "05": {
+      "title": "Escuela, educación secundaria y desarrollo temprano"
+    },
+    "06": {
+      "title": "Educación superior"
+    },
+    "07": {
+      "title": "Certificaciones, licencias, afiliaciones y formación"
+    },
+    "08": {
+      "title": "Historial laboral"
+    },
+    "09": {
+      "title": "Prácticas, aprendizajes, voluntariado y pausas profesionales"
+    },
+    "10": {
+      "title": "Proyectos, productos y portafolio"
+    },
+    "11": {
+      "title": "Investigación, publicaciones, docencia y contribución pública"
+    },
+    "12": {
+      "title": "Habilidades, herramientas e idiomas"
+    },
+    "13": {
+      "title": "Banco de logros e historias para entrevistas"
+    },
+    "14": {
+      "title": "Motivación, valores y voz de escritura"
+    },
+    "15": {
+      "title": "Módulos de profundidad por puesto"
+    },
+    "16": {
+      "title": "Referencias y verificación"
+    },
+    "17": {
+      "title": "Evidencias y enlaces a documentos"
+    },
+    "18": {
+      "title": "Autoridad de candidatura, límites de la IA y preguntas especiales"
+    },
+    "19": {
+      "title": "Revisión final y declaración"
+    }
   }
 }

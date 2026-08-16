@@ -25,6 +25,7 @@ import CandidateScholarships from '../pages/candidate/CandidateScholarships';
 import CandidatePayments from '../pages/candidate/CandidatePayments';
 import CandidateUpgrade from '../pages/candidate/CandidateUpgrade';
 import CandidateProfile from '../pages/candidate/CandidateProfile';
+import ProfileBuilderPage from '../features/profile-builder/ProfileBuilderPage';
 import SystemUserProfile from '../pages/shared/SystemUserProfile';
 import CandidateSupport from '../pages/candidate/CandidateSupport';
 import AdminRoles from '../pages/admin/AdminRoles';
@@ -205,7 +206,12 @@ export default function AppRoutes() {
         <Route path="notifications" element={<NotificationsPage />} />
         <Route path="support" element={<CandidateSupport />} />
         <Route path="anonymous-discovery" element={<AnonymousJobDiscovery />} />
-        <Route path="profile" element={<CandidateProfile />} />
+        <Route path="profile" element={<ProfileBuilderPage />} />
+        {/* The previous eight-step form, kept reachable while old and new are
+            compared for test profiles (redesign brief §8.3, step 6). It is
+            retired once that comparison is signed off — not before, because it
+            is the only way to check nothing was lost in the migration. */}
+        <Route path="profile/legacy" element={<CandidateProfile />} />
       </Route>
 
       <Route

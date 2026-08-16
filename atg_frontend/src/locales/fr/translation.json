@@ -191,7 +191,9 @@
     "edit": "Modifier",
     "close": "Fermer",
     "submit": "Soumettre",
-    "back": "Retour"
+    "back": "Retour",
+    "retry": "Réessayer",
+    "continue": "Continuer"
   },
   "dashboard": {
     "welcome": "Bon retour",
@@ -335,5 +337,105 @@
     "TIMEOUT": "Le serveur a mis trop de temps à répondre. Veuillez réessayer.",
     "NETWORK": "Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.",
     "UNKNOWN": "Une erreur inattendue s'est produite."
+  },
+  "profileBuilder": {
+    "submitted": "Profil soumis pour révision.",
+    "noSchema": "Les questions du profil ne sont pas encore configurées pour cet environnement.",
+    "submit": "Soumettre pour révision",
+    "chapterLabel": "Chapitre",
+    "navLabel": "Chapitres du profil",
+    "restrictedHidden": "Restreint — communiqué uniquement pour une candidature nommée, avec votre accord.",
+    "selectPlaceholder": "Sélectionner…",
+    "noteRestricted": "Restreint. Partagé uniquement pour une candidature nommée, après votre accord.",
+    "notePrivateNoAi": "Privé. Jamais transmis à des outils d'IA externes.",
+    "notePrivate": "Privé. Utilisé uniquement pour les candidatures.",
+    "progressLabel": "Progression du profil",
+    "progressCount": "{{started}} chapitres sur {{total}} commencés",
+    "chapterNumber": "Chapitre {{code}}",
+    "requiredMissing": "Encore nécessaire ici : {{fields}}",
+    "optionalNote": "La plupart des questions ici sont facultatives. Passez ce qui ne s'applique pas et revenez plus tard.",
+    "saveFailed": "Non enregistré",
+    "saving": "Enregistrement…",
+    "saved": "Enregistré",
+    "errorRequired": "Cette réponse est nécessaire au fonctionnement de votre profil.",
+    "errorEmail": "Saisissez une adresse e-mail valide.",
+    "errorUrl": "Saisissez une adresse complète commençant par http:// ou https://",
+    "errorTooLong": "Cette réponse est trop longue pour être enregistrée. Veuillez la raccourcir.",
+    "addEducation": "Ajouter une formation",
+    "addRole": "Ajouter un poste",
+    "addProject": "Ajouter un projet",
+    "addReference": "Ajouter un référent",
+    "addEntry": "Ajouter une entrée",
+    "entryEducation": "Formation",
+    "entryRole": "Poste",
+    "entryProject": "Projet",
+    "entryReference": "Référent",
+    "entry": "Entrée",
+    "statusComplete": "Terminé",
+    "statusInProgress": "En cours",
+    "statusNeedsReview": "À revoir",
+    "statusNotStarted": "Non commencé"
+  },
+  "profileChapters": {
+    "00": {
+      "title": "Bienvenue et choix éclairé"
+    },
+    "01": {
+      "title": "Identité, contact et présence professionnelle"
+    },
+    "02": {
+      "title": "Autorisation de travail, mobilité et disponibilité"
+    },
+    "03": {
+      "title": "Orientation de carrière et règles d'opportunité"
+    },
+    "04": {
+      "title": "Identité professionnelle et récit de carrière"
+    },
+    "05": {
+      "title": "École, enseignement secondaire et développement précoce"
+    },
+    "06": {
+      "title": "Enseignement supérieur"
+    },
+    "07": {
+      "title": "Certifications, licences, adhésions et formations"
+    },
+    "08": {
+      "title": "Parcours professionnel"
+    },
+    "09": {
+      "title": "Stages, apprentissages, bénévolat et interruptions de carrière"
+    },
+    "10": {
+      "title": "Projets, produits et portfolio"
+    },
+    "11": {
+      "title": "Recherche, publications, enseignement et contribution publique"
+    },
+    "12": {
+      "title": "Compétences, outils et langues"
+    },
+    "13": {
+      "title": "Banque d'anecdotes de réussite et d'entretien"
+    },
+    "14": {
+      "title": "Motivation, valeurs et style d'écriture"
+    },
+    "15": {
+      "title": "Modules d'approfondissement par métier"
+    },
+    "16": {
+      "title": "Références et vérification"
+    },
+    "17": {
+      "title": "Preuves et liens vers les documents"
+    },
+    "18": {
+      "title": "Autorisation de candidature, limites de l'IA et questions particulières"
+    },
+    "19": {
+      "title": "Vérification finale et déclaration"
+    }
   }
 }
