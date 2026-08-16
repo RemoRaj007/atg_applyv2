@@ -198,6 +198,10 @@ app.use("/api/companies", companyRoutes);
 app.use("/api/requests", requestRoutes);
 app.use("/api/profile-columns", profileColumnRoutes);
 app.use("/api/profile-values", profileValueRoutes);
+// The schema-driven master profile: the 20 canonical chapters, the candidate's
+// values and the staff read-only view, all off one schema. The two routers
+// above remain for the existing administrator field editor.
+app.use("/api/profile", require("./modules/profile-schema/profileSchema.routes"));
 app.use("/api/job-forms", jobFormRoutes);
 app.use("/api/skills", skillRoutes);
 app.use("/api/job-roles", require("./modules/jobRoles/jobRole.routes"));

@@ -292,11 +292,39 @@ model ChangeRequest {
   @@index([status])
 }
 
+// One of the 20 canonical chapters of the master profile ("00" — Welcome &
+// informed choice, through "19" — Final review & declaration). The code is the
+// stable key: it is what the candidate builder, the operator view and any
+// future migration address a chapter by, so it must not be renumbered.
+model ProfileSection {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique // "00" … "19"
+  title       String
+  description String?  @db.Text
+  sortOrder   Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  d_status    String   @default("active")
+
+  fields ProfileColumn[]
+
+  @@index([sortOrder])
+}
+
+// The schema for a single profile question.
+//
+// Kept as `ProfileColumn` rather than renamed to `ProfileField`: the brief
+// permits keeping the database name, and renaming a table that already holds
+// administrator-defined fields and their values buys nothing the added columns
+// do not. Everything below `name` is new metadata that lets this table drive
+// the candidate UI, the operator view and the privacy rules, instead of being a
+// second, disconnected field system alongside the hard-coded profile form.
 model ProfileColumn {
   id         Int      @id @default(autoincrement())
   name       String   @unique
   label      String
-  inputType  String // "text", "number", "file"
+  inputType  String // "text", "number", "file", "textarea", "select", "multiselect", "date", "boolean", "url"
   isRequired Boolean  @default(false)
   options    String?  @db.Text
   status     String   @default("active")
@@ -304,7 +332,36 @@ model ProfileColumn {
   updatedAt  DateTime @updatedAt
   d_status   String   @default("active")
 
-  values ProfileValue[]
+  // Canonical field code from the ATG Apply question catalogue — "SYS-01",
+  // "PREF-14", "EXP2-07". Nullable because administrator-created fields have no
+  // catalogue code; unique so a catalogue code can only be seeded once.
+  code      String? @unique
+  sectionId Int?
+  helpText  String? @db.Text
+
+  // Privacy policy carried by the field itself, so it can be enforced rather
+  // than merely displayed. CAREER | PRIVATE | SENSITIVE | RESTRICTED.
+  sensitivity      String @default("CAREER")
+  // Whether this value may ever be sent to an external AI service.
+  // YES | LIMITED | NO. Enforced server-side when building any AI payload.
+  externalAiPolicy String @default("NO")
+
+  defaultApplicationUse String? @db.Text
+  purpose               String? @db.Text
+
+  // Set when the field belongs to a repeatable group ("education",
+  // "employment", "project", "reference"), which is what lets one schema field
+  // hold several entries via ProfileValue.repeatIndex.
+  repeatableGroup String?
+  sortOrder       Int     @default(0)
+  validation      String? @db.Text
+  active          Boolean @default(true)
+
+  section ProfileSection? @relation(fields: [sectionId], references: [id])
+  values  ProfileValue[]
+
+  @@index([sectionId, sortOrder])
+  @@index([repeatableGroup])
 }
 
 model ProfileValue {
@@ -316,10 +373,24 @@ model ProfileValue {
   updatedAt DateTime @updatedAt
   d_status  String   @default("active")
 
+  // Which entry of a repeatable group this value belongs to. 0 for ordinary
+  // single-value fields, so existing rows keep their meaning unchanged.
+  repeatIndex Int @default(0)
+
+  // Who put the value here. Candidate facts and operator-requested corrections
+  // must stay distinguishable — an operator must not be able to silently
+  // overwrite what the candidate said. candidate | operator_request | import.
+  source String @default("candidate")
+
+  verified    Boolean   @default(false)
+  verifiedAt  DateTime?
+  // Attribution for the audit trail: who last wrote this value.
+  updatedById Int?
+
   user   User          @relation(fields: [userId], references: [id])
   column ProfileColumn @relation(fields: [columnId], references: [id])
 
-  @@unique([userId, columnId])
+  @@unique([userId, columnId, repeatIndex])
   @@index([columnId])
 }
 
