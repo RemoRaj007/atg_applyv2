@@ -7,6 +7,10 @@ export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
+    // Prisma 7 reads the seed command from here rather than package.json, so
+    // without this `prisma db seed` reported "No seed command configured" even
+    // though prisma/seed.js exists and `npm run db:seed` runs it.
+    seed: "node prisma/seed.js",
   },
   datasource: {
     url: process.env.DATABASE_URL,
