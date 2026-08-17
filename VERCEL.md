@@ -62,29 +62,65 @@ Compose + VPS setup for production.
    locally. It can reset the database, so never point it at production.
 3. Seed if needed: `npx prisma db seed`.
 
-### Applying migrations to production — a required manual step
+### Applying migrations to production — now part of the build
 
-**Nothing in the deploy pipeline runs migrations.** Vercel's `postinstall` runs
-`prisma generate` only, which regenerates the client but never touches the
-database. Merging a PR that adds a migration therefore ships code that expects
-columns the database does not have, and every query touching them fails at
-runtime with `The column X does not exist in the current database`.
+The deploy pipeline applies migrations. Vercel runs the `vercel-build` script,
+which is `prisma generate && node scripts/migrateOnDeploy.js`. Before this
+existed, `postinstall` ran `prisma generate` alone — regenerating the client
+without touching the database — so merging a PR that added a migration shipped
+code expecting columns the database did not have, and every query touching them
+answered `The column X does not exist in the current database` while the
+deployment itself looked healthy.
 
-Migrations are also not run automatically on purpose: `prisma migrate deploy`
-needs a **session-mode** (port `5432`) connection, while `DATABASE_URL` on Vercel
-is the transaction pooler on port `6543`. Running migrations through a
-transaction pooler is unreliable — it cannot hold the advisory locks Prisma uses.
+**The connection matters, which is why this goes through a script rather than a
+bare `prisma migrate deploy`.** Prisma holds an advisory lock for the duration of
+a migration, and Supabase's transaction pooler (port `6543`) cannot hold one — it
+hands each statement to a different backend. `DATABASE_URL` on Vercel *is* that
+pooler, so it must not be used for migrations. `scripts/migrateOnDeploy.js`
+therefore:
 
-Before running anything, **check the project ref in your connection string is
-`jlfyewnowimoetemzhlt`.** The lookalike `atg-apply` project will happily accept
-the migration and report success while production stays broken.
+- resolves the connection from `MIGRATE_DATABASE_URL`, `POSTGRES_URL_NON_POOLING`
+  or `DIRECT_URL`, in that order — never from `DATABASE_URL`;
+- refuses a string that routes through a transaction pooler (port `6543`, or
+  `pgbouncer=true`/`pool_timeout` in the query), rather than migrating through it;
+- redacts the password before logging which connection it used;
+- **warns without failing** when the connection is missing, is a pooler, or cannot
+  be reached — a configuration gap must not block deploys that add no migration at
+  all, which would be a worse outage than the drift it guards against. The warning
+  is printed in a banner and tells you how to apply the migration by hand;
+- **fails the build** only when a migration actually fails to apply against a
+  database it already connected to, because half an applied migration is not
+  something a redeploy fixes.
 
-So whenever a change adds anything under `prisma/migrations/`, run this yourself
-against production, before or immediately after merging:
+Because a missing variable only warns, the enforcing gate is the **Migration
+status** check in `.github/workflows/deploy.yml`. That check is a no-op unless the
+`MIGRATE_DATABASE_URL` repository secret is set — it exits 0 with a warning and a
+green tick. Set that secret to the session pooler string; otherwise a PR adding a
+migration passes CI without anything having verified production.
+
+With the Supabase integration, `POSTGRES_URL_NON_POOLING` is already provided —
+confirm it is exposed to this project's **build** environment.
+
+One caveat: the integration usually sets `POSTGRES_URL_NON_POOLING` to the
+*direct* host (`db.<ref>.supabase.co:5432`), which Supabase serves over IPv6 only
+unless the IPv4 add-on is enabled, so it can time out from a build runner. That
+surfaces as a failed build rather than a silent skip. If it happens, set
+`MIGRATE_DATABASE_URL` to the IPv4-reachable **session pooler** string
+(`aws-0-ca-central-1.pooler.supabase.com:5432`) — it is checked first and wins.
+
+Before pointing anything at production, **check the project ref in your
+connection string is `jlfyewnowimoetemzhlt`.** The lookalike `atg-apply` project
+will happily accept the migration and report success while production stays
+broken.
+
+To apply migrations by hand — to recover a deployment that shipped before this
+script existed, or to migrate without redeploying:
 
 ```bash
 cd atg_backend
 DATABASE_URL="<session-pooler-string>" npx prisma migrate deploy
+# or, using the same resolution rules as the build:
+POSTGRES_URL_NON_POOLING="<session-pooler-string>" npm run db:migrate:deploy
 ```
 
 To check whether production is up to date at any point:
@@ -140,8 +176,11 @@ already reflected in the schema, rather than editing the table by hand.
   - See the env block in [SETUP.md](SETUP.md#4-manual-setup-if-you-skip-the-script-or-it-fails-partway)
     for the full list: email, SMS, social sign-in, Apify, etc. (The root
     `.env.example` covers only the legacy Docker Compose database variables.)
-- Build command: not required — `prisma generate` runs from the `postinstall`
-  script in `atg_backend/package.json`.
+- Build command: not required — Vercel runs the `vercel-build` script in
+  `atg_backend/package.json`, which runs `prisma generate` and then applies
+  pending migrations (see *Applying migrations to production* above).
+- `POSTGRES_URL_NON_POOLING` must be available to the **build** environment, not
+  just at runtime: the migration step fails the build without it.
 
 ### Cross-site auth
 
