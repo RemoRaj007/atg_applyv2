@@ -83,9 +83,20 @@ therefore:
   or `DIRECT_URL`, in that order — never from `DATABASE_URL`;
 - refuses a string that routes through a transaction pooler (port `6543`, or
   `pgbouncer=true`/`pool_timeout` in the query), rather than migrating through it;
-- fails the build when none is configured, because a build that silently skips
-  migrations succeeds and then serves 500s;
-- redacts the password before logging which connection it used.
+- redacts the password before logging which connection it used;
+- **warns without failing** when the connection is missing, is a pooler, or cannot
+  be reached — a configuration gap must not block deploys that add no migration at
+  all, which would be a worse outage than the drift it guards against. The warning
+  is printed in a banner and tells you how to apply the migration by hand;
+- **fails the build** only when a migration actually fails to apply against a
+  database it already connected to, because half an applied migration is not
+  something a redeploy fixes.
+
+Because a missing variable only warns, the enforcing gate is the **Migration
+status** check in `.github/workflows/deploy.yml`. That check is a no-op unless the
+`MIGRATE_DATABASE_URL` repository secret is set — it exits 0 with a warning and a
+green tick. Set that secret to the session pooler string; otherwise a PR adding a
+migration passes CI without anything having verified production.
 
 With the Supabase integration, `POSTGRES_URL_NON_POOLING` is already provided —
 confirm it is exposed to this project's **build** environment.

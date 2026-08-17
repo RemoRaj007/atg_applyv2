@@ -49,7 +49,7 @@ describe("resolveMigrationUrl", () => {
   // DATABASE_URL is the pooled runtime connection. Using it here is the mistake
   // this whole script exists to prevent, so it is not a candidate at all.
   it("never falls back to DATABASE_URL", () => {
-    expect(() => resolveMigrationUrl({ DATABASE_URL: SESSION })).toThrow(/No session-mode connection/);
+    expect(resolveMigrationUrl({ DATABASE_URL: SESSION })).toBeNull();
   });
 
   it("refuses a transaction pooler rather than migrating through it", () => {
@@ -58,13 +58,11 @@ describe("resolveMigrationUrl", () => {
     );
   });
 
-  // A build that silently skips migrations is the failure mode that shipped
-  // broken code while reporting success.
-  it("fails loudly when nothing is configured", () => {
-    expect(() => resolveMigrationUrl({})).toThrow(/No session-mode connection/);
-    expect(() => resolveMigrationUrl({ POSTGRES_URL_NON_POOLING: "   " })).toThrow(
-      /No session-mode connection/
-    );
+  // Null rather than a throw: an unconfigured build warns and carries on, so a
+  // missing variable cannot take down deploys that add no migration at all.
+  it("reports nothing configured without throwing", () => {
+    expect(resolveMigrationUrl({})).toBeNull();
+    expect(resolveMigrationUrl({ POSTGRES_URL_NON_POOLING: "   " })).toBeNull();
   });
 });
 

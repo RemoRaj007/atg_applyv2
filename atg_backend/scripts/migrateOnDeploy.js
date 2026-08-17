@@ -63,21 +63,89 @@ const resolveMigrationUrl = (env = process.env) => {
     return { name, url: value };
   }
 
-  // Failing is deliberate. A build that skips migrations succeeds and then
-  // serves 500s, which is the failure this script exists to prevent — better a
-  // red build with this message than a green one that half-works.
-  throw new Error(
-    "No session-mode connection string for migrations.\n" +
-      `Set one of: ${CANDIDATES.join(", ")}.\n` +
-      "On Vercel with the Supabase integration, POSTGRES_URL_NON_POOLING is already provided —\n" +
-      "make sure it is exposed to this project's build environment.\n" +
-      "DATABASE_URL is intentionally not used: it is the pooled runtime connection."
-  );
+  return null;
 };
 
-const main = () => {
-  const { name, url } = resolveMigrationUrl();
+const NOT_CONFIGURED = [
+  "No session-mode connection string for migrations, so none were applied.",
+  `Set one of: ${CANDIDATES.join(", ")} in the BUILD environment.`,
+  "On Vercel with the Supabase integration, POSTGRES_URL_NON_POOLING is usually present —",
+  "check it is exposed to builds, not only to runtime.",
+  "DATABASE_URL is intentionally not used: it is the pooled runtime connection.",
+  "",
+  "The deploy continues. If this release added a migration, the database is now behind",
+  "the code and queries touching new columns will fail — apply it by hand:",
+  "  DATABASE_URL='<session-pooler-string>' npx prisma migrate deploy",
+].join("\n");
+
+/** Prints a banner that survives a wall of build output. */
+const warn = (message) => {
+  console.warn(`\n${"!".repeat(72)}\n${message}\n${"!".repeat(72)}\n`);
+};
+
+const PREFLIGHT_TIMEOUT_MS = 10000;
+
+/**
+ * Can we reach the database at all?
+ *
+ * Separating this from the migration is what lets an unreachable database warn
+ * while a genuinely failing migration stops the build. It matters here because
+ * the non-pooling string Supabase hands out is often the direct host, which is
+ * IPv6-only unless the IPv4 add-on is on — unreachable from many build runners,
+ * and a network problem is not a reason to take the deployment down.
+ */
+const canConnect = async (url) => {
+  const { Client } = require("pg");
+  const client = new Client({ connectionString: url, connectionTimeoutMillis: PREFLIGHT_TIMEOUT_MS });
+  try {
+    await client.connect();
+    await client.query("SELECT 1");
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, reason: error.message };
+  } finally {
+    await client.end().catch(() => {});
+  }
+};
+
+const main = async () => {
+  // A configuration gap must not take the deployment down: failing here blocks
+  // every deploy, including ones that add no migration at all, which is a worse
+  // outage than the drift it guards against. Config problems warn; only a
+  // migration that actually fails to apply stops the build, because shipping
+  // half an applied migration is not recoverable by redeploying.
+  let resolved;
+  try {
+    resolved = resolveMigrationUrl();
+  } catch (error) {
+    warn(`${error.message}\n\nThe deploy continues; no migrations were applied.`);
+    return;
+  }
+
+  if (!resolved) {
+    warn(NOT_CONFIGURED);
+    return;
+  }
+
+  const { name, url } = resolved;
   console.log(`Applying migrations using ${name} (${redact(url)})`);
+
+  const reachable = await canConnect(url);
+  if (!reachable.ok) {
+    warn(
+      [
+        `${name} is set but the database could not be reached: ${reachable.reason}`,
+        "",
+        "If this is the direct host (db.<ref>.supabase.co), Supabase serves it over IPv6 only",
+        "unless the IPv4 add-on is enabled, which many build runners cannot use. Set",
+        "MIGRATE_DATABASE_URL to the IPv4-reachable session pooler string (port 5432) —",
+        "it is checked first and wins.",
+        "",
+        "The deploy continues; no migrations were applied.",
+      ].join("\n")
+    );
+    return;
+  }
 
   execFileSync("npx", ["prisma", "migrate", "deploy"], {
     stdio: "inherit",
@@ -90,12 +158,13 @@ const main = () => {
 };
 
 if (require.main === module) {
-  try {
-    main();
-  } catch (error) {
-    console.error(`\nMigration step failed.\n${error.message}\n`);
+  main().catch((error) => {
+    // Reached only when `prisma migrate deploy` itself failed against a
+    // database we had already connected to — a broken migration, which must
+    // stop the build rather than ship half-applied.
+    console.error(`\nMigration step failed: ${error.message}\n`);
     process.exit(1);
-  }
+  });
 }
 
-module.exports = { resolveMigrationUrl, isTransactionPooler, redact, CANDIDATES };
+module.exports = { resolveMigrationUrl, isTransactionPooler, redact, canConnect, CANDIDATES };
