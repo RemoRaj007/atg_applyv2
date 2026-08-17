@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import AtgWordmark from '../ui/AtgWordmark';
+import atgLogo from '../../assets/atg_apply.png';
 import LanguageSelector from '../ui/LanguageSelector';
 import MaintenanceBanner from './MaintenanceBanner';
 
@@ -21,20 +21,21 @@ export default function MarketingHeader() {
     <>
     {/* Site-wide notice, raised from Site Settings. Renders nothing when empty. */}
     <MaintenanceBanner />
-    <header className="flex justify-between items-center py-5 px-8 border-b border-[#D2D2D7] bg-white text-[#1D1D1F] sticky top-0 z-50">
+    <header className="flex justify-between items-center py-6 px-8 border-b border-slate-800 bg-[#0f172a]/95 backdrop-blur-md text-white sticky top-0 z-50 shadow-lg">
       <div className="flex items-center gap-6">
-        <Link to="/" className="flex items-center">
-          <AtgWordmark size="md" />
+        <Link to="/" className="flex items-center gap-3 font-extrabold text-2xl md:text-3xl text-white group">
+          <img src={atgLogo} alt="ATG Apply Logo" className="h-12 w-auto object-contain transition-transform duration-500 group-hover:scale-110" />
+          <span className="tracking-tight text-white transition-all duration-300 group-hover:opacity-90">ATG Apply</span>
         </Link>
-        <nav className="hidden md:flex gap-6 text-base text-[#6E6E73] ml-12">
+        <nav className="hidden md:flex gap-6 text-sm text-slate-300 font-medium ml-12">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.to}
               to={link.to}
               className={
                 pathname === link.to
-                  ? 'text-[#1D1D1F] font-semibold border-b-2 border-[#F05A28] pb-1'
-                  : 'hover:text-[#1D1D1F] transition-colors pb-1'
+                  ? 'text-white font-semibold border-b-2 border-blue-500 pb-1'
+                  : 'hover:text-white transition-colors pb-1'
               }
             >
               {t(link.key)}
@@ -42,10 +43,10 @@ export default function MarketingHeader() {
           ))}
         </nav>
       </div>
-      <div className="flex items-center gap-4 text-base">
+      <div className="flex items-center gap-4 text-sm font-medium">
         <LanguageSelector />
-        <Link to="/login" className="px-5 py-2 border border-[#D2D2D7] rounded-lg text-[#1D1D1F] hover:bg-[#F5F5F7] transition-colors">{t('nav.signIn')}</Link>
-        <Link to="/register" className="px-5 py-2 bg-[#0066CC] text-white rounded-lg hover:bg-[#0055AA] transition-colors hidden md:block">
+        <Link to="/login" className="px-5 py-2 border border-slate-700 rounded text-slate-200 hover:bg-slate-800 transition-colors">{t('nav.signIn')}</Link>
+        <Link to="/register" className="px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-500 transition-colors hidden md:block hover:shadow-md">
           {t('nav.startFree')}
         </Link>
       </div>

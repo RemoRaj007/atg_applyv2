@@ -49,25 +49,25 @@ export default function VerifyEmail() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white px-4">
+    <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
       <div className="max-w-md w-full text-center">
         <img src={atgLogo} alt="ATG Apply" className="h-10 mx-auto mb-8" />
 
         {status === 'verifying' && (
           <>
             <Loader2 className="w-14 h-14 text-action-500 mx-auto mb-4 animate-spin" />
-            <h1 className="text-2xl font-bold text-[#1D1D1F] mb-2">Verifying your email…</h1>
+            <h1 className="text-2xl font-bold text-white mb-2">Verifying your email…</h1>
           </>
         )}
 
         {status === 'success' && (
           <>
             <CheckCircle className="w-14 h-14 text-emerald-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-[#1D1D1F] mb-3">Email verified</h1>
-            <p className="text-[#6E6E73] mb-8">Your address is confirmed. You're all set.</p>
+            <h1 className="text-2xl font-bold text-white mb-3">Email verified</h1>
+            <p className="text-slate-400 mb-8">Your address is confirmed. You're all set.</p>
             <Link
               to="/login"
-              className="inline-block px-6 py-3 rounded-xl bg-action-500 text-[#1D1D1F] font-semibold hover:bg-action-600 transition"
+              className="inline-block px-6 py-3 rounded-xl bg-action-500 text-white font-semibold hover:bg-action-600 transition"
             >
               Continue to sign in
             </Link>
@@ -77,13 +77,13 @@ export default function VerifyEmail() {
         {status === 'error' && (
           <>
             <XCircle className="w-14 h-14 text-rose-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-[#1D1D1F] mb-3">Link invalid or expired</h1>
-            <p className="text-[#6E6E73] mb-8">
+            <h1 className="text-2xl font-bold text-white mb-3">Link invalid or expired</h1>
+            <p className="text-slate-400 mb-8">
               This verification link no longer works. Request a new one below.
             </p>
 
             {resendSent ? (
-              <p className="text-[#6E6E73]">
+              <p className="text-slate-300">
                 Check your inbox for a new link. It expires in 24 hours.
               </p>
             ) : (
@@ -94,19 +94,19 @@ export default function VerifyEmail() {
                   value={resendEmail}
                   onChange={(e) => setResendEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full px-4 py-3 rounded-xl bg-white border border-[#D2D2D7] text-[#1D1D1F] placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-action-500"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-action-500"
                 />
                 <button
                   type="submit"
                   disabled={resending}
-                  className="w-full px-6 py-3 rounded-xl bg-action-500 text-[#1D1D1F] font-semibold hover:bg-action-600 transition disabled:opacity-50"
+                  className="w-full px-6 py-3 rounded-xl bg-action-500 text-white font-semibold hover:bg-action-600 transition disabled:opacity-50"
                 >
                   {resending ? 'Sending…' : 'Resend verification link'}
                 </button>
               </form>
             )}
 
-            <Link to="/login" className="block mt-6 text-sm text-[#6E6E73] hover:text-[#1D1D1F]">
+            <Link to="/login" className="block mt-6 text-sm text-slate-400 hover:text-slate-200">
               Back to sign in
             </Link>
           </>

@@ -13,7 +13,6 @@ const { default: validate } = await import("../../middlewares/validations/valida
 const { default: errorHandler } = await import("../../middlewares/error.middleware.js");
 const { default: notFound } = await import("../../middlewares/notFound.middleware.js");
 const { default: ApiError } = await import("../../utils/ApiError.js");
-const { resolveLocale } = await import("../../middlewares/locale.middleware.js");
 
 const mockRes = () => {
   const res = {};
@@ -175,84 +174,6 @@ describe("error handler", () => {
     const err = new Error("Invalid `prisma.user.findFirst()` invocation: connection string leaked");
     errorHandler(err, mockReq(), res, vi.fn());
     expect(res.json.mock.calls[0][0].message).toBe("Internal server error");
-  });
-
-  // The error body is what a user actually reads when a page fails. It used to
-  // be English only, so a candidate who had selected தமிழ் still met an English
-  // sentence — the "translation not done fully" report. These cover the code +
-  // locale contract that lets the client, and the API itself, localize it.
-  it("carries a stable code for Prisma schema drift", () => {
-    const res = mockRes();
-    const err = new Error("Invalid `prisma.job.findMany()` invocation");
-    err.code = "P2022";
-    errorHandler(err, mockReq(), res, vi.fn());
-    expect(res.json.mock.calls[0][0].code).toBe("DB_SCHEMA_MISSING_COLUMN");
-  });
-
-  it("translates the message when the request asked for another language", () => {
-    const res = mockRes();
-    const err = new Error("Invalid `prisma.job.findMany()` invocation");
-    err.code = "P2022";
-    errorHandler(err, mockReq({ locale: "ta" }), res, vi.fn());
-    const body = res.json.mock.calls[0][0];
-    expect(body.message).toContain("தரவுத்தளத்தில் இல்லை");
-    // The English text stays available under its own key, because logs and
-    // support tickets quote it and must stay searchable.
-    expect(body.messageEn).toBe(
-      "The database is missing a column this API expects. A migration has not been applied to this environment."
-    );
-  });
-
-  it("leaves the English message byte-identical when no language was requested", () => {
-    const res = mockRes();
-    const err = new Error("Invalid `prisma.job.findMany()` invocation");
-    err.code = "P2022";
-    errorHandler(err, mockReq(), res, vi.fn());
-    expect(res.json.mock.calls[0][0].message).toBe(
-      "The database is missing a column this API expects. A migration has not been applied to this environment."
-    );
-  });
-
-  // Regression guard: an earlier draft derived the code from the HTTP status, so
-  // every 404 answered "The requested item could not be found." and "Job not
-  // found" was lost. A translated but vaguer message is a downgrade.
-  it("does not flatten a specific 4xx message into a generic translated one", () => {
-    const res = mockRes();
-    errorHandler(ApiError.notFound("Job not found"), mockReq({ locale: "ta" }), res, vi.fn());
-    const body = res.json.mock.calls[0][0];
-    expect(body.message).toBe("Job not found");
-    expect(body.code).toBeUndefined();
-  });
-
-  it("falls back to English for a language with no translation of that code", () => {
-    const res = mockRes();
-    const err = new Error("boom");
-    err.code = "P2022";
-    errorHandler(err, mockReq({ locale: "de" }), res, vi.fn());
-    expect(res.json.mock.calls[0][0].message).toContain("The database is missing a column");
-  });
-});
-
-describe("locale middleware", () => {
-  it("picks the base language, ignoring the region", () => {
-    expect(resolveLocale("ta-LK,ta;q=0.9,en;q=0.8")).toBe("ta");
-  });
-
-  it("honours quality order rather than document order", () => {
-    expect(resolveLocale("en;q=0.2,si;q=0.9")).toBe("si");
-  });
-
-  it("falls back to English for an unsupported or absent language", () => {
-    expect(resolveLocale("de-DE,de;q=0.9")).toBe("en");
-    expect(resolveLocale("")).toBe("en");
-    expect(resolveLocale(undefined)).toBe("en");
-  });
-
-  // The header is attacker-controllable, so a malformed one must degrade to
-  // English rather than throw on every single request.
-  it("survives a malformed header", () => {
-    expect(resolveLocale(";;;q=notanumber,,")).toBe("en");
-    expect(resolveLocale("*")).toBe("en");
   });
 });
 

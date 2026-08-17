@@ -20,13 +20,7 @@ const getByUserId = asyncHandler(async (req, res) => {
     return res.status(403).json({ status: false, message: "Forbidden: Access denied" });
   }
 
-  // Pass the viewer so restricted values are withheld from staff reading
-  // someone else's profile. Without this the endpoint returned every value it
-  // had, including the ones the schema marks release-on-approval only.
-  const values = await profileValueService.getByUserId(userId, {
-    id: req.user.id,
-    role: req.user.role,
-  });
+  const values = await profileValueService.getByUserId(userId);
   sendSuccess(res, { message: "Profile values retrieved", data: { values } });
 });
 

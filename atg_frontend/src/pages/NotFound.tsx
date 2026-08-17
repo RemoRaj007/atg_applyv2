@@ -10,16 +10,16 @@ export default function NotFound() {
   const home = isAuthenticated && user ? `/${user.role}` : '/';
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white px-4">
+    <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
       <div className="max-w-md w-full text-center">
-        <p className="text-7xl font-semibold text-[#F05A28] mb-2">404</p>
-        <h1 className="text-2xl font-semibold text-[#1D1D1F] mb-3">Page not found</h1>
-        <p className="text-[#6E6E73] mb-8">
+        <p className="text-7xl font-black text-action-500 mb-2">404</p>
+        <h1 className="text-2xl font-bold text-white mb-3">Page not found</h1>
+        <p className="text-slate-400 mb-8">
           The page you're looking for doesn't exist, or it may have moved.
         </p>
         <Link
           to={home}
-          className="inline-block min-h-11 px-6 py-3 rounded-lg bg-[#0066CC] text-white font-medium hover:bg-[#0055AA] transition-colors"
+          className="inline-block px-6 py-3 rounded-xl bg-action-500 text-white font-semibold hover:bg-action-600 transition"
         >
           {isAuthenticated ? 'Back to dashboard' : 'Back to home'}
         </Link>

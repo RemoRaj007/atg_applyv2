@@ -129,12 +129,6 @@ app.use((req, res, next) =>
   SAFE_METHODS.has(req.method) ? next() : requireTrustedOrigin(req, res, next)
 );
 
-// Resolves Accept-Language into req.locale for every request, so the error
-// handler can answer in the language the user selected. Mounted before the
-// routers because any of them can throw, and after the security middleware
-// because an unauthenticated request has no business setting up locale state.
-app.use(require("./middlewares/locale.middleware"));
-
 // A ceiling for the whole API. Until now only the auth endpoints and the
 // contact form were limited, so every other router — applications, payments,
 // users, profile values — could be called as fast as the network allowed by
@@ -198,10 +192,6 @@ app.use("/api/companies", companyRoutes);
 app.use("/api/requests", requestRoutes);
 app.use("/api/profile-columns", profileColumnRoutes);
 app.use("/api/profile-values", profileValueRoutes);
-// The schema-driven master profile: the 20 canonical chapters, the candidate's
-// values and the staff read-only view, all off one schema. The two routers
-// above remain for the existing administrator field editor.
-app.use("/api/profile", require("./modules/profile-schema/profileSchema.routes"));
 app.use("/api/job-forms", jobFormRoutes);
 app.use("/api/skills", skillRoutes);
 app.use("/api/job-roles", require("./modules/jobRoles/jobRole.routes"));
