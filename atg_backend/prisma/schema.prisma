@@ -292,11 +292,29 @@ model ChangeRequest {
   @@index([status])
 }
 
+// The 20 chapters of the ATG Apply question catalogue ("00 — Welcome &
+// informed choice" … "19 — Final review & declaration"). `code` is the two
+// digit prefix and is the stable key; the catalogue may reword a title, but a
+// chapter's code never changes.
+model ProfileSection {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique
+  title     String
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  columns ProfileColumn[]
+
+  @@index([sortOrder])
+}
+
 model ProfileColumn {
   id         Int      @id @default(autoincrement())
   name       String   @unique
   label      String
-  inputType  String // "text", "number", "file"
+  inputType  String // "text", "textarea", "select", "multiselect", "number", "file"
   isRequired Boolean  @default(false)
   options    String?  @db.Text
   status     String   @default("active")
@@ -304,7 +322,31 @@ model ProfileColumn {
   updatedAt  DateTime @updatedAt
   d_status   String   @default("active")
 
-  values ProfileValue[]
+  // ─── Question catalogue metadata ───────────────────────────────
+  // `code` is the catalogue field code (SYS-01, EDU1-03, RULE-07). It is the
+  // migration and API key, so it is stable even when the wording changes.
+  code       String? @unique
+  sectionId  Int?
+  helpText   String? @db.Text
+  purpose    String? @db.Text
+  // How exposed the answer is. PRIVATE and RESTRICTED answers are never sent
+  // to an employer by default, and the catalogue marks some of them as unsafe
+  // for external AI processing — see externalAiPolicy.
+  sensitivity          String  @default("CAREER") // CAREER | PRIVATE | SENSITIVE | RESTRICTED
+  externalAiPolicy     String  @default("NO") // YES | LIMITED | NO
+  defaultApplicationUse String? @db.Text
+  validation           String? @db.Text // JSON, e.g. {"format":"email"}
+  // Questions asked once per entry (education, employment, project, reference)
+  // share a group. The schema carries one copy; repetition is repeatIndex's job.
+  repeatableGroup String?
+  sortOrder       Int     @default(0)
+  active          Boolean @default(true)
+
+  section ProfileSection? @relation(fields: [sectionId], references: [id])
+  values  ProfileValue[]
+
+  @@index([sectionId, sortOrder])
+  @@index([repeatableGroup])
 }
 
 model ProfileValue {
@@ -312,6 +354,10 @@ model ProfileValue {
   userId    Int
   columnId  Int
   value     String   @db.Text
+  // Which entry of a repeatable group this answer belongs to: 0 for an
+  // ordinary question, 0..n for "Education 1", "Education 2", and so on.
+  // Existing rows predate repeatable groups and default to entry 0.
+  repeatIndex Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   d_status  String   @default("active")
@@ -319,7 +365,7 @@ model ProfileValue {
   user   User          @relation(fields: [userId], references: [id])
   column ProfileColumn @relation(fields: [columnId], references: [id])
 
-  @@unique([userId, columnId])
+  @@unique([userId, columnId, repeatIndex])
   @@index([columnId])
 }
 
