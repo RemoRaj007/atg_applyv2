@@ -101,8 +101,8 @@ describe("stripEntryNumber", () => {
   // The card is already labelled "Education 2", so repeating the number in
   // every question reads as a duplicate.
   it("removes the entry number from a repeatable label", () => {
-    expect(stripEntryNumber("Education 1 — institution and country")).toBe("institution and country");
-    expect(stripEntryNumber("Experience 3 — responsibilities")).toBe("responsibilities");
+    expect(stripEntryNumber("Education 1 — institution and country")).toBe("Institution and country");
+    expect(stripEntryNumber("Experience 3 — responsibilities")).toBe("Responsibilities");
   });
 
   it("leaves a non-repeatable label untouched", () => {

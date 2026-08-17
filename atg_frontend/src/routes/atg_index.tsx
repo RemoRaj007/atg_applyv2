@@ -24,6 +24,7 @@ import CandidateApplications from '../pages/candidate/CandidateApplications';
 import CandidateScholarships from '../pages/candidate/CandidateScholarships';
 import CandidatePayments from '../pages/candidate/CandidatePayments';
 import CandidateUpgrade from '../pages/candidate/CandidateUpgrade';
+import ProfileBuilderPage from '../features/profile-builder/ProfileBuilderPage';
 import CandidateProfile from '../pages/candidate/CandidateProfile';
 import SystemUserProfile from '../pages/shared/SystemUserProfile';
 import CandidateSupport from '../pages/candidate/CandidateSupport';
@@ -205,7 +206,11 @@ export default function AppRoutes() {
         <Route path="notifications" element={<NotificationsPage />} />
         <Route path="support" element={<CandidateSupport />} />
         <Route path="anonymous-discovery" element={<AnonymousJobDiscovery />} />
-        <Route path="profile" element={<CandidateProfile />} />
+        <Route path="profile" element={<ProfileBuilderPage />} />
+        {/* The structured profile the catalogue supersedes. Still routed
+            because the operator profile view and the CV export read those
+            tables, so removing it would strip their only data source. */}
+        <Route path="profile/legacy" element={<CandidateProfile />} />
       </Route>
 
       <Route

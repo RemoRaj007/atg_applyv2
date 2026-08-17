@@ -61,3 +61,7 @@ Thumbs.db
 *.tar.xz
 *.tar.zst
 ```
+# Runtime uploads. The directory is kept (uploads/.gitkeep) but the files
+# candidates and seeds write into it are user data, not source.
+atg_backend/uploads/*
+!atg_backend/uploads/.gitkeep

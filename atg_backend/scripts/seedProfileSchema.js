@@ -16,6 +16,11 @@
  * Run: node scripts/seedProfileSchema.js [--dry-run]
  */
 
+// Loaded before config/db so the standalone run has DATABASE_URL. Requiring
+// this module from prisma/seed.js is unaffected — dotenv only fills in
+// variables the environment has not already set.
+require("dotenv").config();
+
 const fs = require("fs");
 const path = require("path");
 const { prisma } = require("../config/db");
@@ -66,8 +71,12 @@ const classifyCode = (code) => {
 
 // "Education 1 — institution and country" reads oddly on a repeatable card that
 // is already labelled "Education 2", so the entry number comes off the label.
-const stripEntryNumber = (label) =>
-  label.replace(/^(Education|Experience|Project|Reference)\s+\d+\s*[—–-]\s*/i, "").trim();
+// What remains started mid-sentence, so it is recapitalised to stand alone.
+const stripEntryNumber = (label) => {
+  const stripped = label.replace(/^(Education|Experience|Project|Reference)\s+\d+\s*[—–-]\s*/i, "").trim();
+  if (stripped === label) return stripped;
+  return stripped.charAt(0).toUpperCase() + stripped.slice(1);
+};
 
 const parseOptions = (raw) => {
   const trimmed = String(raw || "").trim();
