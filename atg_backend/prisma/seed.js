@@ -21,6 +21,7 @@ const path = require('path');
 const argon2 = require('argon2');
 const { prisma } = require('../config/db');
 const { toRecords } = require('../scripts/importScholarships');
+const { seedProfileSchema } = require('../scripts/seedProfileSchema');
 
 const FORCE = process.argv.includes('--force');
 const SEED_PASSWORD = 'Password123!';
@@ -42,7 +43,8 @@ async function wipeAll() {
     'userReference', 'userExperience', 'userOtherQualification', 'userDocument',
     'userItSkill', 'userLanguage', 'userAcademicQualification', 'userAddress',
     'userPhone', 'userProfile', 'payment', 'notification', 'scholarship',
-    'logEntry', 'changeRequest', 'profileColumn', 'job', 'jobRole', 'skill',
+    'logEntry', 'changeRequest', 'profileColumn', 'profileSection',
+    'job', 'jobRole', 'skill',
     'user', 'company',
   ];
   for (const model of order) {
@@ -373,6 +375,12 @@ async function main() {
   }
   done(`${appCount} applications created across ${candidates.length} candidates.`);
 
+  head('PROFILE QUESTION CATALOGUE');
+  // The 20-chapter questionnaire is the candidate profile: without it the
+  // profile builder has nothing to render, so a seeded database needs it.
+  const catalogue = await seedProfileSchema();
+  done(`${catalogue.sections} chapters and ${catalogue.fields} questions seeded.`);
+
   head('SUMMARY');
   console.log(`
 ${c.bold}${c.green}  Database seeded successfully!${c.reset}
@@ -388,6 +396,7 @@ ${c.bold}${c.green}  Database seeded successfully!${c.reset}
   • ${createdJobs.length} jobs (with skills attached)
   • ${SCHOLARSHIPS.length} scholarships
   • ${appCount} candidate applications
+  • ${catalogue.sections} profile chapters, ${catalogue.fields} profile questions
   `);
 }
 
