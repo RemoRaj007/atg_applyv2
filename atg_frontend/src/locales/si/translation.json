@@ -25,24 +25,24 @@
     "siteContent": "අඩවි අන්තර්ගතය",
     "siteSettings": "අඩවි සැකසුම්",
     "emailTemplates": "ඊමේල් අච්චු",
-    "dashboardHub": "Dashboard Hub",
-    "myBookedApps": "My Applications",
-    "candidates": "Candidates",
-    "jobsCatalog": "Jobs Catalog",
-    "scholarshipsCatalog": "Scholarships Catalog",
-    "jobLinkDesk": "Job Link Desk",
-    "applicationsHub": "Applications Hub",
-    "reports": "Reports",
-    "skillsCatalog": "Skills Catalog",
-    "jobRolesCatalog": "Job Roles Catalog",
-    "companies": "Companies",
-    "profileSchema": "Job Profile Schema",
-    "userManagement": "User Management",
-    "changeApprovals": "Change Approvals",
-    "paymentOptions": "Payment Options",
-    "teamCapacity": "Team Capacity",
-    "notifications": "Notifications",
-    "upgrade": "Upgrade"
+    "dashboardHub": "උපකරණ පුවරු මධ්‍යස්ථානය",
+    "myBookedApps": "මගේ අයදුම්පත්",
+    "candidates": "අපේක්ෂකයන්",
+    "jobsCatalog": "රැකියා නාමාවලිය",
+    "scholarshipsCatalog": "ශිෂ්‍යත්ව නාමාවලිය",
+    "jobLinkDesk": "රැකියා සබැඳි මේසය",
+    "applicationsHub": "අයදුම් මධ්‍යස්ථානය",
+    "reports": "වාර්තා",
+    "skillsCatalog": "කුසලතා නාමාවලිය",
+    "jobRolesCatalog": "රැකියා භූමිකා නාමාවලිය",
+    "companies": "සමාගම්",
+    "profileSchema": "රැකියා පැතිකඩ ව්‍යුහය",
+    "userManagement": "පරිශීලක කළමනාකරණය",
+    "changeApprovals": "වෙනස්කම් අනුමැති",
+    "paymentOptions": "ගෙවීම් විකල්ප",
+    "teamCapacity": "කණ්ඩායම් ධාරිතාව",
+    "notifications": "දැනුම්දීම්",
+    "upgrade": "උසස් කරන්න"
   },
   "footer": {
     "tagline": "මිනිස් මැදිහත්වීමෙන් සිදුවන රැකියා අයදුම්පත් සේවාව. පුහුණු කණ්ඩායමක් මගින් සකස් කර ඉදිරිපත් කරනු ලැබේ.",
@@ -59,10 +59,15 @@
     "badge": "මිනිස් මැදිහත්වීමෙන් · පර්යේෂණාත්මක",
     "titleLine1": "ඔබේ පෞද්ගලික රැකියා",
     "titleLine2": "අයදුම්පත් කණ්ඩායම.",
-    "subtitle": "පුහුණු ලත් කණ්ඩායමක් විසින් රැකියා පරීක්ෂා කර, ඔබේ CV එක සකස් කර සාක්ෂි සහිතව අයදුම්පත් යොමු කරයි.",
+    "subtitle": "සිසුන්, උපාධිධාරීන් සහ කාර්යබහුල වෘත්තිකයන්ට සුදුසු රැකියා සොයාගැනීමට, ශක්තිමත් අයදුම්පත් සකස් කිරීමට සහ විශ්වාසයෙන් අයදුම් කිරීමට අපි උදව් කරමු. අපගේ පුහුණු කණ්ඩායම තනතුරු පිළිබඳ පර්යේෂණ කර, ඔබගේ ගැලපීම පරීක්ෂා කර, ඔබගේ CV සහ අභිප්‍රේරණ ලිපිය සකසා, ඔබ වෙනුවෙන් ඉදිරිපත් කරයි.",
     "startTrial": "නොමිලේ අත්හදා බලන්න — අයදුම්පත් 2ක්",
     "viewPricing": "ගාස්තු විස්තර බලන්න",
-    "guaranteeNote": "කාඩ්පත් අවශ්‍ය නැත · නොමිලේ අයදුම්පත් 2ක් · මිනිස් මැදිහත්වීමෙන්"
+    "guaranteeNote": "කාඩ්පත් අවශ්‍ය නැත · නොමිලේ අයදුම්පත් 2ක් · මිනිස් මැදිහත්වීමෙන්",
+    "title": "ඔබගේම රැකියා\nඅයදුම් කණ්ඩායම.",
+    "eyebrow": "එක් පැතිකඩක්. සෑම අවස්ථාවක්ම.",
+    "primaryCta": "ඔබගේ පැතිකඩ සාදන්න",
+    "secondaryCta": "මෙය ක්‍රියා කරන ආකාරය බලන්න",
+    "reassurance": "කාඩ්පතක් අවශ්‍ය නැත. ඔබ සෑහීමකට පත් වූ විට පමණක් ගෙවන්න."
   },
   "features": {
     "title": "ATG Apply තෝරාගත යුත්තේ ඇයි?",
@@ -145,9 +150,9 @@
   "auth": {
     "welcomeBack": "සාදරයෙන් පිළිගනිමු",
     "loginSubtitle": "ඔබේ ගිණුමට ඇතුළු වන්න",
-    "emailLabel": "විද්‍යුත් තැපෑල",
+    "emailLabel": "විද්‍යුත් තැපැල් ලිපිනය",
     "passwordLabel": "මුරපදය",
-    "forgotPassword": "මුරපදය අමතක වුනාද?",
+    "forgotPassword": "මුරපදය අමතකද?",
     "signInBtn": "ඇතුළු වන්න",
     "noAccount": "ගිණුමක් නැද්ද?",
     "registerNow": "දැන්ම ලියාපදිංචි වන්න",
@@ -156,7 +161,22 @@
     "fullName": "සම්පූර්ණ නම",
     "registerBtn": "ගිණුම සාදන්න",
     "alreadyHaveAccount": "දැනටමත් ගිණුමක් තිබේද?",
-    "signInLink": "ඇතුළු වන්න"
+    "signInLink": "ඇතුළු වන්න",
+    "welcomeToast": "නැවත සාදරයෙන් පිළිගනිමු.",
+    "eyebrow": "එක් පැතිකඩක්. සෑම අවස්ථාවක්ම.",
+    "openingHeadline": "ඔබගේ එක ගොඩනඟමු.",
+    "openingSupport": "අද ඔබ දන්නා දෙයින් පටන් ගන්න. ඔබගේ වෘත්තීය ජීවිතය වර්ධනය වන විට නැවත පැමිණ තවත් එක් කරන්න.",
+    "hidePassword": "මුරපදය සඟවන්න",
+    "showPassword": "මුරපදය පෙන්වන්න",
+    "rememberMe": "මාව මතක තබාගන්න",
+    "signingIn": "පිවිසෙමින්…",
+    "signIn": "පිවිසෙන්න",
+    "orContinueWith": "හෝ",
+    "createAccount": "එකක් සාදන්න",
+    "privacyLink": "ATG Apply ඔබගේ තොරතුරු හසුරුවන ආකාරය",
+    "registerHeadline": "ඔබ සිටින තැනින් පටන් ගන්න.",
+    "registerSupport": "ඔබගේ පැතිකඩ සාදා, අද ඔබ සතුව ඇති තරමට ඔබගේ වෘත්තීය තොරතුරු එක් කරන්න.",
+    "createAccountHeading": "ඔබගේ ගිණුම සාදන්න"
   },
   "common": {
     "backToHome": "මුල් පිටුවට",
@@ -164,13 +184,16 @@
     "save": "සුරකින්න",
     "cancel": "අවලංගු කරන්න",
     "loading": "පූරණය වෙමින් පවතී...",
-    "search": "Search",
-    "filter": "Filter",
-    "action": "Action",
-    "delete": "Delete",
-    "edit": "Edit",
-    "close": "Close",
-    "submit": "Submit"
+    "search": "සොයන්න",
+    "filter": "පෙරන්න",
+    "action": "ක්‍රියාව",
+    "delete": "මකන්න",
+    "edit": "සංස්කරණය",
+    "close": "වසන්න",
+    "submit": "ඉදිරිපත් කරන්න",
+    "back": "ආපසු",
+    "retry": "නැවත උත්සාහ කරන්න",
+    "continue": "ඉදිරියට"
   },
   "contactPage": {
     "title": "අප හා සම්බන්ධ වන්න",
@@ -194,82 +217,238 @@
     "errorGeneric": "යමක් වැරදී ගියේය. නැවත උත්සාහ කරන්න."
   },
   "dashboard": {
-    "welcome": "Welcome back",
-    "overview": "Overview of your application pipeline and activity.",
-    "totalApplications": "Total Applications",
-    "submitted": "Submitted",
-    "inProgress": "In Progress",
-    "availableBalance": "Available Balance",
-    "recentActivity": "Recent Activity",
-    "quickActions": "Quick Actions",
-    "browseJobs": "Browse Recommended Jobs",
-    "viewApplications": "View Application Trackers",
-    "manageProfile": "Update Candidate Profile",
-    "noRecentActivity": "No recent activity recorded yet."
+    "welcome": "නැවත සාදරයෙන් පිළිගනිමු",
+    "overview": "ඔබගේ අයදුම් ක්‍රියාවලිය සහ ක්‍රියාකාරකම් පිළිබඳ දළ විශ්ලේෂණය.",
+    "totalApplications": "මුළු අයදුම්පත්",
+    "submitted": "ඉදිරිපත් කර ඇත",
+    "inProgress": "ක්‍රියාත්මකයි",
+    "availableBalance": "ලබාගත හැකි ශේෂය",
+    "recentActivity": "මෑත ක්‍රියාකාරකම්",
+    "quickActions": "ඉක්මන් ක්‍රියා",
+    "browseJobs": "නිර්දේශිත රැකියා බලන්න",
+    "viewApplications": "අයදුම් ලුහුබැඳීම් බලන්න",
+    "manageProfile": "අපේක්ෂක පැතිකඩ යාවත්කාලීන කරන්න",
+    "noRecentActivity": "මෑත ක්‍රියාකාරකම් සටහන් වී නැත.",
+    "heroHeadline": "ඔබගේ මීළඟ අවස්ථාව",
+    "heroSupport": "අද ඔබ දන්නා දේ එක් කරන්න. ඔබගේ උපදෙස් අනුව නිවැරදි අයදුම්පත් සකස් කිරීමට ඔබගේ කණ්ඩායම එය භාවිත කරයි.",
+    "operatorRequestEyebrow": "ක්‍රියාකරු ඉල්ලීම",
+    "sendJobLinkHeading": "බාහිර රැකියා සබැඳියක් ඔබගේ ක්‍රියාකරු වෙත එවන්න",
+    "sendJobLinkSupport": "වෙනත් තැනක තනතුරක් හමු වුණාද? සබැඳිය අලවන්න, එය ඔබගේ පැතිකඩට කෙතරම් ගැලපේද යන්න ක්‍රියාකරුවෙකු තක්සේරු කරයි.",
+    "jobLinkPlaceholder": "රැකියා දැන්වීමේ URL එක අලවන්න",
+    "sending": "යවමින්…",
+    "sendToOperator": "ක්‍රියාකරු වෙත එවන්න",
+    "recommendedHeading": "අප නිර්දේශ කරන අවස්ථා",
+    "noRecommendations": "තවම නිර්දේශ නැත",
+    "quickJobs": "රැකියා සොයන්න",
+    "quickJobsCaption": "තනතුරු සොයාගන්න",
+    "quickJobLink": "රැකියා සබැඳිය එවන්න",
+    "quickJobLinkCaption": "ක්‍රියාකරු මේසය සහ කතාබහ",
+    "quickScholarships": "ශිෂ්‍යත්ව",
+    "quickScholarshipsCaption": "ප්‍රදාන සහ අරමුදල්",
+    "quickApplications": "අයදුම්පත්",
+    "quickApplicationsCaption": "සොයා බලා සමාලෝචනය කරන්න",
+    "quickProfile": "මගේ පැතිකඩ",
+    "quickProfileCaption": "මනාපයන්",
+    "trustPlatform": "විශ්වාසනීය වේදිකාව",
+    "trustPlatformCaption": "ආරක්ෂිත සහ විශ්වසනීයයි",
+    "trustCompanies": "ප්‍රමුඛ සමාගම්",
+    "trustCompaniesCaption": "හොඳම අය සමඟ වැඩ කරන්න",
+    "trustMatching": "සැලකිලිමත් ගැලපීම",
+    "trustMatchingCaption": "ඔබගේ පැතිකඩට ගැලපෙන තනතුරු",
+    "trustSupport": "මානුෂීය සහාය",
+    "trustSupportCaption": "ඔබ පැත්තේ සැබෑ පුද්ගලයෙක්"
   },
   "jobs": {
-    "title": "Recommended Jobs",
-    "subtitle": "Roles matched to your profile with detailed fit scoring.",
-    "searchPlaceholder": "Search by job title, company, or location...",
-    "filterAll": "All Jobs",
-    "filterHighFit": "High Fit (80%+)",
-    "filterMediumFit": "Medium Fit (50%-79%)",
-    "applyNow": "Apply Now",
-    "viewDetails": "View Details",
-    "fitScore": "Fit Score",
-    "location": "Location",
-    "salary": "Salary",
-    "postedDate": "Posted",
-    "company": "Company",
-    "status": "Status",
-    "alreadyApplied": "Applied"
+    "title": "නිර්දේශිත රැකියා",
+    "subtitle": "ඔබගේ පැතිකඩට ගැලපෙන තනතුරු, විස්තරාත්මක ගැලපීම් ලකුණු සමඟ.",
+    "searchPlaceholder": "රැකියා නාමය, සමාගම හෝ ස්ථානය අනුව සොයන්න…",
+    "filterAll": "සියලු රැකියා",
+    "filterHighFit": "ඉහළ ගැලපීම (80%+)",
+    "filterMediumFit": "මධ්‍යම ගැලපීම (50%-79%)",
+    "applyNow": "දැන් අයදුම් කරන්න",
+    "viewDetails": "විස්තර බලන්න",
+    "fitScore": "ගැලපීම් ලකුණු",
+    "location": "ස්ථානය",
+    "salary": "වැටුප",
+    "postedDate": "පළ කළ දිනය",
+    "company": "සමාගම",
+    "status": "තත්ත්වය",
+    "alreadyApplied": "අයදුම් කර ඇත"
   },
   "applications": {
-    "title": "My Applications",
-    "subtitle": "Track real-time status and view proof of submission for every job.",
-    "statusPending": "Pending Review",
-    "statusSubmitted": "Submitted",
-    "statusInReview": "Under Review",
-    "statusRejected": "Unsuccessful",
-    "statusAccepted": "Interview / Offer",
-    "viewProof": "View Proof Document",
-    "proofUploaded": "Proof Logged",
-    "noApplications": "No applications found."
+    "title": "මගේ අයදුම්පත්",
+    "subtitle": "සෑම රැකියාවක් සඳහාම තත්ත්වය තත්‍ය කාලීනව නිරීක්ෂණය කර ඉදිරිපත් කිරීමේ සාක්ෂි බලන්න.",
+    "statusPending": "සමාලෝචනය බලාපොරොත්තුවෙන්",
+    "statusSubmitted": "ඉදිරිපත් කර ඇත",
+    "statusInReview": "සමාලෝචනය වෙමින්",
+    "statusRejected": "සාර්ථක නොවීය",
+    "statusAccepted": "සම්මුඛ පරීක්ෂණය / ඉදිරිපත් කිරීම",
+    "viewProof": "සාක්ෂි ලේඛනය බලන්න",
+    "proofUploaded": "සාක්ෂි සටහන් කර ඇත",
+    "noApplications": "අයදුම්පත් හමු නොවීය."
   },
   "payments": {
-    "title": "Payments & Balance",
-    "subtitle": "Manage your application package balance and billing transaction receipts.",
-    "currentBalance": "Current Application Balance",
-    "buyPackages": "Purchase Package",
-    "transactionHistory": "Transaction History",
-    "amount": "Amount",
-    "package": "Package",
-    "date": "Date",
-    "status": "Payment Status",
-    "pending": "Pending Verification",
-    "paid": "Paid",
-    "refunded": "Refunded"
+    "title": "ගෙවීම් සහ ශේෂය",
+    "subtitle": "ඔබගේ අයදුම් පැකේජ ශේෂය සහ බිල්පත් රිසිට්පත් කළමනාකරණය කරන්න.",
+    "currentBalance": "වත්මන් අයදුම් ශේෂය",
+    "buyPackages": "පැකේජය මිලදී ගන්න",
+    "transactionHistory": "ගනුදෙනු ඉතිහාසය",
+    "amount": "මුදල",
+    "package": "පැකේජය",
+    "date": "දිනය",
+    "status": "ගෙවීම් තත්ත්වය",
+    "pending": "සත්‍යාපනය බලාපොරොත්තුවෙන්",
+    "paid": "ගෙවා ඇත",
+    "refunded": "ආපසු ගෙවා ඇත"
   },
   "profile": {
-    "title": "Candidate Profile",
-    "subtitle": "Complete your intake profile to unlock recommended job matches.",
-    "personalDetails": "Personal Details",
-    "contactInfo": "Contact Information",
-    "educationInfo": "Education & Degrees",
-    "skillsInfo": "IT & Other Skills",
-    "documentsInfo": "Documents & Resume",
-    "saveProfile": "Save Profile Changes",
-    "completionStatus": "Profile Completion"
+    "title": "අපේක්ෂක පැතිකඩ",
+    "subtitle": "නිර්දේශිත රැකියා ගැලපීම් විවෘත කිරීමට ඔබගේ පැතිකඩ සම්පූර්ණ කරන්න.",
+    "personalDetails": "පුද්ගලික විස්තර",
+    "contactInfo": "සම්බන්ධතා තොරතුරු",
+    "educationInfo": "අධ්‍යාපනය සහ උපාධි",
+    "skillsInfo": "තොරතුරු තාක්ෂණ සහ වෙනත් කුසලතා",
+    "documentsInfo": "ලේඛන සහ ජීව දත්ත",
+    "saveProfile": "පැතිකඩ වෙනස්කම් සුරකින්න",
+    "completionStatus": "පැතිකඩ සම්පූර්ණත්වය"
   },
   "admin": {
-    "title": "Admin Console",
-    "manageUsers": "User Management",
-    "manageCompanies": "Companies Catalog",
-    "schemaBuilder": "Profile Schema Builder",
-    "approvals": "Pending Approvals",
-    "paymentOptions": "Package Pricing Options",
-    "totalUsers": "Total System Users",
-    "activeCompanies": "Active Partner Companies",
-    "pendingReviews": "Pending Reviews"
+    "title": "පරිපාලක කොන්සෝලය",
+    "manageUsers": "පරිශීලක කළමනාකරණය",
+    "manageCompanies": "සමාගම් නාමාවලිය",
+    "schemaBuilder": "පැතිකඩ ව්‍යුහ නිර්මාපකය",
+    "approvals": "අනුමැතිය බලාපොරොත්තුවෙන්",
+    "paymentOptions": "පැකේජ මිල විකල්ප",
+    "totalUsers": "මුළු පද්ධති පරිශීලකයන්",
+    "activeCompanies": "සක්‍රීය හවුල්කාර සමාගම්",
+    "pendingReviews": "සමාලෝචන බලාපොරොත්තුවෙන්"
+  },
+  "errors": {
+    "DB_SCHEMA_MISSING_TABLE": "මෙම API අපේක්ෂා කරන වගුවක් දත්ත ගබඩාවේ නොමැත. මෙම පරිසරයට සංක්‍රමණයක් (migration) තවම යොදා නොමැත.",
+    "DB_SCHEMA_MISSING_COLUMN": "මෙම API අපේක්ෂා කරන තීරුවක් දත්ත ගබඩාවේ නොමැත. මෙම පරිසරයට සංක්‍රමණයක් (migration) තවම යොදා නොමැත.",
+    "INTERNAL": "අපගේ පැත්තෙන් යම් දෝෂයක් සිදු විය. නැවත උත්සාහ කරන්න.",
+    "AUTH_INVALID_CREDENTIALS": "විද්‍යුත් තැපැල් ලිපිනය හෝ මුරපදය වැරදිය.",
+    "AUTH_SESSION_EXPIRED": "ඔබගේ සැසිය අවසන් වී ඇත. නැවත පිවිසෙන්න.",
+    "VALIDATION_FAILED": "සපයන ලද තොරතුරු සමහරක් වලංගු නොවේ.",
+    "NOT_FOUND": "ඉල්ලූ අයිතමය සොයාගත නොහැකි විය.",
+    "FORBIDDEN": "මෙය කිරීමට ඔබට අවසර නැත.",
+    "CONFLICT_DUPLICATE": "මෙම අයිතමය දැනටමත් පවතී.",
+    "UPSTREAM_UNAVAILABLE": "මෙම විශේෂාංගය රඳා පවතින සේවාවක් නොමැත. මොහොතකින් නැවත උත්සාහ කරන්න.",
+    "TIMEOUT": "සේවාදායකය ප්‍රතිචාර දැක්වීමට වැඩි කාලයක් ගත විය. නැවත උත්සාහ කරන්න.",
+    "NETWORK": "සේවාදායකයට සම්බන්ධ විය නොහැකි විය. ඔබගේ සම්බන්ධතාවය පරීක්ෂා කර නැවත උත්සාහ කරන්න.",
+    "UNKNOWN": "අනපේක්ෂිත දෝෂයක් සිදු විය."
+  },
+  "profileBuilder": {
+    "submitted": "පැතිකඩ සමාලෝචනය සඳහා ඉදිරිපත් කරන ලදී.",
+    "noSchema": "මෙම පරිසරය සඳහා පැතිකඩ ප්‍රශ්න තවම සකසා නොමැත.",
+    "submit": "සමාලෝචනය සඳහා ඉදිරිපත් කරන්න",
+    "chapterLabel": "පරිච්ඡේදය",
+    "navLabel": "පැතිකඩ පරිච්ඡේද",
+    "restrictedHidden": "සීමිතයි — නම් කළ අයදුම්පතක් සඳහා, අනුමැතිය සහිතව පමණක් නිකුත් කෙරේ.",
+    "selectPlaceholder": "තෝරන්න…",
+    "noteRestricted": "සීමිතයි. ඔබ අනුමත කළ පසු, නම් කළ අයදුම්පතක් සඳහා පමණක් බෙදාගනී.",
+    "notePrivateNoAi": "පෞද්ගලිකයි. බාහිර AI මෙවලම් වෙත කිසිවිටෙක නොයවයි.",
+    "notePrivate": "පෞද්ගලිකයි. අයදුම්පත් සඳහා පමණක් භාවිත වේ.",
+    "progressLabel": "පැතිකඩ ප්‍රගතිය",
+    "progressCount": "පරිච්ඡේද {{total}} කින් {{started}} ක් ආරම්භ කර ඇත",
+    "chapterNumber": "පරිච්ඡේදය {{code}}",
+    "requiredMissing": "මෙහි තවම අවශ්‍යයි: {{fields}}",
+    "optionalNote": "මෙහි ඇති බොහෝ ප්‍රශ්න විකල්පයි. අදාළ නොවන ඒවා මඟහැර පසුව නැවත එන්න.",
+    "saveFailed": "සුරැකුවේ නැත",
+    "saving": "සුරකිමින්…",
+    "saved": "සුරකින ලදී",
+    "errorRequired": "ඔබගේ පැතිකඩ ක්‍රියාත්මක කිරීමට මෙම පිළිතුර අවශ්‍යයි.",
+    "errorEmail": "වලංගු විද්‍යුත් තැපැල් ලිපිනයක් ඇතුළත් කරන්න.",
+    "errorUrl": "http:// හෝ https:// වලින් ආරම්භ වන සම්පූර්ණ ලිපිනයක් ඇතුළත් කරන්න",
+    "errorTooLong": "මෙම පිළිතුර ගබඩා කිරීමට තරම් දිගයි. කරුණාකර කෙටි කරන්න.",
+    "addEducation": "අධ්‍යාපනය එක් කරන්න",
+    "addRole": "තනතුරක් එක් කරන්න",
+    "addProject": "ව්‍යාපෘතියක් එක් කරන්න",
+    "addReference": "නිර්දේශකයෙකු එක් කරන්න",
+    "addEntry": "ඇතුළත් කිරීමක් එක් කරන්න",
+    "entryEducation": "අධ්‍යාපනය",
+    "entryRole": "තනතුර",
+    "entryProject": "ව්‍යාපෘතිය",
+    "entryReference": "නිර්දේශකයා",
+    "entry": "ඇතුළත් කිරීම",
+    "statusComplete": "සම්පූර්ණයි",
+    "statusInProgress": "ක්‍රියාත්මකයි",
+    "statusNeedsReview": "සමාලෝචනය අවශ්‍යයි",
+    "statusNotStarted": "ආරම්භ කර නැත"
+  },
+  "profileChapters": {
+    "10": {
+      "title": "ව්‍යාපෘති, නිෂ්පාදන සහ කළඑළි කටයුතු"
+    },
+    "11": {
+      "title": "පර්යේෂණ, ප්‍රකාශන, ඉගැන්වීම සහ මහජන දායකත්වය"
+    },
+    "12": {
+      "title": "කුසලතා, මෙවලම් සහ භාෂා"
+    },
+    "13": {
+      "title": "ජයග්‍රහණ සහ සම්මුඛ පරීක්ෂණ කථා එකතුව"
+    },
+    "14": {
+      "title": "අභිප්‍රේරණය, වටිනාකම් සහ ලේඛන ශෛලිය"
+    },
+    "15": {
+      "title": "තනතුරට විශේෂිත ගැඹුරු මොඩියුල"
+    },
+    "16": {
+      "title": "නිර්දේශ සහ තහවුරු කිරීම"
+    },
+    "17": {
+      "title": "සාක්ෂි සහ ලේඛන සබැඳි"
+    },
+    "18": {
+      "title": "අයදුම් අධිකාරිය, AI සීමා සහ විශේෂ ප්‍රශ්න"
+    },
+    "19": {
+      "title": "අවසාන සමාලෝචනය සහ ප්‍රකාශය"
+    },
+    "00": {
+      "title": "සාදරයෙන් පිළිගැනීම සහ දැනුවත් තේරීම"
+    },
+    "01": {
+      "title": "අනන්‍යතාව, සම්බන්ධතා සහ වෘත්තීය පැවැත්ම"
+    },
+    "02": {
+      "title": "රැකියා අවසරය, ගමන්බිම සහ ලබාගත හැකි බව"
+    },
+    "03": {
+      "title": "වෘත්තීය දිශානතිය සහ අවස්ථා නීති"
+    },
+    "04": {
+      "title": "වෘත්තීය අනන්‍යතාව සහ වෘත්තීය කථාව"
+    },
+    "05": {
+      "title": "පාසල, ද්විතීයික අධ්‍යාපනය සහ මුල් සංවර්ධනය"
+    },
+    "06": {
+      "title": "උසස් අධ්‍යාපනය"
+    },
+    "07": {
+      "title": "සහතික, බලපත්‍ර, සාමාජිකත්ව සහ පුහුණුව"
+    },
+    "08": {
+      "title": "රැකියා ඉතිහාසය"
+    },
+    "09": {
+      "title": "පුහුණුවීම්, ආධුනිකත්ව, ස්වේච්ඡා සේවා සහ වෘත්තීය විවේක"
+    }
+  },
+  "operatorProfile": {
+    "noteSaved": "සටහන සුරකින ලදී.",
+    "correctionSent": "නිවැරදි කිරීම ඉල්ලා ඇත.",
+    "missingHeading": "අවශ්‍ය කරුණු නොමැත",
+    "noAi": "බාහිර AI නැත",
+    "restricted": "සීමිතයි — නම් කළ අයදුම්පතක් සඳහා අවශ්‍ය විටෙක ඉල්ලන්න.",
+    "requestCorrection": "නිවැරදි කිරීමක් ඉල්ලන්න",
+    "correctionFor": "{{code}} නිවැරදි කරන ලෙස අපේක්ෂකයාගෙන් ඉල්ලන්න",
+    "sendCorrection": "ඉල්ලීම යවන්න",
+    "notesHeading": "පෞද්ගලික ක්‍රියාකරු සටහන්",
+    "notesHint": "මේවා දැකිය හැක්කේ කාර්ය මණ්ඩලයට පමණි. අපේක්ෂකයාට නොහැක.",
+    "saveNote": "සටහන සුරකින්න"
   }
 }

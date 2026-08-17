@@ -1,6 +1,6 @@
 const { prisma } = require("../../config/db");
 const { systemLogger, securityLogger } = require("../../config/atg_logger");
-const { validateNIC, isValidPhone } = require("../../utils/validators");
+const { isValidPhone } = require("../../utils/validators");
 const resolveFileUrl = require("../../utils/fileUrl");
 const sanitizeUser = require("../../utils/sanitizeUser");
 
@@ -97,14 +97,13 @@ exports.updatePersonal = async (req, res, next) => {
       data.dob = new Date(data.dob).toISOString();
     }
 
-    if (data.nic || data.nationalId) {
-      const userObj = await prisma.user.findUnique({ where: { id: userId } });
-      const countryToUse = data.country || userObj?.country;
-      const nicCheck = validateNIC(data.nic || data.nationalId, countryToUse);
-      if (!nicCheck.isValid) {
-        return res.status(400).json({ error: nicCheck.message });
-      }
-    }
+    // National-ID and passport numbers are not collected in the master profile
+    // at all, so there is nothing to validate here any more. `nic`/`nationalId`
+    // are dropped rather than validated-and-stored: identity evidence is
+    // requested just in time for a named application, with candidate approval,
+    // and UserProfile has no column to put a number in regardless.
+    delete data.nic;
+    delete data.nationalId;
 
     const profile = await prisma.userProfile.upsert({
       where: { userId },

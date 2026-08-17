@@ -59,10 +59,15 @@
     "badge": "Human-managed · Research-led",
     "titleLine1": "Your personal job",
     "titleLine2": "application team.",
-    "subtitle": "A trained team researches roles, tailors your CV, and manually submits every application with proof logged to your dashboard.",
+    "subtitle": "We help students, graduates and busy professionals find suitable jobs, prepare stronger applications, and apply with confidence. Our trained team researches roles, checks your fit, tailors your CV and motivation letter, and submits on your behalf.",
     "startTrial": "Start trial — 2 free applications",
     "viewPricing": "View pricing & packages",
-    "guaranteeNote": "No card needed · 2 free applications · Human-submitted"
+    "guaranteeNote": "No card needed · 2 free applications · Human-submitted",
+    "title": "Your personal job\napplication team.",
+    "eyebrow": "One profile. Every opportunity.",
+    "primaryCta": "Create your profile",
+    "secondaryCta": "See how it works",
+    "reassurance": "No card required. Pay only when you are satisfied."
   },
   "features": {
     "title": "Why ATG Apply?",
@@ -85,7 +90,35 @@
     "browseJobs": "Browse Recommended Jobs",
     "viewApplications": "View Application Trackers",
     "manageProfile": "Update Candidate Profile",
-    "noRecentActivity": "No recent activity recorded yet."
+    "noRecentActivity": "No recent activity recorded yet.",
+    "heroHeadline": "Your next opportunity",
+    "heroSupport": "Add what you know today. Your assigned team uses it to prepare accurate applications on your instructions.",
+    "operatorRequestEyebrow": "Operator request",
+    "sendJobLinkHeading": "Send an external job link to your operator",
+    "sendJobLinkSupport": "Found a role elsewhere? Paste the link and an operator will assess how well it fits your profile.",
+    "jobLinkPlaceholder": "Paste the job posting URL",
+    "sending": "Sending…",
+    "sendToOperator": "Send to operator",
+    "recommendedHeading": "Opportunities we recommend",
+    "noRecommendations": "No recommendations yet",
+    "quickJobs": "Find jobs",
+    "quickJobsCaption": "Discover roles",
+    "quickJobLink": "Send job link",
+    "quickJobLinkCaption": "Operator desk & chat",
+    "quickScholarships": "Scholarships",
+    "quickScholarshipsCaption": "Grants & funding",
+    "quickApplications": "Applications",
+    "quickApplicationsCaption": "Track & review",
+    "quickProfile": "My profile",
+    "quickProfileCaption": "Preferences",
+    "trustPlatform": "Trusted platform",
+    "trustPlatformCaption": "Secure and reliable",
+    "trustCompanies": "Top companies",
+    "trustCompaniesCaption": "Work with the best",
+    "trustMatching": "Considered matching",
+    "trustMatchingCaption": "Roles that fit your profile",
+    "trustSupport": "Human support",
+    "trustSupportCaption": "A real person on your side"
   },
   "jobs": {
     "title": "Recommended Jobs",
@@ -155,18 +188,33 @@
   "auth": {
     "welcomeBack": "Welcome Back",
     "loginSubtitle": "Sign in to access your ATG Apply dashboard",
-    "emailLabel": "Email Address",
+    "emailLabel": "Email address",
     "passwordLabel": "Password",
-    "forgotPassword": "Forgot Password?",
+    "forgotPassword": "Forgot password?",
     "signInBtn": "Sign In",
-    "noAccount": "Don't have an account?",
+    "noAccount": "Don’t have an account?",
     "registerNow": "Register now",
     "createAccountTitle": "Create your ATG Apply account",
     "registerSubtitle": "Start with 2 free applications. No credit card required.",
     "fullName": "Full Name",
     "registerBtn": "Create Account",
     "alreadyHaveAccount": "Already have an account?",
-    "signInLink": "Sign in"
+    "signInLink": "Sign in",
+    "welcomeToast": "Welcome back.",
+    "eyebrow": "One profile. Every opportunity.",
+    "openingHeadline": "Let’s build yours.",
+    "openingSupport": "Start with what you know today. Come back and add more whenever your career grows.",
+    "hidePassword": "Hide password",
+    "showPassword": "Show password",
+    "rememberMe": "Remember me",
+    "signingIn": "Signing in…",
+    "signIn": "Sign in",
+    "orContinueWith": "or",
+    "createAccount": "Create one",
+    "privacyLink": "How ATG Apply handles your information",
+    "registerHeadline": "Start where you are.",
+    "registerSupport": "Create your profile, then add as much or as little of your career as you have today.",
+    "createAccountHeading": "Create your account"
   },
   "common": {
     "backToHome": "Back to Home",
@@ -180,7 +228,10 @@
     "delete": "Delete",
     "edit": "Edit",
     "close": "Close",
-    "submit": "Submit"
+    "submit": "Submit",
+    "back": "Back",
+    "retry": "Try again",
+    "continue": "Continue"
   },
   "howItWorksPage": {
     "title": "How ATG Apply works",
@@ -271,5 +322,133 @@
     "errorSubject": "Please enter a subject",
     "errorMessage": "Please enter a message of at least 10 characters",
     "errorGeneric": "Something went wrong. Please try again."
+  },
+  "errors": {
+    "DB_SCHEMA_MISSING_TABLE": "The database is missing a table this API expects. A migration has not been applied to this environment.",
+    "DB_SCHEMA_MISSING_COLUMN": "The database is missing a column this API expects. A migration has not been applied to this environment.",
+    "INTERNAL": "Something went wrong on our side. Please try again.",
+    "AUTH_INVALID_CREDENTIALS": "The email address or password is incorrect.",
+    "AUTH_SESSION_EXPIRED": "Your session has ended. Please sign in again.",
+    "VALIDATION_FAILED": "Some of the information provided is not valid.",
+    "NOT_FOUND": "The requested item could not be found.",
+    "FORBIDDEN": "You do not have permission to do this.",
+    "CONFLICT_DUPLICATE": "This item already exists.",
+    "UPSTREAM_UNAVAILABLE": "A service this feature depends on is unavailable. Please try again shortly.",
+    "TIMEOUT": "The server took too long to respond. Please try again.",
+    "NETWORK": "Could not reach the server. Check your connection and try again.",
+    "UNKNOWN": "An unexpected error occurred."
+  },
+  "profileBuilder": {
+    "submitted": "Profile submitted for review.",
+    "noSchema": "The profile questions have not been set up for this environment yet.",
+    "submit": "Submit for review",
+    "chapterLabel": "Chapter",
+    "navLabel": "Profile chapters",
+    "restrictedHidden": "Restricted — released only for a named application, with approval.",
+    "selectPlaceholder": "Select…",
+    "noteRestricted": "Restricted. Shared only for a named application, after you approve it.",
+    "notePrivateNoAi": "Private. Never sent to external AI tools.",
+    "notePrivate": "Private. Used for applications only.",
+    "progressLabel": "Profile progress",
+    "progressCount": "{{started}} of {{total}} chapters started",
+    "chapterNumber": "Chapter {{code}}",
+    "requiredMissing": "Still needed here: {{fields}}",
+    "optionalNote": "Most questions here are optional. Skip anything that does not apply and come back later.",
+    "saveFailed": "Not saved",
+    "saving": "Saving…",
+    "saved": "Saved",
+    "errorRequired": "This answer is needed to operate your profile.",
+    "errorEmail": "Enter a valid email address.",
+    "errorUrl": "Enter a complete address beginning with http:// or https://",
+    "errorTooLong": "This answer is too long to store. Please shorten it.",
+    "addEducation": "Add education",
+    "addRole": "Add role",
+    "addProject": "Add project",
+    "addReference": "Add reference",
+    "addEntry": "Add entry",
+    "entryEducation": "Education",
+    "entryRole": "Role",
+    "entryProject": "Project",
+    "entryReference": "Reference",
+    "entry": "Entry",
+    "statusComplete": "Complete",
+    "statusInProgress": "In progress",
+    "statusNeedsReview": "Needs review",
+    "statusNotStarted": "Not started"
+  },
+  "profileChapters": {
+    "10": {
+      "title": "Projects, products & portfolio work"
+    },
+    "11": {
+      "title": "Research, publications, teaching & public contribution"
+    },
+    "12": {
+      "title": "Skills, tools & languages"
+    },
+    "13": {
+      "title": "Achievement & interview story bank"
+    },
+    "14": {
+      "title": "Motivation, values & writing voice"
+    },
+    "15": {
+      "title": "Role-specific depth modules"
+    },
+    "16": {
+      "title": "References & verification"
+    },
+    "17": {
+      "title": "Evidence & document links"
+    },
+    "18": {
+      "title": "Application authority, AI boundaries & special questions"
+    },
+    "19": {
+      "title": "Final review & declaration"
+    },
+    "00": {
+      "title": "Welcome & informed choice"
+    },
+    "01": {
+      "title": "Identity, contact & professional presence"
+    },
+    "02": {
+      "title": "Work authorization, mobility & availability"
+    },
+    "03": {
+      "title": "Career direction & opportunity rules"
+    },
+    "04": {
+      "title": "Professional identity & career narrative"
+    },
+    "05": {
+      "title": "School, secondary education & early development"
+    },
+    "06": {
+      "title": "Higher education"
+    },
+    "07": {
+      "title": "Certifications, licences, memberships & training"
+    },
+    "08": {
+      "title": "Employment history"
+    },
+    "09": {
+      "title": "Internships, apprenticeships, volunteering & career breaks"
+    }
+  },
+  "operatorProfile": {
+    "noteSaved": "Note saved.",
+    "correctionSent": "Correction requested.",
+    "missingHeading": "Missing required facts",
+    "noAi": "no external AI",
+    "restricted": "Restricted — request just-in-time for a named application.",
+    "requestCorrection": "Request correction",
+    "correctionFor": "Ask the candidate to correct {{code}}",
+    "sendCorrection": "Send request",
+    "notesHeading": "Private operator notes",
+    "notesHint": "Only staff can see these. The candidate cannot.",
+    "saveNote": "Save note"
   }
 }

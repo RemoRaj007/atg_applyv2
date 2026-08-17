@@ -13,6 +13,7 @@ import {
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { getFileUrl } from '../../utils/fileUrl';
+import { useErrorMessage } from '../../hooks/useErrorMessage';
 
 // ─── Types ────────────────────────────────────────────────────────
 export interface JobWithFit extends Job {
@@ -400,6 +401,7 @@ export function JobDetailsModal({ job, scholarship, onClose, onRequestApply, app
 // ─── Main Component ────────────────────────────────────────────────
 export default function CandidateJobs() {
   const { t } = useTranslation();
+  const toMessage = useErrorMessage();
   const [jobs, setJobs] = useState<JobWithFit[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
@@ -425,7 +427,10 @@ export default function CandidateJobs() {
       setJobs(jobsList as JobWithFit[]);
       setApplications(appsList);
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Failed to load jobs');
+      // Deliberately not reading response.data.message directly: that is the raw
+      // English body, and reaching for it first bypassed the translated form.
+      // apiClient has already copied it onto err.message as the fallback.
+      setError(toMessage(err, 'Failed to load jobs'));
     } finally {
       setLoading(false);
     }
@@ -440,7 +445,7 @@ export default function CandidateJobs() {
       toast.success('Application requested successfully!');
       await loadData();
     } catch (err: any) {
-      toast.error(err.message || 'Failed to request application');
+      toast.error(toMessage(err, 'Failed to request application'));
     } finally {
       setRequestingJobId(null);
     }

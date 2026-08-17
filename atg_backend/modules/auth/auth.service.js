@@ -2,6 +2,7 @@ const crypto = require("crypto");
 const argon2 = require("argon2");
 const { prisma } = require("../../config/db");
 const ApiError = require("../../utils/ApiError");
+const { ERROR_CODES } = require("../../constants/errorCodes");
 const sanitizeUser = require("../../utils/sanitizeUser");
 const { issueTokenPair, verifyRefreshToken } = require("../../utils/token.util");
 const { activityLogger, securityLogger } = require("../../config/atg_logger");
@@ -138,7 +139,7 @@ const login = async ({ email, password }) => {
   });
   if (!user) {
     securityLogger.security("Login failed: unknown email or inactive", { email });
-    throw ApiError.unauthorized("Invalid email or password");
+    throw ApiError.unauthorized("Invalid email or password").withCode(ERROR_CODES.AUTH_INVALID_CREDENTIALS);
   }
 
   // SSO-only accounts have no password. argon2.verify throws on a null hash, so
@@ -149,7 +150,7 @@ const login = async ({ email, password }) => {
       userId: user.id,
       provider: user.provider,
     });
-    throw ApiError.unauthorized("Invalid email or password");
+    throw ApiError.unauthorized("Invalid email or password").withCode(ERROR_CODES.AUTH_INVALID_CREDENTIALS);
   }
 
   // Not argon2.verify directly: it throws on a stored value it cannot parse,
@@ -158,7 +159,7 @@ const login = async ({ email, password }) => {
   const valid = await verifyPassword(user.password, password, { userId: user.id });
   if (!valid) {
     securityLogger.security("Login failed: wrong password", { userId: user.id, email });
-    throw ApiError.unauthorized("Invalid email or password");
+    throw ApiError.unauthorized("Invalid email or password").withCode(ERROR_CODES.AUTH_INVALID_CREDENTIALS);
   }
 
   securityLogger.security("Login succeeded", { userId: user.id, email });
@@ -176,7 +177,7 @@ const refresh = async (refreshToken) => {
   try {
     decoded = verifyRefreshToken(refreshToken);
   } catch (err) {
-    throw ApiError.unauthorized("Invalid or expired refresh token");
+    throw ApiError.unauthorized("Invalid or expired refresh token").withCode(ERROR_CODES.AUTH_SESSION_EXPIRED);
   }
 
   const user = await prisma.user.findFirst({
@@ -184,7 +185,7 @@ const refresh = async (refreshToken) => {
     include: { company: true },
   });
   if (!user) {
-    throw ApiError.unauthorized("User no longer exists or is inactive");
+    throw ApiError.unauthorized("User no longer exists or is inactive").withCode(ERROR_CODES.AUTH_SESSION_EXPIRED);
   }
 
   const { accessToken } = issueTokenPair(user);

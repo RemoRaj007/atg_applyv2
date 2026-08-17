@@ -5,6 +5,20 @@ class ApiError extends Error {
     this.details = details;
   }
 
+  /**
+   * Tags this error with a stable code so clients can show it in the user's own
+   * language: `throw ApiError.unauthorized("Invalid email or password").withCode(
+   * ERROR_CODES.AUTH_INVALID_CREDENTIALS)`.
+   *
+   * A 4xx keeps its specific English message unless a code is attached here on
+   * purpose — deriving codes from the status alone would flatten every "Job not
+   * found" into a generic sentence. This is how a throw site opts in.
+   */
+  withCode(errorCode) {
+    this.errorCode = errorCode;
+    return this;
+  }
+
   static badRequest(message, details) {
     return new ApiError(400, message, details);
   }

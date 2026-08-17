@@ -4,7 +4,7 @@ import { Bell, ChevronDown, LogOut, User, Briefcase, GraduationCap, FileText, Cr
 import { useSession } from '../../hooks/useSession';
 import { useUnreadNotifications } from '../../hooks/useUnreadNotifications';
 import { useTranslation } from 'react-i18next';
-import atgLogo from '../../assets/atg_apply.png';
+import AtgWordmark from '../ui/AtgWordmark';
 import LanguageSelector from '../ui/LanguageSelector';
 import { getFileUrl } from '../../utils/fileUrl';
 
@@ -48,20 +48,13 @@ export default function CandidateHeader() {
   ];
 
   return (
-    <header className="bg-slate-900 border-b border-slate-800 h-20 sticky top-0 z-50 shadow-md flex items-center text-white">
+    <header className="bg-white border-b border-[#D2D2D7] h-20 sticky top-0 z-50 flex items-center text-[#1D1D1F]">
       <div className="w-full max-w-[1800px] mx-auto px-6 md:px-12 lg:px-16 flex items-center justify-between">
         {/* Left: Logo */}
         <div className="flex items-center gap-4">
           <Link to="/candidate" className="flex items-center gap-3 group">
-            <img src={atgLogo} alt="ATG Apply Logo" className="h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
             <div>
-              <div className="flex items-center">
-                <span className="font-black text-2xl text-white tracking-tight">ATG</span>
-                <span className="font-extrabold text-2xl text-blue-400 tracking-tight ml-1.5">Apply</span>
-              </div>
-              <p className="text-[9px] text-slate-400 font-bold tracking-wider uppercase leading-none mt-0.5">
-                Your Personal Job Application Team.
-              </p>
+              <AtgWordmark size="md" withTagline />
             </div>
           </Link>
         </div>
@@ -69,14 +62,14 @@ export default function CandidateHeader() {
         {/* Right: Actions */}
         <div className="flex items-center gap-3 md:gap-4">
           {/* Applications Left Count Pill Box */}
-          <div className="hidden sm:flex items-center gap-4 bg-slate-800/80 border border-slate-700/60 rounded-2xl py-1.5 px-4 shadow-sm">
+          <div className="hidden sm:flex items-center gap-4 bg-[#F5F5F7] border border-[#D2D2D7] rounded-xl py-1.5 px-4">
             <div className="text-left">
-              <p className="text-[9px] text-slate-400 font-bold uppercase tracking-wider leading-none">{t('nav.applicationsLeft')}</p>
-              <p className="text-xl font-black text-blue-400 leading-none mt-1">{remaining ?? 100}</p>
+              <p className="text-[10px] text-[#6E6E73] font-medium uppercase tracking-wide leading-none">{t('nav.applicationsLeft')}</p>
+              <p className="text-xl font-semibold text-[#1D1D1F] leading-none mt-1">{remaining ?? 100}</p>
             </div>
             <Link
               to="/candidate/upgrade"
-              className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2 px-4 rounded-xl shadow-sm transition-all"
+              className="bg-[#0066CC] hover:bg-[#0055AA] text-white text-xs font-semibold py-2 px-4 rounded-lg transition-colors"
             >
               {t('nav.buyMore')}
             </Link>
@@ -88,12 +81,12 @@ export default function CandidateHeader() {
           {/* Notification Icon */}
           <Link
             to="/candidate/notifications"
-            className="w-10 h-10 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-full text-slate-300 hover:text-white transition-all shadow-sm relative flex items-center justify-center"
+            className="w-10 h-10 bg-white hover:bg-[#F5F5F7] border border-[#D2D2D7] rounded-full text-[#6E6E73] hover:text-[#1D1D1F] transition-colors relative flex items-center justify-center"
             title={unreadCount > 0 ? `${unreadCount} unread notifications` : 'Notifications'}
           >
             <Bell size={18} />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-slate-900 flex items-center justify-center animate-pulse">
+              <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 bg-[#D70015] text-white text-[10px] font-semibold rounded-full border-2 border-white flex items-center justify-center">
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}
@@ -111,10 +104,10 @@ export default function CandidateHeader() {
                 <img
                   src={getFileUrl(user.profilePhoto)}
                   alt={user.name}
-                  className="h-10 w-10 rounded-full object-cover border border-slate-700 shadow-sm"
+                  className="h-10 w-10 rounded-full object-cover border border-[#D2D2D7]"
                 />
               ) : (
-                <div className="h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                <div className="h-10 w-10 rounded-full bg-[#F05A28] text-white flex items-center justify-center font-semibold text-sm">
                   {user.name.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -123,16 +116,16 @@ export default function CandidateHeader() {
             {/* Chevron Circular Trigger */}
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-slate-300 transition-all outline-none"
+              className="w-8 h-8 rounded-full bg-white hover:bg-[#F5F5F7] border border-[#D2D2D7] flex items-center justify-center text-[#6E6E73] transition-colors"
             >
               <ChevronDown size={14} className={`transition-transform duration-250 ${dropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {dropdownOpen && (
-              <div className="absolute right-0 top-12 w-64 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl py-2.5 z-50 transform origin-top-right transition-all animate-fadeIn">
-                <div className="px-4 py-3 border-b border-slate-800 mb-1">
-                  <p className="text-sm font-bold text-white truncate">{user.name}</p>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">{user.pkg || 'Free'} Package</p>
+              <div className="absolute right-0 top-12 w-64 bg-white border border-[#D2D2D7] rounded-xl shadow-lg py-2 z-50 origin-top-right animate-fadeIn">
+                <div className="px-4 py-3 border-b border-[#D2D2D7] mb-1">
+                  <p className="text-sm font-semibold text-[#1D1D1F] truncate">{user.name}</p>
+                  <p className="text-[10px] font-medium text-[#6E6E73] uppercase mt-0.5">{user.pkg || 'Free'} Package</p>
                 </div>
 
                 <div className="max-h-[300px] overflow-y-auto">
@@ -146,21 +139,21 @@ export default function CandidateHeader() {
                         onClick={() => setDropdownOpen(false)}
                         className={`flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors ${
                           isActive
-                            ? 'bg-blue-600/20 text-blue-400 border-l-4 border-blue-500 pl-3'
-                            : 'text-slate-300 hover:bg-slate-800 hover:text-white border-l-4 border-transparent'
+                            ? 'bg-[#F5F5F7] text-[#1D1D1F] border-l-4 border-[#F05A28] pl-3'
+                            : 'text-[#1D1D1F] hover:bg-[#F5F5F7] border-l-4 border-transparent'
                         }`}
                       >
-                        <Icon size={16} className={isActive ? 'text-blue-400' : 'text-slate-400'} />
+                        <Icon size={16} className={isActive ? 'text-[#F05A28]' : 'text-[#6E6E73]'} />
                         {item.label}
                       </Link>
                     );
                   })}
                 </div>
 
-                <div className="border-t border-slate-800 mt-2 pt-2 px-3">
+                <div className="border-t border-[#D2D2D7] mt-2 pt-2 px-3">
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 shadow-md transition-colors duration-150"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-[#D70015] border border-[#D2D2D7] hover:bg-[#F5F5F7] transition-colors"
                   >
                     <LogOut size={14} />
                     Logout
