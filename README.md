@@ -82,15 +82,3 @@ Never commit real `.env` files:
 | `npm run build` | Type-check and build for production |
 | `npm run preview` | Preview the production build locally |
 | `npm run lint` | Oxlint |
-
-## Seeded demo data
-
-Running `npm run db:seed` (on an empty database) creates 1 admin, 5
-operators, 10 candidates (each with a full profile), ~20 companies, 20 jobs,
-and 2 scholarships. All seeded accounts use the password **`Password123!`**.
-See [SETUP.md](SETUP.md#6-log-in-and-test) for the full account list.
-
-## Deployment
-
-Docker Compose + GitHub Actions deploy to a VPS over SSH. Full instructions,
-required server setup, and GitHub secrets are in [DEVOPS.md](DEVOPS.md).
