@@ -59,15 +59,10 @@
     "badge": "Géré par des humains · Recherche ciblée",
     "titleLine1": "Votre équipe personnelle",
     "titleLine2": "de candidature.",
-    "subtitle": "Nous aidons les étudiants, les jeunes diplômés et les professionnels occupés à trouver des postes adaptés, à préparer des candidatures plus solides et à postuler en confiance. Notre équipe formée étudie les offres, vérifie votre adéquation, adapte votre CV et votre lettre de motivation, et postule en votre nom.",
+    "subtitle": "Une équipe formée étudie les postes, adapte votre CV et soumet chaque candidature manuellement avec preuve à l'appui.",
     "startTrial": "Démarrer l'essai — 2 candidatures offertes",
     "viewPricing": "Voir les tarifs & forfaits",
-    "guaranteeNote": "Sans carte bancaire · 2 candidatures offertes · Soumission humaine",
-    "title": "Votre équipe personnelle\nde candidature.",
-    "eyebrow": "Un profil. Toutes les opportunités.",
-    "primaryCta": "Créer votre profil",
-    "secondaryCta": "Voir comment ça marche",
-    "reassurance": "Aucune carte requise. Vous ne payez que si vous êtes satisfait."
+    "guaranteeNote": "Sans carte bancaire · 2 candidatures offertes · Soumission humaine"
   },
   "features": {
     "title": "Pourquoi choisir ATG Apply ?",
@@ -161,22 +156,7 @@
     "fullName": "Nom complet",
     "registerBtn": "Créer un compte",
     "alreadyHaveAccount": "Vous avez déjà un compte ?",
-    "signInLink": "Se connecter",
-    "welcomeToast": "Bon retour.",
-    "eyebrow": "Un profil. Toutes les opportunités.",
-    "openingHeadline": "Créons le vôtre.",
-    "openingSupport": "Commencez par ce que vous savez aujourd'hui. Revenez enrichir votre profil à mesure que votre carrière évolue.",
-    "hidePassword": "Masquer le mot de passe",
-    "showPassword": "Afficher le mot de passe",
-    "rememberMe": "Se souvenir de moi",
-    "signingIn": "Connexion…",
-    "signIn": "Se connecter",
-    "orContinueWith": "ou",
-    "createAccount": "Créez-en un",
-    "privacyLink": "Comment ATG Apply traite vos informations",
-    "registerHeadline": "Commencez là où vous en êtes.",
-    "registerSupport": "Créez votre profil, puis ajoutez autant ou aussi peu de votre parcours que vous en disposez aujourd'hui.",
-    "createAccountHeading": "Créez votre compte"
+    "signInLink": "Se connecter"
   },
   "common": {
     "backToHome": "Retour à l'accueil",
@@ -190,10 +170,7 @@
     "delete": "Supprimer",
     "edit": "Modifier",
     "close": "Fermer",
-    "submit": "Soumettre",
-    "back": "Retour",
-    "retry": "Réessayer",
-    "continue": "Continuer"
+    "submit": "Soumettre"
   },
   "dashboard": {
     "welcome": "Bon retour",
@@ -207,35 +184,7 @@
     "browseJobs": "Parcourir les emplois recommandés",
     "viewApplications": "Voir les candidatures",
     "manageProfile": "Mettre à jour le profil",
-    "noRecentActivity": "Aucune activité récente enregistrée.",
-    "heroHeadline": "Votre prochaine opportunité",
-    "heroSupport": "Ajoutez ce que vous savez aujourd'hui. Votre équipe s'en sert pour préparer des candidatures exactes, selon vos instructions.",
-    "operatorRequestEyebrow": "Demande à l'opérateur",
-    "sendJobLinkHeading": "Envoyez un lien d'offre externe à votre opérateur",
-    "sendJobLinkSupport": "Vous avez trouvé un poste ailleurs ? Collez le lien : un opérateur évaluera son adéquation avec votre profil.",
-    "jobLinkPlaceholder": "Collez l'URL de l'offre",
-    "sending": "Envoi…",
-    "sendToOperator": "Envoyer à l'opérateur",
-    "recommendedHeading": "Les opportunités que nous recommandons",
-    "noRecommendations": "Pas encore de recommandations",
-    "quickJobs": "Trouver des offres",
-    "quickJobsCaption": "Découvrir des postes",
-    "quickJobLink": "Envoyer un lien",
-    "quickJobLinkCaption": "Bureau opérateur et messagerie",
-    "quickScholarships": "Bourses",
-    "quickScholarshipsCaption": "Subventions et financements",
-    "quickApplications": "Candidatures",
-    "quickApplicationsCaption": "Suivre et consulter",
-    "quickProfile": "Mon profil",
-    "quickProfileCaption": "Préférences",
-    "trustPlatform": "Plateforme de confiance",
-    "trustPlatformCaption": "Sûre et fiable",
-    "trustCompanies": "Entreprises de premier plan",
-    "trustCompaniesCaption": "Travaillez avec les meilleurs",
-    "trustMatching": "Mise en relation réfléchie",
-    "trustMatchingCaption": "Des postes adaptés à votre profil",
-    "trustSupport": "Un accompagnement humain",
-    "trustSupportCaption": "Une vraie personne à vos côtés"
+    "noRecentActivity": "Aucune activité récente enregistrée."
   },
   "jobs": {
     "title": "Offres recommandées",
@@ -322,133 +271,5 @@
     "errorSubject": "Veuillez saisir un sujet",
     "errorMessage": "Veuillez saisir un message d'au moins 10 caractères",
     "errorGeneric": "Une erreur s'est produite. Veuillez réessayer."
-  },
-  "errors": {
-    "DB_SCHEMA_MISSING_TABLE": "Une table attendue par cette API est absente de la base de données. Une migration n'a pas été appliquée à cet environnement.",
-    "DB_SCHEMA_MISSING_COLUMN": "Une colonne attendue par cette API est absente de la base de données. Une migration n'a pas été appliquée à cet environnement.",
-    "INTERNAL": "Un problème est survenu de notre côté. Veuillez réessayer.",
-    "AUTH_INVALID_CREDENTIALS": "L'adresse e-mail ou le mot de passe est incorrect.",
-    "AUTH_SESSION_EXPIRED": "Votre session a pris fin. Veuillez vous reconnecter.",
-    "VALIDATION_FAILED": "Certaines informations fournies ne sont pas valides.",
-    "NOT_FOUND": "L'élément demandé est introuvable.",
-    "FORBIDDEN": "Vous n'avez pas l'autorisation d'effectuer cette action.",
-    "CONFLICT_DUPLICATE": "Cet élément existe déjà.",
-    "UPSTREAM_UNAVAILABLE": "Un service dont dépend cette fonctionnalité est indisponible. Veuillez réessayer sous peu.",
-    "TIMEOUT": "Le serveur a mis trop de temps à répondre. Veuillez réessayer.",
-    "NETWORK": "Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.",
-    "UNKNOWN": "Une erreur inattendue s'est produite."
-  },
-  "profileBuilder": {
-    "submitted": "Profil soumis pour révision.",
-    "noSchema": "Les questions du profil ne sont pas encore configurées pour cet environnement.",
-    "submit": "Soumettre pour révision",
-    "chapterLabel": "Chapitre",
-    "navLabel": "Chapitres du profil",
-    "restrictedHidden": "Restreint — communiqué uniquement pour une candidature nommée, avec votre accord.",
-    "selectPlaceholder": "Sélectionner…",
-    "noteRestricted": "Restreint. Partagé uniquement pour une candidature nommée, après votre accord.",
-    "notePrivateNoAi": "Privé. Jamais transmis à des outils d'IA externes.",
-    "notePrivate": "Privé. Utilisé uniquement pour les candidatures.",
-    "progressLabel": "Progression du profil",
-    "progressCount": "{{started}} chapitres sur {{total}} commencés",
-    "chapterNumber": "Chapitre {{code}}",
-    "requiredMissing": "Encore nécessaire ici : {{fields}}",
-    "optionalNote": "La plupart des questions ici sont facultatives. Passez ce qui ne s'applique pas et revenez plus tard.",
-    "saveFailed": "Non enregistré",
-    "saving": "Enregistrement…",
-    "saved": "Enregistré",
-    "errorRequired": "Cette réponse est nécessaire au fonctionnement de votre profil.",
-    "errorEmail": "Saisissez une adresse e-mail valide.",
-    "errorUrl": "Saisissez une adresse complète commençant par http:// ou https://",
-    "errorTooLong": "Cette réponse est trop longue pour être enregistrée. Veuillez la raccourcir.",
-    "addEducation": "Ajouter une formation",
-    "addRole": "Ajouter un poste",
-    "addProject": "Ajouter un projet",
-    "addReference": "Ajouter un référent",
-    "addEntry": "Ajouter une entrée",
-    "entryEducation": "Formation",
-    "entryRole": "Poste",
-    "entryProject": "Projet",
-    "entryReference": "Référent",
-    "entry": "Entrée",
-    "statusComplete": "Terminé",
-    "statusInProgress": "En cours",
-    "statusNeedsReview": "À revoir",
-    "statusNotStarted": "Non commencé"
-  },
-  "profileChapters": {
-    "10": {
-      "title": "Projets, produits et portfolio"
-    },
-    "11": {
-      "title": "Recherche, publications, enseignement et contribution publique"
-    },
-    "12": {
-      "title": "Compétences, outils et langues"
-    },
-    "13": {
-      "title": "Banque d'anecdotes de réussite et d'entretien"
-    },
-    "14": {
-      "title": "Motivation, valeurs et style d'écriture"
-    },
-    "15": {
-      "title": "Modules d'approfondissement par métier"
-    },
-    "16": {
-      "title": "Références et vérification"
-    },
-    "17": {
-      "title": "Preuves et liens vers les documents"
-    },
-    "18": {
-      "title": "Autorisation de candidature, limites de l'IA et questions particulières"
-    },
-    "19": {
-      "title": "Vérification finale et déclaration"
-    },
-    "00": {
-      "title": "Bienvenue et choix éclairé"
-    },
-    "01": {
-      "title": "Identité, contact et présence professionnelle"
-    },
-    "02": {
-      "title": "Autorisation de travail, mobilité et disponibilité"
-    },
-    "03": {
-      "title": "Orientation de carrière et règles d'opportunité"
-    },
-    "04": {
-      "title": "Identité professionnelle et récit de carrière"
-    },
-    "05": {
-      "title": "École, enseignement secondaire et développement précoce"
-    },
-    "06": {
-      "title": "Enseignement supérieur"
-    },
-    "07": {
-      "title": "Certifications, licences, adhésions et formations"
-    },
-    "08": {
-      "title": "Parcours professionnel"
-    },
-    "09": {
-      "title": "Stages, apprentissages, bénévolat et interruptions de carrière"
-    }
-  },
-  "operatorProfile": {
-    "noteSaved": "Note enregistrée.",
-    "correctionSent": "Correction demandée.",
-    "missingHeading": "Informations obligatoires manquantes",
-    "noAi": "pas d'IA externe",
-    "restricted": "Restreint — à demander au moment voulu pour une candidature nommée.",
-    "requestCorrection": "Demander une correction",
-    "correctionFor": "Demander au candidat de corriger {{code}}",
-    "sendCorrection": "Envoyer la demande",
-    "notesHeading": "Notes privées de l'opérateur",
-    "notesHint": "Visibles par l'équipe uniquement, pas par le candidat.",
-    "saveNote": "Enregistrer la note"
   }
 }

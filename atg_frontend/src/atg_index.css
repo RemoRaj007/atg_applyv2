@@ -1,113 +1,354 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 @config "../tailwind.atg.config.js";
 
-/* ─── ATG Apply design tokens ──────────────────────────────────────
- *
- * Light, quiet and spacious, per the approved visual direction. The page is
- * white, the type is near-black, and orange is reserved for the word "Apply",
- * progress, and small emphasis — not for decoration.
- *
- * What used to be here was the opposite: a dark navy palette plus a large
- * `!important` override layer that rewrote every `bg-white`, `text-slate-900`,
- * table and input in the app to dark. The components themselves were always
- * written in light Tailwind classes; the darkness was painted over the top.
- * Removing that layer is what returns the app to a light theme, and it is why
- * this change is a stylesheet rather than a rewrite of every page.
- */
-:root {
-  --atg-bg:            #FFFFFF;  /* Page background */
-  --atg-surface:       #F5F5F7;  /* Quiet secondary areas only */
-  --atg-border:        #D2D2D7;  /* Inputs and dividers */
-  --atg-text:          #1D1D1F;  /* Headings and body */
-  --atg-text-muted:    #6E6E73;  /* Help and metadata */
-  --atg-text-subtle:   #86868B;
-  --atg-brand:         #F05A28;  /* "Apply", progress, small emphasis */
-  --atg-brand-light:   rgba(240, 90, 40, 0.10);
-  --atg-action:        #0066CC;  /* Primary link/button, used sparingly */
-  --atg-success:       #248A3D;  /* Saved / complete states */
-  --atg-danger:        #D70015;  /* Validation only */
+/* ─── Premium CSS Custom Properties (Candidate Color Theme) ───── */
+:root, .dark {
+  --atg-bg:            #0f172a;
+  --atg-surface:       #1e293b;
+  --atg-border:        #334155;
+  --atg-text:          #f8fafc;
+  --atg-text-muted:    #94a3b8;
+  --atg-text-subtle:   #64748b;
+  --atg-brand:         #3b82f6;
+  --atg-brand-light:   rgba(59, 130, 246, 0.15);
+  --atg-action:        #10b981;
+  --atg-danger:        #ef4444;
+  --atg-nav:           #3b82f6;
+  --atg-shadow-sm:     0 2px 12px rgba(0,0,0,0.2);
+  --atg-shadow-md:     0 8px 32px rgba(0,0,0,0.36);
+  --atg-shadow-lg:     0 16px 48px rgba(0,0,0,0.5);
 
-  /* Shadows are for separating a surface from the page, not for drama. */
-  --atg-shadow-sm:     0 1px 2px rgba(0, 0, 0, 0.04);
-  --atg-shadow-md:     0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --atg-shadow-lg:     0 4px 16px rgba(0, 0, 0, 0.08);
+  --nav-gradient:      linear-gradient(to bottom, #1e293b, #0f172a);
+  --nav-border:        1px solid #334155;
+  --header-gradient:   linear-gradient(to right, #1e293b, #0f172a);
+  --header-border:     1px solid #334155;
+  --footer-gradient:   linear-gradient(to right, #1e293b, #0f172a);
+  --footer-border:     1px solid #334155;
 }
 
-/* ─── Base reset & typography ─────────────────────────────────────
- *
- * The native system stack, so the interface reads as part of the user's
- * platform rather than as a branded artefact. This also drops the two
- * remote Google Fonts imports that previously blocked first paint.
- */
+/* Candidate Color Theme Global Component Overrides */
+body {
+  background-color: var(--atg-bg) !important;
+  color: var(--atg-text) !important;
+}
+
+[class*="bg-white"],
+[class*="bg-gray-50"],
+[class*="bg-gray-100"],
+[class*="bg-gray-200"],
+[class*="bg-slate-50"],
+[class*="bg-slate-100"],
+[class*="bg-slate-200"],
+[class*="bg-brand-50"],
+[class*="bg-surface-0"],
+[class*="bg-surface-50"],
+[class*="bg-surface-100"],
+[class*="bg-surface-200"] {
+  background-color: var(--atg-surface) !important;
+}
+
+[class*="bg-gray-50/"],
+[class*="bg-gray-100/"],
+[class*="bg-slate-50/"],
+[class*="bg-slate-100/"],
+[class*="bg-slate-800/"],
+[class*="bg-slate-900/"] {
+  background-color: rgba(30, 41, 59, 0.8) !important;
+}
+
+table,
+thead,
+tbody,
+tr,
+th,
+td {
+  background-color: var(--atg-surface) !important;
+  color: var(--atg-text) !important;
+  border-color: var(--atg-border) !important;
+}
+
+[class*="text-slate-900"],
+[class*="text-slate-800"],
+[class*="text-slate-700"],
+[class*="text-gray-900"],
+[class*="text-gray-800"],
+[class*="text-gray-700"],
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--atg-text) !important;
+}
+
+[class*="text-slate-500"],
+[class*="text-slate-400"],
+[class*="text-gray-600"],
+[class*="text-gray-500"],
+[class*="text-gray-400"] {
+  color: var(--atg-text-muted) !important;
+}
+
+[class*="border-gray-"],
+[class*="border-slate-100"],
+[class*="border-slate-200"],
+[class*="border-slate-300"],
+div.border-gray-150 {
+  border-color: var(--atg-border) !important;
+}
+
+input,
+select,
+textarea {
+  background-color: #0f172a !important;
+  color: var(--atg-text) !important;
+  border-color: var(--atg-border) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--atg-text-muted) !important;
+  opacity: 0.8;
+}
+
+table tbody tr:hover {
+  background-color: var(--atg-border) !important;
+}
+
+/* Status Badges (Candidate Color Theme Ranges) */
+[class*="bg-emerald-50"], [class*="bg-emerald-100"] { background-color: rgba(16, 185, 129, 0.18) !important; }
+[class*="text-emerald-700"], [class*="text-emerald-800"] { color: #34d399 !important; }
+
+[class*="bg-red-50"], [class*="bg-red-100"] { background-color: rgba(239, 68, 68, 0.18) !important; }
+[class*="text-red-700"], [class*="text-red-800"] { color: #f87171 !important; }
+
+[class*="bg-amber-50"], [class*="bg-amber-100"] { background-color: rgba(245, 158, 11, 0.18) !important; }
+[class*="text-amber-700"], [class*="text-amber-800"], [class*="text-amber-850"] { color: #fbbf24 !important; }
+
+[class*="bg-blue-50"], [class*="bg-blue-100"] { background-color: rgba(59, 130, 246, 0.18) !important; }
+[class*="text-blue-700"], [class*="text-blue-800"], [class*="text-brand-700"] { color: #60a5fa !important; }
+
+[class*="bg-indigo-50"], [class*="bg-indigo-100"] { background-color: rgba(99, 102, 241, 0.18) !important; }
+[class*="text-indigo-700"], [class*="text-indigo-800"] { color: #818cf8 !important; }
+
+[class*="bg-violet-50"], [class*="bg-violet-100"] { background-color: rgba(139, 92, 246, 0.18) !important; }
+[class*="text-violet-700"], [class*="text-violet-800"] { color: #a78bfa !important; }
+
+[class*="bg-cyan-50"], [class*="bg-cyan-100"] { background-color: rgba(6, 182, 212, 0.18) !important; }
+[class*="text-cyan-700"], [class*="text-cyan-800"] { color: #22d3ee !important; }
+
+/* ─── Base Reset & Typography ─────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  font-family: 'Outfit', 'Inter', 'Public Sans', sans-serif;
   background-color: var(--atg-bg);
   color: var(--atg-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
-  font-weight: 600;
-  color: var(--atg-text);
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-weight: 700;
 }
 
-/* ─── Card system ─────────────────────────────────────────────────
- * A boundary only where one is functionally necessary: a hairline border and
- * a shadow just strong enough to lift the surface off the page.
- */
+/* ─── Card System — NO borders, only shadows ─────────────────── */
 .card {
-  background: var(--atg-bg);
-  border: 1px solid var(--atg-border);
-  border-radius: 12px;
-  box-shadow: var(--atg-shadow-sm);
+  background: var(--atg-surface);
+  border: none;
+  border-radius: 16px;
+  box-shadow: var(--atg-shadow-md);
 }
 
-/* ─── Scrollbar ───────────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 8px; height: 8px; }
+/* Remove ALL border-gray-150 borders — shadow only */
+div.border-gray-150 {
+  border: none !important;
+  box-shadow: var(--atg-shadow-md) !important;
+  border-radius: 16px !important;
+}
+
+/* Table & inline elements */
+thead.border-gray-150,
+tr.border-gray-150,
+td.border-gray-150,
+th.border-gray-150,
+span.border-gray-150 {
+  border-color: var(--atg-border) !important;
+}
+
+/* ─── Rounded Corners ─────────────────────────────────────────── */
+.rounded-3xl { border-radius: 16px !important; }
+.rounded-2xl { border-radius: 12px !important; }
+
+/* ─── Glassmorphism (modals only) ─────────────────────────────── */
+.glass {
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: none;
+  box-shadow: 0 8px 40px rgba(30,30,70,0.18);
+}
+
+/* ─── Scrollbar ───────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--atg-border); border-radius: 99px; }
+::-webkit-scrollbar-thumb { background: #d1d4e0; border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--atg-text-subtle); }
 
-/* ─── Focus ring ──────────────────────────────────────────────────
- * Required to stay visible for keyboard users (WCAG AA). Uses the action blue
- * rather than the brand orange, which does not carry enough contrast against
- * white at a 2px outline.
- */
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible,
-button:focus-visible,
-a:focus-visible,
-[tabindex]:focus-visible {
-  outline: 2px solid var(--atg-action);
+/* ─── FadeIn ──────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn { animation: fadeIn 0.25s ease both; }
+
+/* ─── Float (Login) ───────────────────────────────────────────── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) translateX(0px) scale(1); }
+  50%       { transform: translateY(-45px) translateX(35px) scale(1.12); }
+}
+@keyframes float-reverse {
+  0%, 100% { transform: translateY(0px) translateX(0px) scale(1); }
+  50%       { transform: translateY(55px) translateX(-40px) scale(0.88); }
+}
+.animate-float-slow   { animation: float 12s ease-in-out infinite; }
+.animate-float-slower { animation: float-reverse 16s ease-in-out infinite; }
+
+/* ─── Table Row Hover ─────────────────────────────────────────── */
+table tbody tr:hover {
+  background: #f7f8fc;
+}
+
+/* ─── Focus Ring ──────────────────────────────────────────────── */
+input:focus, select:focus, textarea:focus, button:focus-visible {
+  outline: 2px solid var(--atg-brand);
   outline-offset: 2px;
 }
 
-/* ─── Motion ──────────────────────────────────────────────────────
- * One entrance transition, kept short. The particle, lightning, glow, float
- * and 3D-card animations that used to live here are deliberately gone: they
- * were the "decorative, futuristic, game-like" quality the product is meant
- * not to have.
- */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* ─── Remove borders from inputs globally ─────────────────────── */
+input, select, textarea {
+  border-color: #e5e7eb;
 }
-.animate-fadeIn { animation: fadeIn 0.2s ease both; }
 
-/* Users who have asked their system for less motion get none of it. */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
+/* ─── Premium Landing Page Animations ────────────────────────── */
+@keyframes floatCard {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(0.5deg); }
+}
+.animate-float-card {
+  animation: floatCard 6s ease-in-out infinite;
+}
+
+@keyframes floatCardSecondary {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(-0.5deg); }
+}
+.animate-float-card-secondary {
+  animation: floatCardSecondary 5s ease-in-out infinite;
+}
+
+@keyframes glowBorder {
+  0%, 100% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.15), 0 0 30px rgba(147, 197, 253, 0.05); }
+  50% { box-shadow: 0 0 25px rgba(59, 130, 246, 0.35), 0 0 50px rgba(147, 197, 253, 0.2); }
+}
+.animate-glow-border {
+  animation: glowBorder 5s ease-in-out infinite;
+}
+
+@keyframes pulseSlow {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+.animate-pulse-slow {
+  animation: pulseSlow 4s ease-in-out infinite;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(25px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animation-delay-100 { animation-delay: 100ms; }
+.animation-delay-200 { animation-delay: 200ms; }
+.animation-delay-300 { animation-delay: 300ms; }
+.animation-delay-400 { animation-delay: 400ms; }
+
+/* ─── Orange Arrow Lightning Sweeping Animation ────────────────── */
+@keyframes arrowLightningSlow {
+  0% {
+    transform: translate3d(-180%, 0, 0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.85;
+  }
+  80% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(280%, 0, 0);
+    opacity: 0;
   }
 }
+
+@keyframes spreadablePulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.45;
+    filter: blur(40px) drop-shadow(0 0 30px rgba(255, 140, 0, 0.4));
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.85;
+    filter: blur(65px) drop-shadow(0 0 80px rgba(255, 140, 0, 0.85));
+  }
+}
+
+.animate-arrow-lightning-slow {
+  animation: arrowLightningSlow 16s linear infinite;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.animate-spreadable-pulse {
+  animation: spreadablePulse 8s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* ─── Ultra-Sharp Particles Rising Animation (Subtle Soft Opacity) ─── */
+@keyframes particlesRise {
+  0% {
+    transform: translate3d(0, 105vh, 0) scale(0.4);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.35;
+  }
+  85% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translate3d(0, -10vh, 0) scale(1.4);
+    opacity: 0;
+  }
+}
+
+.animate-particles-rise {
+  animation: particlesRise 9.5s linear infinite;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.35));
+}
+
+

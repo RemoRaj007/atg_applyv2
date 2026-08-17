@@ -17,7 +17,7 @@ export default function Layout() {
     const isDashboardRoot = location.pathname === '/candidate' || location.pathname === '/candidate/';
     const isProfilePage = location.pathname.includes('/profile');
     return (
-      <div className="min-h-screen flex flex-col bg-white text-[#1D1D1F]">
+      <div className="min-h-screen flex flex-col bg-[#0f172a] text-slate-100">
         <MaintenanceBanner />
         <CandidateHeader />
 
@@ -45,7 +45,7 @@ export default function Layout() {
 
   // Layout for operator, company, admin, visitor, etc. with candidate color theme
   return (
-    <div className="flex min-h-screen bg-white text-[#1D1D1F] font-sans">
+    <div className="flex min-h-screen bg-[#0f172a] text-slate-100 font-sans">
       <Sidebar user={user} onLogout={logout} />
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         <MaintenanceBanner />

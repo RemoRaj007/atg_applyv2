@@ -1,7 +1,5 @@
 const crypto = require("crypto");
 const { systemLogger } = require("../config/atg_logger");
-const { ENGLISH_MESSAGES, PRISMA_CODE_MAP, resolveErrorCode } = require("../constants/errorCodes");
-const { translateErrorCode, DEFAULT_LOCALE } = require("../i18n/errorMessages");
 
 // Prisma's own error codes, for the failures that are worth naming rather than
 // flattening into "Internal server error".
@@ -12,13 +10,10 @@ const { translateErrorCode, DEFAULT_LOCALE } = require("../i18n/errorMessages");
 // single unapplied migration reads as "the whole feature is 500ing", with
 // nothing in the response to say why. The code names the drift without quoting
 // the query, the connection string, or any row data.
-//
-// The wording now lives in constants/errorCodes.js so the response can also
-// carry a stable `code` and be translated; this map is derived from it rather
-// than duplicating the sentences, which would drift.
-const PRISMA_MESSAGES = Object.fromEntries(
-  Object.entries(PRISMA_CODE_MAP).map(([prismaCode, ourCode]) => [prismaCode, ENGLISH_MESSAGES[ourCode]])
-);
+const PRISMA_MESSAGES = {
+  P2021: "The database is missing a table this API expects. A migration has not been applied to this environment.",
+  P2022: "The database is missing a column this API expects. A migration has not been applied to this environment.",
+};
 
 const errorHandler = (err, req, res, next) => {
   const statusCode = err.statusCode || 500;
@@ -58,36 +53,9 @@ const errorHandler = (err, req, res, next) => {
   const isDevelopment = process.env.NODE_ENV === "development";
   const namedCause = PRISMA_MESSAGES[err.code];
 
-  const englishMessage = isClientError || isDevelopment ? message : namedCause || "Internal server error";
-
-  // A stable identifier for the failure, so a client can show its own translated
-  // sentence instead of rendering the English above verbatim — which is what
-  // reached users who had selected another language.
-  const code = resolveErrorCode(err, statusCode);
-
-  // Answer in the language the caller asked for. `req.locale` is set by
-  // locale.middleware; if that middleware is not mounted (unit tests
-  // constructing a bare req, for instance) this falls back to English.
-  //
-  // English is deliberately taken from the throw site rather than from the
-  // catalogue, even when a code is attached. The throw site is where the
-  // wording was chosen, sometimes for reasons that matter: the login failure
-  // says "Invalid email or password" identically for an unknown address and a
-  // wrong password, and swapping in a catalogue sentence would quietly rewrite
-  // a message whose exact form is a security property. Attaching a code must
-  // add a translation, never change the English.
-  const locale = req.locale || DEFAULT_LOCALE;
-  const localizedMessage =
-    locale === DEFAULT_LOCALE ? englishMessage : translateErrorCode(code, locale, englishMessage);
-
   const body = {
     status: false,
-    message: localizedMessage,
-    // Always the English text, regardless of locale. Support tickets, logs and
-    // bug reports quote this field, and a sentence in a language the on-call
-    // engineer cannot read is not a useful thing to paste into a search.
-    messageEn: englishMessage,
-    code: code || undefined,
+    message: isClientError || isDevelopment ? message : namedCause || "Internal server error",
     error: isDevelopment ? err.stack : undefined,
   };
 

@@ -19,11 +19,11 @@ export default function Header({ title }: HeaderProps) {
 
   return (
     <header
-      className="h-14 flex items-center justify-between px-8 bg-white text-[#1D1D1F] border-b border-[#D2D2D7] shadow-md"
+      className="h-14 flex items-center justify-between px-8 bg-slate-900 text-white border-b border-slate-800 shadow-md"
     >
       <div className="flex items-center gap-4">
         <h2
-          className="text-sm font-semibold capitalize tracking-wide text-[#1D1D1F]"
+          className="text-sm font-semibold capitalize tracking-wide text-white"
           style={{ letterSpacing: '0.04em' }}
         >
           {t(`nav.${title}`, { defaultValue: title })}
@@ -35,7 +35,7 @@ export default function Header({ title }: HeaderProps) {
         {user && (
           <Link
             to={`/${user.role}/notifications`}
-            className="p-2 rounded-xl transition-all duration-150 text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-[#F5F5F7] outline-none flex items-center justify-center cursor-pointer relative"
+            className="p-2 rounded-xl transition-all duration-150 text-slate-300 hover:text-white hover:bg-slate-800 outline-none flex items-center justify-center cursor-pointer relative"
             title={unreadCount > 0 ? `${unreadCount} unread notifications` : 'Notifications'}
           >
             <Bell size={18} />
@@ -50,10 +50,10 @@ export default function Header({ title }: HeaderProps) {
         {user && (
           <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-semibold leading-none text-[#1D1D1F]">
+              <p className="text-sm font-semibold leading-none text-white">
                 {user.name}
               </p>
-              <p className="text-[11px] mt-0.5 capitalize font-medium text-[#6E6E73]">
+              <p className="text-[11px] mt-0.5 capitalize font-medium text-slate-400">
                 {user.role}
               </p>
             </div>
@@ -61,7 +61,7 @@ export default function Header({ title }: HeaderProps) {
               <img
                 src={getFileUrl(user.profilePhoto)}
                 alt={user.name}
-                className="h-9 w-9 rounded-full object-cover border border-[#D2D2D7] shadow-sm"
+                className="h-9 w-9 rounded-full object-cover border border-slate-700 shadow-sm"
               />
             ) : (
               <div

@@ -25,24 +25,24 @@
     "siteContent": "Contenido del sitio",
     "siteSettings": "Ajustes del sitio",
     "emailTemplates": "Plantillas de correo",
-    "dashboardHub": "Centro del panel",
-    "myBookedApps": "Mis candidaturas",
-    "candidates": "Candidatos",
-    "jobsCatalog": "Catálogo de empleos",
-    "scholarshipsCatalog": "Catálogo de becas",
-    "jobLinkDesk": "Mesa de enlaces de empleo",
-    "applicationsHub": "Centro de candidaturas",
-    "reports": "Informes",
-    "skillsCatalog": "Catálogo de habilidades",
-    "jobRolesCatalog": "Catálogo de roles",
-    "companies": "Empresas",
-    "profileSchema": "Esquema del perfil",
-    "userManagement": "Gestión de usuarios",
-    "changeApprovals": "Aprobaciones de cambios",
-    "paymentOptions": "Opciones de pago",
-    "teamCapacity": "Capacidad del equipo",
-    "notifications": "Notificaciones",
-    "upgrade": "Mejorar plan"
+    "dashboardHub": "Dashboard Hub",
+    "myBookedApps": "My Applications",
+    "candidates": "Candidates",
+    "jobsCatalog": "Jobs Catalog",
+    "scholarshipsCatalog": "Scholarships Catalog",
+    "jobLinkDesk": "Job Link Desk",
+    "applicationsHub": "Applications Hub",
+    "reports": "Reports",
+    "skillsCatalog": "Skills Catalog",
+    "jobRolesCatalog": "Job Roles Catalog",
+    "companies": "Companies",
+    "profileSchema": "Job Profile Schema",
+    "userManagement": "User Management",
+    "changeApprovals": "Change Approvals",
+    "paymentOptions": "Payment Options",
+    "teamCapacity": "Team Capacity",
+    "notifications": "Notifications",
+    "upgrade": "Upgrade"
   },
   "footer": {
     "tagline": "Servicio de postulación laboral gestionado por personas. Selección basada en investigación y envío manual.",
@@ -59,15 +59,10 @@
     "badge": "Gestionado por personas · Investigación",
     "titleLine1": "Tu equipo personal",
     "titleLine2": "de postulación.",
-    "subtitle": "Ayudamos a estudiantes, recién titulados y profesionales ocupados a encontrar empleos adecuados, preparar candidaturas más sólidas y postularse con confianza. Nuestro equipo formado investiga los puestos, comprueba tu encaje, adapta tu CV y tu carta de motivación, y se presenta en tu nombre.",
+    "subtitle": "Un equipo capacitado investiga las vacantes, adapta tu CV y envía cada solicitud manualmente con comprobantes en tu panel.",
     "startTrial": "Iniciar prueba — 2 postulaciones gratis",
     "viewPricing": "Ver precios y planes",
-    "guaranteeNote": "Sin tarjeta · 2 postulaciones gratis · Envío humano",
-    "title": "Tu equipo personal\nde candidaturas.",
-    "eyebrow": "Un perfil. Todas las oportunidades.",
-    "primaryCta": "Crea tu perfil",
-    "secondaryCta": "Descubre cómo funciona",
-    "reassurance": "No se requiere tarjeta. Paga solo cuando estés satisfecho."
+    "guaranteeNote": "Sin tarjeta · 2 postulaciones gratis · Envío humano"
   },
   "features": {
     "title": "¿Por qué elegir ATG Apply?",
@@ -152,31 +147,16 @@
     "loginSubtitle": "Inicia sesión para acceder a tu panel de ATG Apply",
     "emailLabel": "Correo electrónico",
     "passwordLabel": "Contraseña",
-    "forgotPassword": "¿Has olvidado la contraseña?",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
     "signInBtn": "Iniciar sesión",
-    "noAccount": "¿No tienes cuenta?",
+    "noAccount": "¿No tienes una cuenta?",
     "registerNow": "Regístrate ahora",
     "createAccountTitle": "Crea tu cuenta de ATG Apply",
     "registerSubtitle": "Empieza con 2 postulaciones gratis. Sin tarjeta de crédito.",
     "fullName": "Nombre completo",
     "registerBtn": "Crear cuenta",
     "alreadyHaveAccount": "¿Ya tienes una cuenta?",
-    "signInLink": "Iniciar sesión",
-    "welcomeToast": "Bienvenido de nuevo.",
-    "eyebrow": "Un perfil. Todas las oportunidades.",
-    "openingHeadline": "Vamos a crear el tuyo.",
-    "openingSupport": "Empieza con lo que sabes hoy. Vuelve y añade más a medida que crezca tu carrera.",
-    "hidePassword": "Ocultar contraseña",
-    "showPassword": "Mostrar contraseña",
-    "rememberMe": "Recuérdame",
-    "signingIn": "Iniciando sesión…",
-    "signIn": "Iniciar sesión",
-    "orContinueWith": "o",
-    "createAccount": "Crea una",
-    "privacyLink": "Cómo trata ATG Apply tu información",
-    "registerHeadline": "Empieza donde estás.",
-    "registerSupport": "Crea tu perfil y añade tanto o tan poco de tu trayectoria como tengas hoy.",
-    "createAccountHeading": "Crea tu cuenta"
+    "signInLink": "Iniciar sesión"
   },
   "common": {
     "backToHome": "Volver al inicio",
@@ -184,16 +164,13 @@
     "save": "Guardar",
     "cancel": "Cancelar",
     "loading": "Cargando...",
-    "search": "Buscar",
-    "filter": "Filtrar",
-    "action": "Acción",
-    "delete": "Eliminar",
-    "edit": "Editar",
-    "close": "Cerrar",
-    "submit": "Enviar",
-    "back": "Atrás",
-    "retry": "Reintentar",
-    "continue": "Continuar"
+    "search": "Search",
+    "filter": "Filter",
+    "action": "Action",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "submit": "Submit"
   },
   "contactPage": {
     "title": "Ponte en contacto",
@@ -217,238 +194,82 @@
     "errorGeneric": "Algo salió mal. Inténtalo de nuevo."
   },
   "dashboard": {
-    "welcome": "Bienvenido de nuevo",
-    "overview": "Resumen de tu proceso de candidaturas y actividad.",
-    "totalApplications": "Total de candidaturas",
-    "submitted": "Enviadas",
-    "inProgress": "En curso",
-    "availableBalance": "Saldo disponible",
-    "recentActivity": "Actividad reciente",
-    "quickActions": "Acciones rápidas",
-    "browseJobs": "Ver empleos recomendados",
-    "viewApplications": "Ver seguimiento de candidaturas",
-    "manageProfile": "Actualizar el perfil del candidato",
-    "noRecentActivity": "No hay actividad reciente registrada.",
-    "heroHeadline": "Tu próxima oportunidad",
-    "heroSupport": "Añade lo que sepas hoy. Tu equipo asignado lo usa para preparar candidaturas precisas siguiendo tus instrucciones.",
-    "operatorRequestEyebrow": "Solicitud al operador",
-    "sendJobLinkHeading": "Envía un enlace de empleo externo a tu operador",
-    "sendJobLinkSupport": "¿Has encontrado un puesto en otro sitio? Pega el enlace y un operador evaluará si encaja con tu perfil.",
-    "jobLinkPlaceholder": "Pega la URL de la oferta",
-    "sending": "Enviando…",
-    "sendToOperator": "Enviar al operador",
-    "recommendedHeading": "Oportunidades que recomendamos",
-    "noRecommendations": "Aún no hay recomendaciones",
-    "quickJobs": "Buscar empleos",
-    "quickJobsCaption": "Descubre puestos",
-    "quickJobLink": "Enviar enlace",
-    "quickJobLinkCaption": "Mesa del operador y chat",
-    "quickScholarships": "Becas",
-    "quickScholarshipsCaption": "Ayudas y financiación",
-    "quickApplications": "Candidaturas",
-    "quickApplicationsCaption": "Sigue y revisa",
-    "quickProfile": "Mi perfil",
-    "quickProfileCaption": "Preferencias",
-    "trustPlatform": "Plataforma de confianza",
-    "trustPlatformCaption": "Segura y fiable",
-    "trustCompanies": "Empresas destacadas",
-    "trustCompaniesCaption": "Trabaja con los mejores",
-    "trustMatching": "Emparejamiento cuidado",
-    "trustMatchingCaption": "Puestos que encajan con tu perfil",
-    "trustSupport": "Apoyo humano",
-    "trustSupportCaption": "Una persona real de tu lado"
+    "welcome": "Welcome back",
+    "overview": "Overview of your application pipeline and activity.",
+    "totalApplications": "Total Applications",
+    "submitted": "Submitted",
+    "inProgress": "In Progress",
+    "availableBalance": "Available Balance",
+    "recentActivity": "Recent Activity",
+    "quickActions": "Quick Actions",
+    "browseJobs": "Browse Recommended Jobs",
+    "viewApplications": "View Application Trackers",
+    "manageProfile": "Update Candidate Profile",
+    "noRecentActivity": "No recent activity recorded yet."
   },
   "jobs": {
-    "title": "Empleos recomendados",
-    "subtitle": "Puestos que encajan con tu perfil, con una puntuación de afinidad detallada.",
-    "searchPlaceholder": "Busca por puesto, empresa o ubicación…",
-    "filterAll": "Todos los empleos",
-    "filterHighFit": "Alta afinidad (80%+)",
-    "filterMediumFit": "Afinidad media (50%-79%)",
-    "applyNow": "Postularme",
-    "viewDetails": "Ver detalles",
-    "fitScore": "Puntuación de afinidad",
-    "location": "Ubicación",
-    "salary": "Salario",
-    "postedDate": "Publicado",
-    "company": "Empresa",
-    "status": "Estado",
-    "alreadyApplied": "Ya postulado"
+    "title": "Recommended Jobs",
+    "subtitle": "Roles matched to your profile with detailed fit scoring.",
+    "searchPlaceholder": "Search by job title, company, or location...",
+    "filterAll": "All Jobs",
+    "filterHighFit": "High Fit (80%+)",
+    "filterMediumFit": "Medium Fit (50%-79%)",
+    "applyNow": "Apply Now",
+    "viewDetails": "View Details",
+    "fitScore": "Fit Score",
+    "location": "Location",
+    "salary": "Salary",
+    "postedDate": "Posted",
+    "company": "Company",
+    "status": "Status",
+    "alreadyApplied": "Applied"
   },
   "applications": {
-    "title": "Mis candidaturas",
-    "subtitle": "Sigue el estado en tiempo real y consulta el comprobante de envío de cada puesto.",
-    "statusPending": "Pendiente de revisión",
-    "statusSubmitted": "Enviada",
-    "statusInReview": "En revisión",
-    "statusRejected": "No seleccionado",
-    "statusAccepted": "Entrevista / Oferta",
-    "viewProof": "Ver documento de comprobante",
-    "proofUploaded": "Comprobante registrado",
-    "noApplications": "No se han encontrado candidaturas."
+    "title": "My Applications",
+    "subtitle": "Track real-time status and view proof of submission for every job.",
+    "statusPending": "Pending Review",
+    "statusSubmitted": "Submitted",
+    "statusInReview": "Under Review",
+    "statusRejected": "Unsuccessful",
+    "statusAccepted": "Interview / Offer",
+    "viewProof": "View Proof Document",
+    "proofUploaded": "Proof Logged",
+    "noApplications": "No applications found."
   },
   "payments": {
-    "title": "Pagos y saldo",
-    "subtitle": "Gestiona el saldo de tu paquete de candidaturas y los recibos.",
-    "currentBalance": "Saldo actual de candidaturas",
-    "buyPackages": "Comprar paquete",
-    "transactionHistory": "Historial de transacciones",
-    "amount": "Importe",
-    "package": "Paquete",
-    "date": "Fecha",
-    "status": "Estado del pago",
-    "pending": "Pendiente de verificación",
-    "paid": "Pagado",
-    "refunded": "Reembolsado"
+    "title": "Payments & Balance",
+    "subtitle": "Manage your application package balance and billing transaction receipts.",
+    "currentBalance": "Current Application Balance",
+    "buyPackages": "Purchase Package",
+    "transactionHistory": "Transaction History",
+    "amount": "Amount",
+    "package": "Package",
+    "date": "Date",
+    "status": "Payment Status",
+    "pending": "Pending Verification",
+    "paid": "Paid",
+    "refunded": "Refunded"
   },
   "profile": {
-    "title": "Perfil del candidato",
-    "subtitle": "Completa tu perfil para desbloquear los empleos recomendados.",
-    "personalDetails": "Datos personales",
-    "contactInfo": "Información de contacto",
-    "educationInfo": "Formación y titulaciones",
-    "skillsInfo": "Habilidades de TI y otras",
-    "documentsInfo": "Documentos y CV",
-    "saveProfile": "Guardar cambios del perfil",
-    "completionStatus": "Completitud del perfil"
+    "title": "Candidate Profile",
+    "subtitle": "Complete your intake profile to unlock recommended job matches.",
+    "personalDetails": "Personal Details",
+    "contactInfo": "Contact Information",
+    "educationInfo": "Education & Degrees",
+    "skillsInfo": "IT & Other Skills",
+    "documentsInfo": "Documents & Resume",
+    "saveProfile": "Save Profile Changes",
+    "completionStatus": "Profile Completion"
   },
   "admin": {
-    "title": "Consola de administración",
-    "manageUsers": "Gestión de usuarios",
-    "manageCompanies": "Catálogo de empresas",
-    "schemaBuilder": "Constructor de esquema de perfil",
-    "approvals": "Aprobaciones pendientes",
-    "paymentOptions": "Opciones de precios de paquetes",
-    "totalUsers": "Total de usuarios del sistema",
-    "activeCompanies": "Empresas asociadas activas",
-    "pendingReviews": "Revisiones pendientes"
-  },
-  "errors": {
-    "DB_SCHEMA_MISSING_TABLE": "Falta en la base de datos una tabla que esta API espera. No se ha aplicado una migración a este entorno.",
-    "DB_SCHEMA_MISSING_COLUMN": "Falta en la base de datos una columna que esta API espera. No se ha aplicado una migración a este entorno.",
-    "INTERNAL": "Se ha producido un problema por nuestra parte. Inténtalo de nuevo.",
-    "AUTH_INVALID_CREDENTIALS": "El correo electrónico o la contraseña no son correctos.",
-    "AUTH_SESSION_EXPIRED": "Tu sesión ha finalizado. Vuelve a iniciar sesión.",
-    "VALIDATION_FAILED": "Parte de la información proporcionada no es válida.",
-    "NOT_FOUND": "No se ha encontrado el elemento solicitado.",
-    "FORBIDDEN": "No tienes permiso para hacer esto.",
-    "CONFLICT_DUPLICATE": "Este elemento ya existe.",
-    "UPSTREAM_UNAVAILABLE": "Un servicio del que depende esta función no está disponible. Inténtalo de nuevo en breve.",
-    "TIMEOUT": "El servidor ha tardado demasiado en responder. Inténtalo de nuevo.",
-    "NETWORK": "No se ha podido contactar con el servidor. Comprueba tu conexión e inténtalo de nuevo.",
-    "UNKNOWN": "Se ha producido un error inesperado."
-  },
-  "profileBuilder": {
-    "submitted": "Perfil enviado para revisión.",
-    "noSchema": "Las preguntas del perfil aún no se han configurado en este entorno.",
-    "submit": "Enviar para revisión",
-    "chapterLabel": "Capítulo",
-    "navLabel": "Capítulos del perfil",
-    "restrictedHidden": "Restringido: se comparte solo para una candidatura concreta y con tu aprobación.",
-    "selectPlaceholder": "Selecciona…",
-    "noteRestricted": "Restringido. Solo se comparte para una candidatura concreta tras tu aprobación.",
-    "notePrivateNoAi": "Privado. Nunca se envía a herramientas de IA externas.",
-    "notePrivate": "Privado. Se usa solo para candidaturas.",
-    "progressLabel": "Progreso del perfil",
-    "progressCount": "{{started}} de {{total}} capítulos iniciados",
-    "chapterNumber": "Capítulo {{code}}",
-    "requiredMissing": "Aún falta aquí: {{fields}}",
-    "optionalNote": "La mayoría de las preguntas aquí son opcionales. Omite lo que no aplique y vuelve más tarde.",
-    "saveFailed": "No guardado",
-    "saving": "Guardando…",
-    "saved": "Guardado",
-    "errorRequired": "Esta respuesta es necesaria para gestionar tu perfil.",
-    "errorEmail": "Introduce un correo electrónico válido.",
-    "errorUrl": "Introduce una dirección completa que empiece por http:// o https://",
-    "errorTooLong": "Esta respuesta es demasiado larga para guardarla. Acórtala.",
-    "addEducation": "Añadir formación",
-    "addRole": "Añadir puesto",
-    "addProject": "Añadir proyecto",
-    "addReference": "Añadir referencia",
-    "addEntry": "Añadir entrada",
-    "entryEducation": "Formación",
-    "entryRole": "Puesto",
-    "entryProject": "Proyecto",
-    "entryReference": "Referencia",
-    "entry": "Entrada",
-    "statusComplete": "Completo",
-    "statusInProgress": "En curso",
-    "statusNeedsReview": "Requiere revisión",
-    "statusNotStarted": "Sin empezar"
-  },
-  "profileChapters": {
-    "10": {
-      "title": "Proyectos, productos y portafolio"
-    },
-    "11": {
-      "title": "Investigación, publicaciones, docencia y contribución pública"
-    },
-    "12": {
-      "title": "Habilidades, herramientas e idiomas"
-    },
-    "13": {
-      "title": "Banco de logros e historias para entrevistas"
-    },
-    "14": {
-      "title": "Motivación, valores y voz de escritura"
-    },
-    "15": {
-      "title": "Módulos de profundidad por puesto"
-    },
-    "16": {
-      "title": "Referencias y verificación"
-    },
-    "17": {
-      "title": "Evidencias y enlaces a documentos"
-    },
-    "18": {
-      "title": "Autoridad de candidatura, límites de la IA y preguntas especiales"
-    },
-    "19": {
-      "title": "Revisión final y declaración"
-    },
-    "00": {
-      "title": "Bienvenida y elección informada"
-    },
-    "01": {
-      "title": "Identidad, contacto y presencia profesional"
-    },
-    "02": {
-      "title": "Autorización de trabajo, movilidad y disponibilidad"
-    },
-    "03": {
-      "title": "Dirección profesional y reglas de oportunidad"
-    },
-    "04": {
-      "title": "Identidad profesional y narrativa de carrera"
-    },
-    "05": {
-      "title": "Escuela, educación secundaria y desarrollo temprano"
-    },
-    "06": {
-      "title": "Educación superior"
-    },
-    "07": {
-      "title": "Certificaciones, licencias, afiliaciones y formación"
-    },
-    "08": {
-      "title": "Historial laboral"
-    },
-    "09": {
-      "title": "Prácticas, aprendizajes, voluntariado y pausas profesionales"
-    }
-  },
-  "operatorProfile": {
-    "noteSaved": "Nota guardada.",
-    "correctionSent": "Corrección solicitada.",
-    "missingHeading": "Faltan datos obligatorios",
-    "noAi": "sin IA externa",
-    "restricted": "Restringido: solicítalo en el momento para una candidatura concreta.",
-    "requestCorrection": "Solicitar corrección",
-    "correctionFor": "Pide al candidato que corrija {{code}}",
-    "sendCorrection": "Enviar solicitud",
-    "notesHeading": "Notas privadas del operador",
-    "notesHint": "Solo el personal puede verlas; el candidato no.",
-    "saveNote": "Guardar nota"
+    "title": "Admin Console",
+    "manageUsers": "User Management",
+    "manageCompanies": "Companies Catalog",
+    "schemaBuilder": "Profile Schema Builder",
+    "approvals": "Pending Approvals",
+    "paymentOptions": "Package Pricing Options",
+    "totalUsers": "Total System Users",
+    "activeCompanies": "Active Partner Companies",
+    "pendingReviews": "Pending Reviews"
   }
 }

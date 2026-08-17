@@ -3,7 +3,6 @@ import { userProfileApi } from '../../api/userProfileApi';
 import type { FullUserProfile } from '../../api/userProfileApi';
 import { X, FileText, Download, Briefcase, Clock, Users, TrendingUp } from 'lucide-react';
 import { getFileUrl } from '../../utils/fileUrl';
-import OperatorProfileView from '../../features/profile-builder/OperatorProfileView';
 
 // ─── Experience Time Calculator Helpers ─────────────────────────────────────
 function calcMonths(startDate: string, endDate?: string, isCurrent?: boolean): number {
@@ -98,13 +97,6 @@ export default function OperatorProfileViewModal({
 
         {/* Content */}
         <div className="p-6 overflow-y-auto space-y-8 bg-gray-50">
-
-          {/* The structured 20-chapter profile, read-only, with correction
-              requests and private notes. Rendered above the legacy relational
-              sections below so an operator sees the canonical source first. */}
-          <div className="bg-white rounded-xl p-6 border border-[#D2D2D7]">
-            <OperatorProfileView userId={userId} />
-          </div>
 
           {/* Fit Score Banner if provided */}
           {fitScore !== undefined && fitScore !== null && (

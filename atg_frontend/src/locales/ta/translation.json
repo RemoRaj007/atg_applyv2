@@ -25,24 +25,24 @@
     "siteContent": "தள உள்ளடக்கம்",
     "siteSettings": "தள அமைப்புகள்",
     "emailTemplates": "மின்னஞ்சல் வார்ப்புருக்கள்",
-    "dashboardHub": "கட்டுப்பாட்டு மையம்",
-    "myBookedApps": "என் விண்ணப்பங்கள்",
-    "candidates": "விண்ணப்பதாரர்கள்",
-    "jobsCatalog": "வேலைகள் அட்டவணை",
-    "scholarshipsCatalog": "உதவித்தொகை அட்டவணை",
-    "jobLinkDesk": "வேலை இணைப்பு மேசை",
-    "applicationsHub": "விண்ணப்ப மையம்",
-    "reports": "அறிக்கைகள்",
-    "skillsCatalog": "திறன்கள் அட்டவணை",
-    "jobRolesCatalog": "பணிப் பாத்திரங்கள் அட்டவணை",
-    "companies": "நிறுவனங்கள்",
-    "profileSchema": "பணி சுயவிவரத் திட்டம்",
-    "userManagement": "பயனர் மேலாண்மை",
-    "changeApprovals": "மாற்ற ஒப்புதல்கள்",
-    "paymentOptions": "கட்டண விருப்பங்கள்",
-    "teamCapacity": "குழு திறன்",
-    "notifications": "அறிவிப்புகள்",
-    "upgrade": "மேம்படுத்து"
+    "dashboardHub": "Dashboard Hub",
+    "myBookedApps": "My Applications",
+    "candidates": "Candidates",
+    "jobsCatalog": "Jobs Catalog",
+    "scholarshipsCatalog": "Scholarships Catalog",
+    "jobLinkDesk": "Job Link Desk",
+    "applicationsHub": "Applications Hub",
+    "reports": "Reports",
+    "skillsCatalog": "Skills Catalog",
+    "jobRolesCatalog": "Job Roles Catalog",
+    "companies": "Companies",
+    "profileSchema": "Job Profile Schema",
+    "userManagement": "User Management",
+    "changeApprovals": "Change Approvals",
+    "paymentOptions": "Payment Options",
+    "teamCapacity": "Team Capacity",
+    "notifications": "Notifications",
+    "upgrade": "Upgrade"
   },
   "footer": {
     "tagline": "மனிதர்களால் நிர்வகிக்கப்படும் வேலை விண்ணப்ப சேவை. ஆராய்ச்சி மற்றும் பயிற்சி பெற்ற குழுவால் விண்ணப்பங்கள் சமர்ப்பிக்கப்படும்.",
@@ -59,15 +59,10 @@
     "badge": "மனித நிர்வாகம் · ஆராய்ச்சி சார்ந்த",
     "titleLine1": "உங்களுக்கான தனிப்பட்ட",
     "titleLine2": "வேலை விண்ணப்பக் குழு.",
-    "subtitle": "மாணவர்கள், பட்டதாரிகள் மற்றும் பணிபளுவுள்ள தொழில் வல்லுநர்கள் பொருத்தமான வேலைகளைக் கண்டறியவும், வலுவான விண்ணப்பங்களைத் தயாரிக்கவும், நம்பிக்கையுடன் விண்ணப்பிக்கவும் நாங்கள் உதவுகிறோம். எங்கள் பயிற்சி பெற்ற குழு பணியிடங்களை ஆராய்ந்து, உங்கள் பொருத்தத்தைச் சரிபார்த்து, உங்கள் CV மற்றும் ஊக்கக் கடிதத்தைத் தனிப்பயனாக்கி, உங்கள் சார்பாகச் சமர்ப்பிக்கிறது.",
+    "subtitle": "பயிற்சி பெற்ற குழு உங்கள் வேலைகளை ஆராய்ந்து, சுயவிவரத்தை தயாரித்து, ஆதாரத்துடன் கைமுறையாக விண்ணப்பிக்கும்.",
     "startTrial": "இலவச சோதனை — 2 விண்ணப்பங்கள்",
     "viewPricing": "விலை மற்றும் திட்டங்களை காண்க",
-    "guaranteeNote": "கார்டு தேவையில்லை · 2 இலவச விண்ணப்பங்கள் · மனிதர்களால் விண்ணப்பம்",
-    "title": "உங்கள் சொந்த வேலை\nவிண்ணப்பக் குழு.",
-    "eyebrow": "ஒரே சுயவிவரம். அனைத்து வாய்ப்புகளும்.",
-    "primaryCta": "உங்கள் சுயவிவரத்தை உருவாக்குங்கள்",
-    "secondaryCta": "இது எப்படி வேலை செய்கிறது என்று பாருங்கள்",
-    "reassurance": "அட்டை தேவையில்லை. நீங்கள் திருப்தி அடைந்தால் மட்டுமே பணம் செலுத்துங்கள்."
+    "guaranteeNote": "கார்டு தேவையில்லை · 2 இலவச விண்ணப்பங்கள் · மனிதர்களால் விண்ணப்பம்"
   },
   "features": {
     "title": "ஏன் ATG Apply?",
@@ -161,22 +156,7 @@
     "fullName": "முழு பெயர்",
     "registerBtn": "கணக்கை உருவாக்கு",
     "alreadyHaveAccount": "ஏற்கனவே கணக்கு உள்ளதா?",
-    "signInLink": "உள்நுழைக",
-    "welcomeToast": "மீண்டும் வரவேற்கிறோம்.",
-    "eyebrow": "ஒரே சுயவிவரம். அனைத்து வாய்ப்புகளும்.",
-    "openingHeadline": "உங்களுடையதை உருவாக்குவோம்.",
-    "openingSupport": "இன்று உங்களுக்குத் தெரிந்ததில் தொடங்குங்கள். உங்கள் தொழில் வளரும்போது திரும்பி வந்து மேலும் சேர்க்கவும்.",
-    "hidePassword": "கடவுச்சொல்லை மறை",
-    "showPassword": "கடவுச்சொல்லைக் காட்டு",
-    "rememberMe": "என்னை நினைவில் வைத்திரு",
-    "signingIn": "உள்நுழைகிறது…",
-    "signIn": "உள்நுழை",
-    "orContinueWith": "அல்லது",
-    "createAccount": "ஒன்றை உருவாக்கு",
-    "privacyLink": "ATG Apply உங்கள் தகவலை எவ்வாறு கையாளுகிறது",
-    "registerHeadline": "நீங்கள் இருக்கும் இடத்திலிருந்து தொடங்குங்கள்.",
-    "registerSupport": "உங்கள் சுயவிவரத்தை உருவாக்கி, இன்று உங்களிடம் உள்ள தொழில் விவரங்களை அதிகமாகவோ குறைவாகவோ சேர்க்கவும்.",
-    "createAccountHeading": "உங்கள் கணக்கை உருவாக்கவும்"
+    "signInLink": "உள்நுழைக"
   },
   "common": {
     "backToHome": "முகப்பிற்குச் செல்க",
@@ -184,16 +164,13 @@
     "save": "சேமிக்கவும்",
     "cancel": "ரத்து செய்",
     "loading": "ஏற்றுகிறது...",
-    "search": "தேடு",
-    "filter": "வடிகட்டு",
-    "action": "செயல்",
-    "delete": "நீக்கு",
-    "edit": "திருத்து",
-    "close": "மூடு",
-    "submit": "சமர்ப்பி",
-    "back": "பின்",
-    "retry": "மீண்டும் முயற்சிக்கவும்",
-    "continue": "தொடரவும்"
+    "search": "Search",
+    "filter": "Filter",
+    "action": "Action",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "submit": "Submit"
   },
   "contactPage": {
     "title": "எங்களைத் தொடர்பு கொள்ளுங்கள்",
@@ -217,238 +194,82 @@
     "errorGeneric": "ஏதோ தவறு நடந்தது. மீண்டும் முயற்சிக்கவும்."
   },
   "dashboard": {
-    "welcome": "மீண்டும் வரவேற்கிறோம்",
-    "overview": "உங்கள் விண்ணப்பப் பாதை மற்றும் செயல்பாட்டின் மேலோட்டம்.",
-    "totalApplications": "மொத்த விண்ணப்பங்கள்",
-    "submitted": "சமர்ப்பிக்கப்பட்டது",
-    "inProgress": "நடைபெறுகிறது",
-    "availableBalance": "கிடைக்கும் இருப்பு",
-    "recentActivity": "சமீபத்திய செயல்பாடு",
-    "quickActions": "விரைவு செயல்கள்",
-    "browseJobs": "பரிந்துரைக்கப்பட்ட வேலைகளைப் பார்க்கவும்",
-    "viewApplications": "விண்ணப்பக் கண்காணிப்பைப் பார்க்கவும்",
-    "manageProfile": "விண்ணப்பதாரர் சுயவிவரத்தைப் புதுப்பிக்கவும்",
-    "noRecentActivity": "சமீபத்திய செயல்பாடு எதுவும் பதிவாகவில்லை.",
-    "heroHeadline": "உங்கள் அடுத்த வாய்ப்பு",
-    "heroSupport": "இன்று உங்களுக்குத் தெரிந்ததைச் சேர்க்கவும். உங்கள் அறிவுறுத்தல்களின்படி துல்லியமான விண்ணப்பங்களைத் தயாரிக்க உங்கள் குழு அதைப் பயன்படுத்தும்.",
-    "operatorRequestEyebrow": "ஆபரேட்டர் கோரிக்கை",
-    "sendJobLinkHeading": "வெளிப்புற வேலை இணைப்பை உங்கள் ஆபரேட்டருக்கு அனுப்பவும்",
-    "sendJobLinkSupport": "வேறு எங்காவது ஒரு பணியிடத்தைக் கண்டீர்களா? இணைப்பை ஒட்டவும், அது உங்கள் சுயவிவரத்துடன் எவ்வளவு பொருந்துகிறது என்பதை ஒரு ஆபரேட்டர் மதிப்பிடுவார்.",
-    "jobLinkPlaceholder": "வேலை அறிவிப்பின் URL ஐ ஒட்டவும்",
-    "sending": "அனுப்புகிறது…",
-    "sendToOperator": "ஆபரேட்டருக்கு அனுப்பு",
-    "recommendedHeading": "நாங்கள் பரிந்துரைக்கும் வாய்ப்புகள்",
-    "noRecommendations": "இதுவரை பரிந்துரைகள் இல்லை",
-    "quickJobs": "வேலைகளைத் தேடு",
-    "quickJobsCaption": "பணியிடங்களைக் கண்டறியவும்",
-    "quickJobLink": "வேலை இணைப்பை அனுப்பு",
-    "quickJobLinkCaption": "ஆபரேட்டர் மேசை & அரட்டை",
-    "quickScholarships": "உதவித்தொகைகள்",
-    "quickScholarshipsCaption": "மானியங்கள் & நிதி",
-    "quickApplications": "விண்ணப்பங்கள்",
-    "quickApplicationsCaption": "கண்காணித்து மதிப்பாய்வு செய்யவும்",
-    "quickProfile": "என் சுயவிவரம்",
-    "quickProfileCaption": "விருப்பங்கள்",
-    "trustPlatform": "நம்பகமான தளம்",
-    "trustPlatformCaption": "பாதுகாப்பானது மற்றும் நம்பகமானது",
-    "trustCompanies": "முன்னணி நிறுவனங்கள்",
-    "trustCompaniesCaption": "சிறந்தவர்களுடன் பணியாற்றுங்கள்",
-    "trustMatching": "கவனமான பொருத்தம்",
-    "trustMatchingCaption": "உங்கள் சுயவிவரத்திற்குப் பொருந்தும் பணியிடங்கள்",
-    "trustSupport": "மனிதத் துணை",
-    "trustSupportCaption": "உங்கள் பக்கம் ஒரு உண்மையான நபர்"
+    "welcome": "Welcome back",
+    "overview": "Overview of your application pipeline and activity.",
+    "totalApplications": "Total Applications",
+    "submitted": "Submitted",
+    "inProgress": "In Progress",
+    "availableBalance": "Available Balance",
+    "recentActivity": "Recent Activity",
+    "quickActions": "Quick Actions",
+    "browseJobs": "Browse Recommended Jobs",
+    "viewApplications": "View Application Trackers",
+    "manageProfile": "Update Candidate Profile",
+    "noRecentActivity": "No recent activity recorded yet."
   },
   "jobs": {
-    "title": "பரிந்துரைக்கப்பட்ட வேலைகள்",
-    "subtitle": "உங்கள் சுயவிவரத்திற்குப் பொருந்தும் பணியிடங்கள், விரிவான பொருத்த மதிப்பெண்ணுடன்.",
-    "searchPlaceholder": "பணி, நிறுவனம் அல்லது இடம் மூலம் தேடவும்…",
-    "filterAll": "அனைத்து வேலைகளும்",
-    "filterHighFit": "அதிக பொருத்தம் (80%+)",
-    "filterMediumFit": "நடுத்தரப் பொருத்தம் (50%-79%)",
-    "applyNow": "இப்போது விண்ணப்பிக்கவும்",
-    "viewDetails": "விவரங்களைப் பார்க்கவும்",
-    "fitScore": "பொருத்த மதிப்பெண்",
-    "location": "இடம்",
-    "salary": "ஊதியம்",
-    "postedDate": "வெளியிடப்பட்டது",
-    "company": "நிறுவனம்",
-    "status": "நிலை",
-    "alreadyApplied": "விண்ணப்பிக்கப்பட்டது"
+    "title": "Recommended Jobs",
+    "subtitle": "Roles matched to your profile with detailed fit scoring.",
+    "searchPlaceholder": "Search by job title, company, or location...",
+    "filterAll": "All Jobs",
+    "filterHighFit": "High Fit (80%+)",
+    "filterMediumFit": "Medium Fit (50%-79%)",
+    "applyNow": "Apply Now",
+    "viewDetails": "View Details",
+    "fitScore": "Fit Score",
+    "location": "Location",
+    "salary": "Salary",
+    "postedDate": "Posted",
+    "company": "Company",
+    "status": "Status",
+    "alreadyApplied": "Applied"
   },
   "applications": {
-    "title": "என் விண்ணப்பங்கள்",
-    "subtitle": "ஒவ்வொரு வேலைக்கும் நிலையை நேரலையில் கண்காணித்து, சமர்ப்பிப்புச் சான்றைப் பார்க்கவும்.",
-    "statusPending": "மதிப்பாய்வு நிலுவையில்",
-    "statusSubmitted": "சமர்ப்பிக்கப்பட்டது",
-    "statusInReview": "மதிப்பாய்வில் உள்ளது",
-    "statusRejected": "வெற்றிபெறவில்லை",
-    "statusAccepted": "நேர்காணல் / வேலை வாய்ப்பு",
-    "viewProof": "சான்று ஆவணத்தைப் பார்க்கவும்",
-    "proofUploaded": "சான்று பதிவு செய்யப்பட்டது",
-    "noApplications": "விண்ணப்பங்கள் எதுவும் இல்லை."
+    "title": "My Applications",
+    "subtitle": "Track real-time status and view proof of submission for every job.",
+    "statusPending": "Pending Review",
+    "statusSubmitted": "Submitted",
+    "statusInReview": "Under Review",
+    "statusRejected": "Unsuccessful",
+    "statusAccepted": "Interview / Offer",
+    "viewProof": "View Proof Document",
+    "proofUploaded": "Proof Logged",
+    "noApplications": "No applications found."
   },
   "payments": {
-    "title": "கட்டணங்கள் & இருப்பு",
-    "subtitle": "உங்கள் விண்ணப்பத் தொகுப்பு இருப்பையும் பட்டியல் ரசீதுகளையும் நிர்வகிக்கவும்.",
-    "currentBalance": "தற்போதைய விண்ணப்ப இருப்பு",
-    "buyPackages": "தொகுப்பை வாங்கவும்",
-    "transactionHistory": "பரிவர்த்தனை வரலாறு",
-    "amount": "தொகை",
-    "package": "தொகுப்பு",
-    "date": "தேதி",
-    "status": "கட்டண நிலை",
-    "pending": "சரிபார்ப்பு நிலுவையில்",
-    "paid": "செலுத்தப்பட்டது",
-    "refunded": "திருப்பியளிக்கப்பட்டது"
+    "title": "Payments & Balance",
+    "subtitle": "Manage your application package balance and billing transaction receipts.",
+    "currentBalance": "Current Application Balance",
+    "buyPackages": "Purchase Package",
+    "transactionHistory": "Transaction History",
+    "amount": "Amount",
+    "package": "Package",
+    "date": "Date",
+    "status": "Payment Status",
+    "pending": "Pending Verification",
+    "paid": "Paid",
+    "refunded": "Refunded"
   },
   "profile": {
-    "title": "விண்ணப்பதாரர் சுயவிவரம்",
-    "subtitle": "பரிந்துரைக்கப்பட்ட வேலைப் பொருத்தங்களைத் திறக்க உங்கள் சுயவிவரத்தை நிறைவு செய்யவும்.",
-    "personalDetails": "தனிப்பட்ட விவரங்கள்",
-    "contactInfo": "தொடர்புத் தகவல்",
-    "educationInfo": "கல்வி & பட்டங்கள்",
-    "skillsInfo": "தகவல் தொழில்நுட்பம் & பிற திறன்கள்",
-    "documentsInfo": "ஆவணங்கள் & விவரக்குறிப்பு",
-    "saveProfile": "சுயவிவர மாற்றங்களைச் சேமிக்கவும்",
-    "completionStatus": "சுயவிவர நிறைவு"
+    "title": "Candidate Profile",
+    "subtitle": "Complete your intake profile to unlock recommended job matches.",
+    "personalDetails": "Personal Details",
+    "contactInfo": "Contact Information",
+    "educationInfo": "Education & Degrees",
+    "skillsInfo": "IT & Other Skills",
+    "documentsInfo": "Documents & Resume",
+    "saveProfile": "Save Profile Changes",
+    "completionStatus": "Profile Completion"
   },
   "admin": {
-    "title": "நிர்வாகக் கட்டுப்பாட்டகம்",
-    "manageUsers": "பயனர் மேலாண்மை",
-    "manageCompanies": "நிறுவனங்கள் அட்டவணை",
-    "schemaBuilder": "சுயவிவரத் திட்ட உருவாக்கி",
-    "approvals": "நிலுவையில் உள்ள ஒப்புதல்கள்",
-    "paymentOptions": "தொகுப்பு விலை விருப்பங்கள்",
-    "totalUsers": "மொத்த கணினி பயனர்கள்",
-    "activeCompanies": "செயலில் உள்ள கூட்டாளி நிறுவனங்கள்",
-    "pendingReviews": "நிலுவையில் உள்ள மதிப்பாய்வுகள்"
-  },
-  "errors": {
-    "DB_SCHEMA_MISSING_TABLE": "இந்த API எதிர்பார்க்கும் ஒரு அட்டவணை தரவுத்தளத்தில் இல்லை. இந்தச் சூழலுக்கு ஒரு இடம்பெயர்வு (migration) இன்னும் பயன்படுத்தப்படவில்லை.",
-    "DB_SCHEMA_MISSING_COLUMN": "இந்த API எதிர்பார்க்கும் ஒரு நிரல் (column) தரவுத்தளத்தில் இல்லை. இந்தச் சூழலுக்கு ஒரு இடம்பெயர்வு (migration) இன்னும் பயன்படுத்தப்படவில்லை.",
-    "INTERNAL": "எங்கள் தரப்பில் ஏதோ தவறு நடந்துள்ளது. மீண்டும் முயற்சிக்கவும்.",
-    "AUTH_INVALID_CREDENTIALS": "மின்னஞ்சல் முகவரி அல்லது கடவுச்சொல் தவறானது.",
-    "AUTH_SESSION_EXPIRED": "உங்கள் அமர்வு முடிந்துவிட்டது. மீண்டும் உள்நுழையவும்.",
-    "VALIDATION_FAILED": "வழங்கப்பட்ட சில தகவல்கள் செல்லுபடியாகாதவை.",
-    "NOT_FOUND": "கோரப்பட்ட உருப்படியைக் கண்டுபிடிக்க முடியவில்லை.",
-    "FORBIDDEN": "இதைச் செய்ய உங்களுக்கு அனுமதி இல்லை.",
-    "CONFLICT_DUPLICATE": "இந்த உருப்படி ஏற்கெனவே உள்ளது.",
-    "UPSTREAM_UNAVAILABLE": "இந்த அம்சம் சார்ந்திருக்கும் ஒரு சேவை கிடைக்கவில்லை. சிறிது நேரத்தில் மீண்டும் முயற்சிக்கவும்.",
-    "TIMEOUT": "சேவையகம் பதிலளிக்க மிக நீண்ட நேரம் எடுத்தது. மீண்டும் முயற்சிக்கவும்.",
-    "NETWORK": "சேவையகத்தை அடைய முடியவில்லை. உங்கள் இணைப்பைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்.",
-    "UNKNOWN": "எதிர்பாராத பிழை ஏற்பட்டது."
-  },
-  "profileBuilder": {
-    "submitted": "சுயவிவரம் மதிப்பாய்வுக்குச் சமர்ப்பிக்கப்பட்டது.",
-    "noSchema": "இந்தச் சூழலுக்கான சுயவிவரக் கேள்விகள் இன்னும் அமைக்கப்படவில்லை.",
-    "submit": "மதிப்பாய்வுக்குச் சமர்ப்பிக்கவும்",
-    "chapterLabel": "அத்தியாயம்",
-    "navLabel": "சுயவிவர அத்தியாயங்கள்",
-    "restrictedHidden": "கட்டுப்படுத்தப்பட்டது — ஒரு குறிப்பிட்ட விண்ணப்பத்திற்கு, அனுமதியுடன் மட்டுமே வழங்கப்படும்.",
-    "selectPlaceholder": "தேர்ந்தெடுக்கவும்…",
-    "noteRestricted": "கட்டுப்படுத்தப்பட்டது. நீங்கள் அனுமதித்த பிறகு, ஒரு குறிப்பிட்ட விண்ணப்பத்திற்கு மட்டுமே பகிரப்படும்.",
-    "notePrivateNoAi": "தனிப்பட்டது. வெளிப்புற AI கருவிகளுக்கு ஒருபோதும் அனுப்பப்படாது.",
-    "notePrivate": "தனிப்பட்டது. விண்ணப்பங்களுக்கு மட்டுமே பயன்படுத்தப்படும்.",
-    "progressLabel": "சுயவிவர முன்னேற்றம்",
-    "progressCount": "{{total}} அத்தியாயங்களில் {{started}} தொடங்கப்பட்டது",
-    "chapterNumber": "அத்தியாயம் {{code}}",
-    "requiredMissing": "இங்கே இன்னும் தேவை: {{fields}}",
-    "optionalNote": "இங்குள்ள பெரும்பாலான கேள்விகள் விருப்பத்தேர்வானவை. பொருந்தாதவற்றைத் தவிர்த்துவிட்டு பின்னர் திரும்பி வரவும்.",
-    "saveFailed": "சேமிக்கப்படவில்லை",
-    "saving": "சேமிக்கிறது…",
-    "saved": "சேமிக்கப்பட்டது",
-    "errorRequired": "உங்கள் சுயவிவரத்தை இயக்க இந்தப் பதில் தேவை.",
-    "errorEmail": "சரியான மின்னஞ்சல் முகவரியை உள்ளிடவும்.",
-    "errorUrl": "http:// அல்லது https:// உடன் தொடங்கும் முழு முகவரியை உள்ளிடவும்",
-    "errorTooLong": "இந்தப் பதில் சேமிக்க முடியாத அளவுக்கு நீளமானது. சுருக்கவும்.",
-    "addEducation": "கல்வியைச் சேர்க்கவும்",
-    "addRole": "பணியைச் சேர்க்கவும்",
-    "addProject": "திட்டத்தைச் சேர்க்கவும்",
-    "addReference": "பரிந்துரையாளரைச் சேர்க்கவும்",
-    "addEntry": "பதிவைச் சேர்க்கவும்",
-    "entryEducation": "கல்வி",
-    "entryRole": "பணி",
-    "entryProject": "திட்டம்",
-    "entryReference": "பரிந்துரையாளர்",
-    "entry": "பதிவு",
-    "statusComplete": "முடிந்தது",
-    "statusInProgress": "நடைபெறுகிறது",
-    "statusNeedsReview": "மதிப்பாய்வு தேவை",
-    "statusNotStarted": "தொடங்கப்படவில்லை"
-  },
-  "profileChapters": {
-    "10": {
-      "title": "திட்டங்கள், தயாரிப்புகள் & போர்ட்ஃபோலியோ பணி"
-    },
-    "11": {
-      "title": "ஆராய்ச்சி, வெளியீடுகள், கற்பித்தல் & பொதுப் பங்களிப்பு"
-    },
-    "12": {
-      "title": "திறன்கள், கருவிகள் & மொழிகள்"
-    },
-    "13": {
-      "title": "சாதனை & நேர்காணல் கதைத் தொகுப்பு"
-    },
-    "14": {
-      "title": "ஊக்கம், மதிப்புகள் & எழுத்து நடை"
-    },
-    "15": {
-      "title": "பணிக்கு உரிய ஆழ்ந்த தொகுதிகள்"
-    },
-    "16": {
-      "title": "பரிந்துரையாளர்கள் & சரிபார்ப்பு"
-    },
-    "17": {
-      "title": "ஆதாரம் & ஆவண இணைப்புகள்"
-    },
-    "18": {
-      "title": "விண்ணப்ப அதிகாரம், AI எல்லைகள் & சிறப்புக் கேள்விகள்"
-    },
-    "19": {
-      "title": "இறுதி மதிப்பாய்வு & பிரகடனம்"
-    },
-    "00": {
-      "title": "வரவேற்பு & தெரிவித்த சம்மதம்"
-    },
-    "01": {
-      "title": "அடையாளம், தொடர்பு & தொழில்முறை இருப்பு"
-    },
-    "02": {
-      "title": "பணி அனுமதி, இடமாற்றம் & கிடைக்கும் தன்மை"
-    },
-    "03": {
-      "title": "தொழில் திசை & வாய்ப்பு விதிகள்"
-    },
-    "04": {
-      "title": "தொழில்முறை அடையாளம் & தொழில் கதை"
-    },
-    "05": {
-      "title": "பள்ளி, இடைநிலைக் கல்வி & ஆரம்ப வளர்ச்சி"
-    },
-    "06": {
-      "title": "உயர்கல்வி"
-    },
-    "07": {
-      "title": "சான்றிதழ்கள், உரிமங்கள், உறுப்பினர்கள் & பயிற்சி"
-    },
-    "08": {
-      "title": "வேலை வரலாறு"
-    },
-    "09": {
-      "title": "பயிற்சிகள், தொழிற்பயிற்சி, தொண்டு & தொழில் இடைவெளிகள்"
-    }
-  },
-  "operatorProfile": {
-    "noteSaved": "குறிப்பு சேமிக்கப்பட்டது.",
-    "correctionSent": "திருத்தம் கோரப்பட்டது.",
-    "missingHeading": "தேவையான தகவல்கள் இல்லை",
-    "noAi": "வெளிப்புற AI இல்லை",
-    "restricted": "கட்டுப்படுத்தப்பட்டது — ஒரு குறிப்பிட்ட விண்ணப்பத்திற்குத் தேவைப்படும்போது கோரவும்.",
-    "requestCorrection": "திருத்தம் கோரவும்",
-    "correctionFor": "{{code}} ஐத் திருத்துமாறு விண்ணப்பதாரரிடம் கேளுங்கள்",
-    "sendCorrection": "கோரிக்கையை அனுப்பு",
-    "notesHeading": "தனிப்பட்ட ஆபரேட்டர் குறிப்புகள்",
-    "notesHint": "இவற்றை ஊழியர்கள் மட்டுமே பார்க்க முடியும். விண்ணப்பதாரரால் முடியாது.",
-    "saveNote": "குறிப்பைச் சேமி"
+    "title": "Admin Console",
+    "manageUsers": "User Management",
+    "manageCompanies": "Companies Catalog",
+    "schemaBuilder": "Profile Schema Builder",
+    "approvals": "Pending Approvals",
+    "paymentOptions": "Package Pricing Options",
+    "totalUsers": "Total System Users",
+    "activeCompanies": "Active Partner Companies",
+    "pendingReviews": "Pending Reviews"
   }
 }

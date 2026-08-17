@@ -1,3 +1,4 @@
+```
 # Dependencies
 node_modules/
 
@@ -59,9 +60,4 @@ Thumbs.db
 *.tar.bz2
 *.tar.xz
 *.tar.zst
-
-# Runtime uploads. Candidate profile photos and application evidence land
-# here at runtime; only .gitkeep belongs in the repository. These are real
-# candidate data and must never be committed.
-atg_backend/uploads/*
-!atg_backend/uploads/.gitkeep
+```
