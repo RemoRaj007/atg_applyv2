@@ -43,6 +43,13 @@ model User {
   externalId    String?
   emailVerified Boolean @default(false)
 
+  // Add-on packages sold alongside the job-application packages. Each unlocks
+  // its own application flow; universityAppsUsed is that flow's own counter,
+  // separate from appsUsed, which only ever counts job applications.
+  hasUniversityPackage Boolean @default(false)
+  universityAppsUsed   Int     @default(0)
+  hasDocumentPackage   Boolean @default(false)
+
   // Relations
   applications CandidateApplication[] @relation("CandidateApps")
   staffedApps  CandidateApplication[] @relation("StaffedApps")
@@ -67,6 +74,8 @@ model User {
   references             UserReference[]
   comments               ApplicationComment[]
   discoveryProfile       AnonymousDiscoveryProfile?
+  universityApplications UniversityApplication[]
+  documentApplications   DocumentApplication[]
 
   @@unique([provider, externalId])
   @@index([companyId])
@@ -134,7 +143,13 @@ model Job {
   @@index([companyId])
   @@index([jobRoleId])
   @@index([d_status, createdAt])
-  @@index([externalSource, externalId])
+  // Unique, not a plain index: re-running an import must update the existing
+  // row rather than add a second copy. Hand-created jobs leave both columns
+  // NULL, and Postgres treats every NULL as distinct, so they are unconstrained
+  // — which is why the partial predicate the first migration carried was
+  // redundant, and why dropping it (see the migration) changes no behaviour
+  // while letting the schema describe the index Prisma actually sees.
+  @@unique([externalSource, externalId])
 }
 
 model JobRole {
@@ -778,4 +793,45 @@ model EmailTemplate {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   d_status    String   @default("active")
+}
+
+// ─── Add-on application flows ────────────────────────────────────────────────
+// University/scholarship and visa/document applications are tracked separately
+// from CandidateApplication: they are sold as their own packages, have their
+// own status vocabularies, and are not staffed by an operator.
+
+model UniversityApplication {
+  id                Int       @id @default(autoincrement())
+  userId            Int
+  universityName    String
+  programName       String
+  applicationStatus String    @default("pending") // pending, submitted, accepted, rejected, withdrawn
+  submissionDate    DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  d_status          String    @default("active")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, d_status])
+  @@index([d_status, createdAt])
+}
+
+model DocumentApplication {
+  id             Int       @id @default(autoincrement())
+  userId         Int
+  // visa, id, citizenship, bank, passport, driving_license, employment_letter,
+  // education_certificate, residence_permit, work_permit, other — the list the
+  // service validates against.
+  documentType   String
+  status         String    @default("pending") // pending, in_review, approved, rejected
+  submissionDate DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  d_status       String    @default("active")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, d_status])
+  @@index([d_status, createdAt])
 }
