@@ -43,6 +43,7 @@ async function wipeAll() {
     'userReference', 'userExperience', 'userOtherQualification', 'userDocument',
     'userItSkill', 'userLanguage', 'userAcademicQualification', 'userAddress',
     'userPhone', 'userProfile', 'payment', 'notification', 'scholarship',
+    'universityApplication', 'documentApplication',
     'logEntry', 'changeRequest', 'profileColumn', 'profileSection',
     'job', 'jobRole', 'skill',
     'user', 'company',
