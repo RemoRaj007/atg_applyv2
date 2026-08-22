@@ -43,6 +43,15 @@ model User {
   externalId    String?
   emailVerified Boolean @default(false)
 
+  // The jti of the one refresh token currently valid for this user. Rotated on
+  // every successful /refresh, and cleared on logout and password reset. A
+  // presented refresh token whose jti doesn't match this value is either a
+  // stale token from before rotation (replay of a token that has already been
+  // exchanged) or one revoked by logout/password change — both are rejected,
+  // which is what makes logout and password reset actually end a session
+  // instead of only clearing the browser's cookie.
+  refreshTokenId String?
+
   // Add-on packages sold alongside the job-application packages. Each unlocks
   // its own application flow; universityAppsUsed is that flow's own counter,
   // separate from appsUsed, which only ever counts job applications.

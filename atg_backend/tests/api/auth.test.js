@@ -221,13 +221,24 @@ describe("POST /api/auth/login", () => {
 
 describe("POST /api/auth/refresh", () => {
   it("issues a new access token from the refresh cookie", async () => {
-    prisma.user.findFirst.mockResolvedValue(await activeUser());
-    const refreshToken = jwt.sign({ id: 4 }, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" });
+    // Rotation ties a refresh token to the user's stored refreshTokenId (see
+    // auth.service.js), so the fixture's token and mocked user must agree on it.
+    prisma.user.findFirst.mockResolvedValue(await activeUser({ refreshTokenId: "test-jti" }));
+    const refreshToken = jwt.sign({ id: 4, jti: "test-jti" }, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" });
 
     const res = await request(app).post("/api/auth/refresh").set("Cookie", [`refreshToken=${refreshToken}`]);
 
     expect(res.status).toBe(200);
     expect(res.body.data.accessToken).toBeTruthy();
+  });
+
+  it("rejects a refresh token whose jti no longer matches (already rotated or revoked)", async () => {
+    prisma.user.findFirst.mockResolvedValue(await activeUser({ refreshTokenId: "current-jti" }));
+    const staleToken = jwt.sign({ id: 4, jti: "old-jti" }, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" });
+
+    const res = await request(app).post("/api/auth/refresh").set("Cookie", [`refreshToken=${staleToken}`]);
+
+    expect(res.status).toBe(401);
   });
 
   it("401s with no cookie", async () => {

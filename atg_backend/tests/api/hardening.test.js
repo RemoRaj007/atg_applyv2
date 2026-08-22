@@ -103,8 +103,12 @@ describe("CORS", () => {
 // else authenticates with a Bearer token, which no browser attaches on an
 // attacker's behalf.
 describe("CSRF on the cookie-authenticated routes", () => {
-  const refreshCookie = () => {
-    const token = jwt.sign({ id: 4, role: "candidate" }, process.env.JWT_REFRESH_SECRET, {
+  // Refresh now checks the token's jti against the user's stored
+  // refreshTokenId (rotation/revocation — see auth.service.js), so a fabricated
+  // token needs a jti that matches the mocked user's record to be accepted.
+  const REFRESH_JTI = "test-refresh-jti";
+  const refreshCookie = (jti = REFRESH_JTI) => {
+    const token = jwt.sign({ id: 4, role: "candidate", jti }, process.env.JWT_REFRESH_SECRET, {
       expiresIn: "7d",
     });
     return `refreshToken=${token}`;
@@ -116,6 +120,7 @@ describe("CSRF on the cookie-authenticated routes", () => {
       email: "candidate@example.com",
       role: "candidate",
       d_status: "active",
+      refreshTokenId: REFRESH_JTI,
     });
   });
 

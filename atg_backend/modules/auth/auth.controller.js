@@ -32,11 +32,15 @@ const login = asyncHandler(async (req, res) => {
 });
 
 const refresh = asyncHandler(async (req, res) => {
-  const { user, accessToken } = await authService.refresh(readCookie(req, REFRESH_COOKIE_NAME));
+  const { user, accessToken, refreshToken } = await authService.refresh(readCookie(req, REFRESH_COOKIE_NAME));
+  // Rotation: the old refresh token's jti is no longer on file after this, so
+  // the client's next refresh must present the cookie set here.
+  res.cookie(REFRESH_COOKIE_NAME, refreshToken, refreshCookieOptions());
   sendSuccess(res, { message: "Token refreshed", data: { user, accessToken } });
 });
 
 const logout = asyncHandler(async (req, res) => {
+  await authService.logout(readCookie(req, REFRESH_COOKIE_NAME));
   res.clearCookie(REFRESH_COOKIE_NAME, refreshCookieOptions());
   sendSuccess(res, { message: "Logged out" });
 });

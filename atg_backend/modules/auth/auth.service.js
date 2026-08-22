@@ -17,6 +17,18 @@ const frontendOrigin = () =>
 
 const verificationLink = (token) => `${frontendOrigin()}/verify-email?token=${token}`;
 
+// Reset and verification tokens are single-use bearer credentials mailed to the
+// candidate and matched back against the DB. Storing them hashed means a
+// database read (backup leak, misconfigured replica, a future SQLi) can't be
+// turned into an account takeover on its own — the attacker would still need
+// the raw token from the email, not just what's in the row.
+const hashToken = (token) => crypto.createHash("sha256").update(token).digest("hex");
+
+// Persists the refresh token's jti as the one currently valid for this user,
+// so a later /refresh can tell a legitimate token from a stale or revoked one.
+const persistRefreshJti = (userId, refreshJti) =>
+  prisma.user.update({ where: { id: userId }, data: { refreshTokenId: refreshJti } });
+
 const register = async (data) => {
   const { email, name, password, phone, country, city, isCompany, companyName, companyWebsite, companyDescription } = data;
   
@@ -54,6 +66,7 @@ const register = async (data) => {
   // provider already attested the address. See "Login gating" below.
   const emailVerificationToken = crypto.randomBytes(32).toString("hex");
   const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+  const emailVerificationTokenHash = hashToken(emailVerificationToken);
 
   if (isCompany) {
     const existingCompany = await prisma.company.findFirst({
@@ -93,7 +106,7 @@ const register = async (data) => {
         city,
         role: isCompany ? "company" : "candidate",
         companyId: createdCompany ? createdCompany.id : null,
-        emailVerificationToken,
+        emailVerificationToken: emailVerificationTokenHash,
         emailVerificationExpires,
       },
     });
@@ -128,7 +141,8 @@ const register = async (data) => {
   }).catch(logNotifyFailure("notification"));
 
   const tokens = issueTokenPair(user);
-  return { user: sanitizeUser(user), ...tokens };
+  await persistRefreshJti(user.id, tokens.refreshJti);
+  return { user: sanitizeUser(user), accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
 };
 
 const login = async ({ email, password }) => {
@@ -164,7 +178,8 @@ const login = async ({ email, password }) => {
   securityLogger.security("Login succeeded", { userId: user.id, email });
 
   const tokens = issueTokenPair(user);
-  return { user: sanitizeUser(user), ...tokens };
+  await persistRefreshJti(user.id, tokens.refreshJti);
+  return { user: sanitizeUser(user), accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
 };
 
 const refresh = async (refreshToken) => {
@@ -187,8 +202,38 @@ const refresh = async (refreshToken) => {
     throw ApiError.unauthorized("User no longer exists or is inactive");
   }
 
-  const { accessToken } = issueTokenPair(user);
-  return { user: sanitizeUser(user), accessToken };
+  // The presented token must be the one currently on file. A mismatch means
+  // either this token was already exchanged for a newer one (replay of a
+  // stolen-but-rotated-away token) or the session was revoked by logout or a
+  // password reset — both are treated the same way: reject and flag it.
+  if (!decoded.jti || decoded.jti !== user.refreshTokenId) {
+    securityLogger.security("Refresh token reuse or revocation detected", { userId: user.id });
+    throw ApiError.unauthorized("Invalid or expired refresh token");
+  }
+
+  const tokens = issueTokenPair(user);
+  await persistRefreshJti(user.id, tokens.refreshJti);
+  return { user: sanitizeUser(user), accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
+};
+
+// Best-effort: logout must succeed even if the refresh token is missing,
+// already expired, or was already revoked — the controller clears the cookie
+// unconditionally. When the token does decode, clearing refreshTokenId is
+// what actually ends the session server-side, rather than only forgetting the
+// cookie client-side.
+const logout = async (refreshToken) => {
+  if (!refreshToken) return;
+
+  let decoded;
+  try {
+    decoded = verifyRefreshToken(refreshToken);
+  } catch (err) {
+    return;
+  }
+
+  await prisma.user
+    .update({ where: { id: decoded.id }, data: { refreshTokenId: null } })
+    .catch(() => {});
 };
 
 const forgotPassword = async (email) => {
@@ -216,7 +261,7 @@ const forgotPassword = async (email) => {
   await prisma.user.update({
     where: { id: user.id },
     data: {
-      resetPasswordToken: token,
+      resetPasswordToken: hashToken(token),
       resetPasswordExpires: expires,
     },
   });
@@ -243,7 +288,7 @@ const resetPassword = async (token, password) => {
 
   const user = await prisma.user.findFirst({
     where: {
-      resetPasswordToken: token,
+      resetPasswordToken: hashToken(token),
       resetPasswordExpires: {
         gt: new Date(),
       },
@@ -263,6 +308,10 @@ const resetPassword = async (token, password) => {
       password: hashed,
       resetPasswordToken: null,
       resetPasswordExpires: null,
+      // A password reset should end any session an attacker (or the user, on
+      // a lost device) already holds — not just change the password while
+      // their existing refresh token keeps working for up to 7 more days.
+      refreshTokenId: null,
     },
   });
 
@@ -280,7 +329,7 @@ const verifyEmail = async (token) => {
 
   const user = await prisma.user.findFirst({
     where: {
-      emailVerificationToken: token,
+      emailVerificationToken: hashToken(token),
       emailVerificationExpires: { gt: new Date() },
       d_status: "active",
     },
@@ -323,7 +372,7 @@ const resendVerificationEmail = async (email) => {
 
   await prisma.user.update({
     where: { id: user.id },
-    data: { emailVerificationToken: token, emailVerificationExpires: expires },
+    data: { emailVerificationToken: hashToken(token), emailVerificationExpires: expires },
   });
 
   await sendTemplatedEmail({
@@ -430,7 +479,8 @@ const socialLogin = async (provider, { idToken, credential }) => {
 
   securityLogger.security(`${provider} login succeeded`, { userId: user.id, email });
   const tokens = issueTokenPair(user);
-  return { user: sanitizeUser(user), ...tokens };
+  await persistRefreshJti(user.id, tokens.refreshJti);
+  return { user: sanitizeUser(user), accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
 };
 
 const googleLogin = (payload) => socialLogin("google", payload);
@@ -440,6 +490,7 @@ module.exports = {
   register,
   login,
   refresh,
+  logout,
   googleLogin,
   microsoftLogin,
   forgotPassword,
