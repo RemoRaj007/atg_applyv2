@@ -172,7 +172,7 @@ const ProfileBuilderPage: React.FC = () => {
               <>
                 <div className="mb-8">
                   <p className="text-xs font-mono text-slate-500 mb-1">
-                    Chapter {chapter.code} of {chapters[chapters.length - 1]?.code}
+                    Chapter {activeIndex + 1} of {chapters.length}
                   </p>
                   <h2 className="text-2xl font-bold text-white">{chapter.title}</h2>
                   <p className="text-slate-400 text-sm mt-1">
@@ -194,7 +194,7 @@ const ProfileBuilderPage: React.FC = () => {
                   >
                     {chapters.map((item, index) => (
                       <option key={item.code} value={index}>
-                        {item.code} — {item.title}
+                        {index + 1} — {item.title}
                       </option>
                     ))}
                   </select>
