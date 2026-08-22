@@ -45,7 +45,7 @@ const ProfileChapterNav: React.FC<Props> = ({ chapters, activeIndex, progress, o
               />
               <span className="flex-1 min-w-0">
                 <span className="block text-[10px] font-mono text-slate-500 mb-0.5">
-                  {chapter.code}
+                  {String(index + 1).padStart(2, '0')}
                 </span>
                 <span className="block leading-snug">{chapter.title}</span>
                 {chapterProgress && chapterProgress.total > 0 && (
