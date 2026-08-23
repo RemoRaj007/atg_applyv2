@@ -107,3 +107,22 @@ theft detection, the main reason rotated rows are kept at all.
 Reversal cost: low — one constant.
 Revisit when: telemetry shows either spurious mass-revocations or a real replay
 that landed inside the window.
+
+## D-0008 — Monitor the API from Cloudflare, and do not build the 10-agent Cloudflare swarm
+Date: 2026-08-23   Lane: DevOps/SRE   Status: accepted
+Rationale: With Cloudflare access connected, the account was inspected rather
+than assumed: 4 Workers, 0 D1 databases, 0 KV namespaces, and 2 R2 buckets
+belonging to an unrelated project. atgapplyv2 is an assets-only static deploy —
+the API runs entirely on Vercel. A Cloudflare deploy/logs/rollback/alerts swarm
+would therefore watch a static file server and be blind to the API, which is
+where every incident in this codebase has actually happened. Its database and
+storage agents would have nothing to query at all. Built one small cron Worker
+that monitors the Vercel API instead. Running the monitor on different
+infrastructure from the monitored service is the point: a monitor colocated
+with what it watches goes down with it.
+Rejected: (a) building the 10 agents — ceremony against absent infrastructure,
+and the MCP connector already provides the read access the useful ones would
+have wrapped; (b) monitoring from Vercel — dies with the thing it monitors.
+Reversal cost: low — one Worker, deployed separately from the app.
+Revisit when: services actually move onto Cloudflare (D1/KV/R2/Workers running
+real logic), which would give those agents something to talk to.

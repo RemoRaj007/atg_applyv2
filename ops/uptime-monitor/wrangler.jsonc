@@ -1,0 +1,34 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "atg-uptime-monitor",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-23",
+
+  // Every 5 minutes. Frequent enough that an outage is caught within one
+  // support-response window, infrequent enough to stay inside the free tier.
+  "triggers": {
+    "crons": ["*/5 * * * *"]
+  },
+
+  "vars": {
+    // Replace with the production API origin before deploying. The root route
+    // is the health check — see src/index.ts for why it is a real dependency
+    // check rather than a liveness ping.
+    "HEALTH_URL": "https://REPLACE-WITH-API-HOST/"
+  },
+
+  // Holds the last observed up/down state so alerts fire on transitions
+  // instead of every five minutes for the duration of an outage.
+  // Create with:  npx wrangler kv namespace create STATE
+  // then paste the printed id below.
+  "kv_namespaces": [
+    {
+      "binding": "STATE",
+      "id": "REPLACE-WITH-KV-NAMESPACE-ID"
+    }
+  ],
+
+  "observability": {
+    "enabled": true
+  }
+}
