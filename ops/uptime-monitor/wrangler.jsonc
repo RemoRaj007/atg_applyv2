@@ -11,20 +11,20 @@
   },
 
   "vars": {
-    // Replace with the production API origin before deploying. The root route
-    // is the health check — see src/index.ts for why it is a real dependency
-    // check rather than a liveness ping.
-    "HEALTH_URL": "https://REPLACE-WITH-API-HOST/"
+    // The production API origin. Its root route is the health check — see
+    // src/index.ts for why that is a real dependency check rather than a
+    // liveness ping. This is the Vercel backend, not the Cloudflare frontend:
+    // every incident so far has been on the API side.
+    "HEALTH_URL": "https://atg-applyv2.vercel.app/"
   },
 
   // Holds the last observed up/down state so alerts fire on transitions
   // instead of every five minutes for the duration of an outage.
-  // Create with:  npx wrangler kv namespace create STATE
-  // then paste the printed id below.
+  // Namespace "atg-uptime-monitor-STATE", already created in the account.
   "kv_namespaces": [
     {
       "binding": "STATE",
-      "id": "REPLACE-WITH-KV-NAMESPACE-ID"
+      "id": "46b7940c60f345f69c720d339917bebe"
     }
   ],
 
