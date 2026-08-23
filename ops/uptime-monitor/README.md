@@ -20,23 +20,22 @@ multi-hour outage produces two messages rather than a hundred.
 
 ## Deploy
 
-Four commands, from this directory.
+Two commands, from this directory. The KV namespace
+(`atg-uptime-monitor-STATE`, id `46b7940c…`) already exists in the account and
+`HEALTH_URL` already points at the production API, so both are wired up in
+`wrangler.jsonc` — nothing to fill in.
 
 ```bash
-# 1. State store, so alerts fire on change rather than every 5 minutes.
-npx wrangler kv namespace create STATE
-#    → paste the printed id into wrangler.jsonc
-
-# 2. Point it at the real API origin.
-#    Edit HEALTH_URL in wrangler.jsonc.
-
-# 3. Where alerts go. Works with a Slack or Discord incoming webhook as-is —
+# 1. Where alerts go. Works with a Slack or Discord incoming webhook as-is —
 #    the payload carries both `text` and `content`.
 npx wrangler secret put ALERT_WEBHOOK_URL
 
-# 4. Ship it.
+# 2. Ship it.
 npx wrangler deploy
 ```
+
+Without step 1 the monitor still runs and still logs, it just has nowhere to
+send the alert — which is most of the point, so do not skip it.
 
 ## Verify it before trusting it
 
@@ -49,8 +48,10 @@ curl https://atg-uptime-monitor.<your-subdomain>.workers.dev
 
 Returns `200` with `{"healthy":true,...}` when the API is up, `503` when it is
 not. To confirm alerting actually reaches you, point `HEALTH_URL` at a URL that
-will fail (say `https://REPLACE-WITH-API-HOST/nope`), redeploy, wait for one
-tick, check the alert arrives, then set it back.
+will fail (say `https://atg-applyv2.vercel.app/nope`), redeploy, then hit the
+endpoint. Alerts fire on transitions, so this only pages if a previous "up"
+state was already recorded — on a brand-new deploy call it once against the
+real URL first to seed that state. Set `HEALTH_URL` back afterwards.
 
 Watch live logs with `npx wrangler tail`.
 
