@@ -10,6 +10,7 @@ const { isValidEmail, validatePasswordStrength, isValidPhone } = require("../../
 const { verifyIdentityToken } = require("./federated-identity.service");
 const { verifyPassword } = require("../../utils/passwordHash");
 const { logNotifyFailure } = require("../../utils/fireAndForget");
+const parseDurationToMs = require("../../utils/parseDuration");
 
 // Shared with forgotPassword's resetLink construction.
 const frontendOrigin = () =>
@@ -17,7 +18,48 @@ const frontendOrigin = () =>
 
 const verificationLink = (token) => `${frontendOrigin()}/verify-email?token=${token}`;
 
-const register = async (data) => {
+// Reset and verification tokens are single-use bearer credentials mailed to the
+// candidate and matched back against the DB. Storing them hashed means a
+// database read (backup leak, misconfigured replica, a future SQLi) can't be
+// turned into an account takeover on its own — the attacker would still need
+// the raw token from the email, not just what's in the row.
+const hashToken = (token) => crypto.createHash("sha256").update(token).digest("hex");
+
+const REFRESH_TTL_MS = parseDurationToMs(process.env.JWT_REFRESH_EXPIRES_IN, 7 * 24 * 60 * 60 * 1000);
+
+// Two tabs can refresh at once. The first rotates the row; the second is still
+// in flight with the token it read a moment earlier, and would otherwise look
+// exactly like a stolen token being replayed. Inside this window a rotated
+// token is treated as that race and simply rejected; outside it, as theft.
+const ROTATION_GRACE_MS = 30 * 1000;
+
+// One row per signed-in device. Opportunistically clears this user's expired
+// rows on the way — enough to keep the table bounded without a scheduled job,
+// since every session is created by someone signing in.
+const startRefreshSession = async (userId, refreshJti, userAgent) => {
+  await prisma.refreshSession.deleteMany({
+    where: { userId, expiresAt: { lt: new Date() } },
+  });
+  await prisma.refreshSession.create({
+    data: {
+      id: refreshJti,
+      userId,
+      expiresAt: new Date(Date.now() + REFRESH_TTL_MS),
+      userAgent: userAgent ? String(userAgent).slice(0, 255) : null,
+    },
+  });
+};
+
+// Theft response. A rotated token presented again means two parties hold the
+// same credential and we cannot tell which is the legitimate one, so every
+// session for the user is ended and they sign in again.
+const revokeAllSessions = (userId) =>
+  prisma.refreshSession.updateMany({
+    where: { userId, revokedAt: null },
+    data: { revokedAt: new Date() },
+  });
+
+const register = async (data, { userAgent } = {}) => {
   const { email, name, password, phone, country, city, isCompany, companyName, companyWebsite, companyDescription } = data;
   
   if (!isValidEmail(email)) {
@@ -54,6 +96,7 @@ const register = async (data) => {
   // provider already attested the address. See "Login gating" below.
   const emailVerificationToken = crypto.randomBytes(32).toString("hex");
   const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+  const emailVerificationTokenHash = hashToken(emailVerificationToken);
 
   if (isCompany) {
     const existingCompany = await prisma.company.findFirst({
@@ -93,7 +136,7 @@ const register = async (data) => {
         city,
         role: isCompany ? "company" : "candidate",
         companyId: createdCompany ? createdCompany.id : null,
-        emailVerificationToken,
+        emailVerificationToken: emailVerificationTokenHash,
         emailVerificationExpires,
       },
     });
@@ -128,10 +171,11 @@ const register = async (data) => {
   }).catch(logNotifyFailure("notification"));
 
   const tokens = issueTokenPair(user);
-  return { user: sanitizeUser(user), ...tokens };
+  await startRefreshSession(user.id, tokens.refreshJti, userAgent);
+  return { user: sanitizeUser(user), accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
 };
 
-const login = async ({ email, password }) => {
+const login = async ({ email, password }, { userAgent } = {}) => {
   const user = await prisma.user.findFirst({
     where: { email, d_status: "active" },
     include: { company: true },
@@ -164,7 +208,8 @@ const login = async ({ email, password }) => {
   securityLogger.security("Login succeeded", { userId: user.id, email });
 
   const tokens = issueTokenPair(user);
-  return { user: sanitizeUser(user), ...tokens };
+  await startRefreshSession(user.id, tokens.refreshJti, userAgent);
+  return { user: sanitizeUser(user), accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
 };
 
 const refresh = async (refreshToken) => {
@@ -187,8 +232,83 @@ const refresh = async (refreshToken) => {
     throw ApiError.unauthorized("User no longer exists or is inactive");
   }
 
-  const { accessToken } = issueTokenPair(user);
-  return { user: sanitizeUser(user), accessToken };
+  const session = decoded.jti
+    ? await prisma.refreshSession.findUnique({ where: { id: decoded.jti } })
+    : null;
+
+  // No row: issued before this table existed, or already cleaned up after
+  // expiry. Nothing to revoke and nothing proven — reject only this attempt.
+  if (!session || session.userId !== user.id) {
+    throw ApiError.unauthorized("Invalid or expired refresh token");
+  }
+
+  if (session.revokedAt) {
+    securityLogger.security("Refresh attempted on a revoked session", { userId: user.id });
+    throw ApiError.unauthorized("Invalid or expired refresh token");
+  }
+
+  // Already exchanged. Either two tabs raced (harmless, and the browser has
+  // the successor cookie already) or someone is replaying a stolen token.
+  // Only the second is worth ending every session over.
+  if (session.rotatedAt) {
+    const withinGrace = Date.now() - session.rotatedAt.getTime() < ROTATION_GRACE_MS;
+    if (!withinGrace) {
+      securityLogger.security("Refresh token reuse detected — revoking all sessions", {
+        userId: user.id,
+        sessionId: session.id,
+      });
+      await revokeAllSessions(user.id);
+    }
+    throw ApiError.unauthorized("Invalid or expired refresh token");
+  }
+
+  if (session.expiresAt <= new Date()) {
+    throw ApiError.unauthorized("Invalid or expired refresh token");
+  }
+
+  const tokens = issueTokenPair(user);
+
+  // Rotate this device's session only. Other devices keep theirs.
+  await prisma.$transaction([
+    prisma.refreshSession.update({
+      where: { id: session.id },
+      data: { rotatedAt: new Date() },
+    }),
+    prisma.refreshSession.create({
+      data: {
+        id: tokens.refreshJti,
+        userId: user.id,
+        expiresAt: new Date(Date.now() + REFRESH_TTL_MS),
+        userAgent: session.userAgent,
+      },
+    }),
+  ]);
+
+  return { user: sanitizeUser(user), accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
+};
+
+// Best-effort: logout must succeed even if the refresh token is missing,
+// already expired, or was already revoked — the controller clears the cookie
+// unconditionally. When the token does decode, revoking that one session is
+// what actually ends it server-side, rather than only forgetting the cookie.
+const logout = async (refreshToken) => {
+  if (!refreshToken) return;
+
+  let decoded;
+  try {
+    decoded = verifyRefreshToken(refreshToken);
+  } catch (err) {
+    return;
+  }
+
+  // This device only. Logging out of a laptop must not sign the phone out.
+  if (!decoded.jti) return;
+  await prisma.refreshSession
+    .updateMany({
+      where: { id: decoded.jti, userId: decoded.id, revokedAt: null },
+      data: { revokedAt: new Date() },
+    })
+    .catch(() => {});
 };
 
 const forgotPassword = async (email) => {
@@ -216,7 +336,7 @@ const forgotPassword = async (email) => {
   await prisma.user.update({
     where: { id: user.id },
     data: {
-      resetPasswordToken: token,
+      resetPasswordToken: hashToken(token),
       resetPasswordExpires: expires,
     },
   });
@@ -243,7 +363,7 @@ const resetPassword = async (token, password) => {
 
   const user = await prisma.user.findFirst({
     where: {
-      resetPasswordToken: token,
+      resetPasswordToken: hashToken(token),
       resetPasswordExpires: {
         gt: new Date(),
       },
@@ -266,6 +386,12 @@ const resetPassword = async (token, password) => {
     },
   });
 
+  // A password reset should end every session an attacker (or the user, on a
+  // lost device) already holds — on all devices, not just the one resetting —
+  // rather than changing the password while their refresh tokens keep working
+  // for up to 7 more days.
+  await revokeAllSessions(user.id);
+
   activityLogger.activity("Password reset successful", { userId: user.id, email: user.email });
 };
 
@@ -280,7 +406,7 @@ const verifyEmail = async (token) => {
 
   const user = await prisma.user.findFirst({
     where: {
-      emailVerificationToken: token,
+      emailVerificationToken: hashToken(token),
       emailVerificationExpires: { gt: new Date() },
       d_status: "active",
     },
@@ -323,7 +449,7 @@ const resendVerificationEmail = async (email) => {
 
   await prisma.user.update({
     where: { id: user.id },
-    data: { emailVerificationToken: token, emailVerificationExpires: expires },
+    data: { emailVerificationToken: hashToken(token), emailVerificationExpires: expires },
   });
 
   await sendTemplatedEmail({
@@ -347,7 +473,7 @@ const resendVerificationEmail = async (email) => {
 //      password account for that address. Only ever attempted when the IdP
 //      says the address is verified, otherwise anyone able to assert an
 //      arbitrary address at an IdP could take over a local account.
-const socialLogin = async (provider, { idToken, credential }) => {
+const socialLogin = async (provider, { idToken, credential }, { userAgent } = {}) => {
   const identity = await verifyIdentityToken(provider, idToken || credential);
   const { externalId, email, emailVerified, name, picture } = identity;
 
@@ -430,16 +556,18 @@ const socialLogin = async (provider, { idToken, credential }) => {
 
   securityLogger.security(`${provider} login succeeded`, { userId: user.id, email });
   const tokens = issueTokenPair(user);
-  return { user: sanitizeUser(user), ...tokens };
+  await startRefreshSession(user.id, tokens.refreshJti, userAgent);
+  return { user: sanitizeUser(user), accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
 };
 
-const googleLogin = (payload) => socialLogin("google", payload);
-const microsoftLogin = (payload) => socialLogin("microsoft", payload);
+const googleLogin = (payload, ctx) => socialLogin("google", payload, ctx);
+const microsoftLogin = (payload, ctx) => socialLogin("microsoft", payload, ctx);
 
 module.exports = {
   register,
   login,
   refresh,
+  logout,
   googleLogin,
   microsoftLogin,
   forgotPassword,
