@@ -103,9 +103,10 @@ describe("CORS", () => {
 // else authenticates with a Bearer token, which no browser attaches on an
 // attacker's behalf.
 describe("CSRF on the cookie-authenticated routes", () => {
-  // Refresh now checks the token's jti against the user's stored
-  // refreshTokenId (rotation/revocation — see auth.service.js), so a fabricated
-  // token needs a jti that matches the mocked user's record to be accepted.
+  // Refresh resolves the token's jti to a RefreshSession row (per-device
+  // rotation — see auth.service.js), so a fabricated token needs a matching
+  // live session to get past the auth check and reach the CSRF behaviour
+  // these cases are actually about.
   const REFRESH_JTI = "test-refresh-jti";
   const refreshCookie = (jti = REFRESH_JTI) => {
     const token = jwt.sign({ id: 4, role: "candidate", jti }, process.env.JWT_REFRESH_SECRET, {
@@ -120,7 +121,15 @@ describe("CSRF on the cookie-authenticated routes", () => {
       email: "candidate@example.com",
       role: "candidate",
       d_status: "active",
-      refreshTokenId: REFRESH_JTI,
+    });
+    prisma.refreshSession.findUnique.mockResolvedValue({
+      id: REFRESH_JTI,
+      userId: 4,
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 7 * 24 * 3600_000),
+      rotatedAt: null,
+      revokedAt: null,
+      userAgent: null,
     });
   });
 

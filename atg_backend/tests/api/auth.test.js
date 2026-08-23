@@ -220,24 +220,81 @@ describe("POST /api/auth/login", () => {
 });
 
 describe("POST /api/auth/refresh", () => {
-  it("issues a new access token from the refresh cookie", async () => {
-    // Rotation ties a refresh token to the user's stored refreshTokenId (see
-    // auth.service.js), so the fixture's token and mocked user must agree on it.
-    prisma.user.findFirst.mockResolvedValue(await activeUser({ refreshTokenId: "test-jti" }));
-    const refreshToken = jwt.sign({ id: 4, jti: "test-jti" }, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" });
+  // Sessions are per-device rows keyed by the token's jti (see RefreshSession).
+  const liveSession = (over = {}) => ({
+    id: "test-jti",
+    userId: 4,
+    createdAt: new Date(),
+    expiresAt: new Date(Date.now() + 7 * 24 * 3600_000),
+    rotatedAt: null,
+    revokedAt: null,
+    userAgent: null,
+    ...over,
+  });
+  const cookieFor = (jti) =>
+    `refreshToken=${jwt.sign({ id: 4, jti }, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" })}`;
 
-    const res = await request(app).post("/api/auth/refresh").set("Cookie", [`refreshToken=${refreshToken}`]);
+  it("issues a new access token from the refresh cookie", async () => {
+    prisma.user.findFirst.mockResolvedValue(await activeUser());
+    prisma.refreshSession.findUnique.mockResolvedValue(liveSession());
+
+    const res = await request(app).post("/api/auth/refresh").set("Cookie", [cookieFor("test-jti")]);
 
     expect(res.status).toBe(200);
     expect(res.body.data.accessToken).toBeTruthy();
   });
 
-  it("rejects a refresh token whose jti no longer matches (already rotated or revoked)", async () => {
-    prisma.user.findFirst.mockResolvedValue(await activeUser({ refreshTokenId: "current-jti" }));
-    const staleToken = jwt.sign({ id: 4, jti: "old-jti" }, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" });
+  it("rotates only the presenting device's session, leaving other devices signed in", async () => {
+    prisma.user.findFirst.mockResolvedValue(await activeUser());
+    prisma.refreshSession.findUnique.mockResolvedValue(liveSession({ id: "laptop-jti" }));
 
-    const res = await request(app).post("/api/auth/refresh").set("Cookie", [`refreshToken=${staleToken}`]);
+    const res = await request(app).post("/api/auth/refresh").set("Cookie", [cookieFor("laptop-jti")]);
+    expect(res.status).toBe(200);
 
+    // The rotation must be scoped to this row. A blanket updateMany over the
+    // user — the bug this table replaced — would sign every device out.
+    const updates = prisma.refreshSession.update.mock.calls.map((c) => c[0].where);
+    expect(updates).toEqual([{ id: "laptop-jti" }]);
+    expect(prisma.refreshSession.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("treats replay of an already-rotated token as theft and revokes every session", async () => {
+    prisma.user.findFirst.mockResolvedValue(await activeUser());
+    prisma.refreshSession.findUnique.mockResolvedValue(
+      liveSession({ rotatedAt: new Date(Date.now() - 10 * 60_000) }) // well outside the grace window
+    );
+
+    const res = await request(app).post("/api/auth/refresh").set("Cookie", [cookieFor("test-jti")]);
+
+    expect(res.status).toBe(401);
+    expect(prisma.refreshSession.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: expect.objectContaining({ userId: 4, revokedAt: null }) })
+    );
+  });
+
+  it("does not punish a tab race — a just-rotated token is rejected without mass revocation", async () => {
+    prisma.user.findFirst.mockResolvedValue(await activeUser());
+    prisma.refreshSession.findUnique.mockResolvedValue(liveSession({ rotatedAt: new Date() }));
+
+    const res = await request(app).post("/api/auth/refresh").set("Cookie", [cookieFor("test-jti")]);
+
+    expect(res.status).toBe(401);
+    expect(prisma.refreshSession.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects a revoked session", async () => {
+    prisma.user.findFirst.mockResolvedValue(await activeUser());
+    prisma.refreshSession.findUnique.mockResolvedValue(liveSession({ revokedAt: new Date() }));
+
+    const res = await request(app).post("/api/auth/refresh").set("Cookie", [cookieFor("test-jti")]);
+    expect(res.status).toBe(401);
+  });
+
+  it("rejects a session belonging to a different user", async () => {
+    prisma.user.findFirst.mockResolvedValue(await activeUser());
+    prisma.refreshSession.findUnique.mockResolvedValue(liveSession({ userId: 99 }));
+
+    const res = await request(app).post("/api/auth/refresh").set("Cookie", [cookieFor("test-jti")]);
     expect(res.status).toBe(401);
   });
 

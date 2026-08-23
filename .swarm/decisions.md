@@ -76,3 +76,34 @@ Rejected: `npm audit fix --force` (breaks the schema toolchain); ignoring audit
 entirely (loses the signal for genuinely reachable CVEs).
 Reversal cost: low.
 Revisit when: Prisma ships a 7.x with the advisories cleared — recheck monthly.
+
+## D-0006 — Store refresh sessions per device, superseding the single-jti column
+Date: 2026-08-23   Lane: Security   Status: accepted   Supersedes: D-0001 (partially)
+Rationale: D-0001's one-jti-per-user column meant any login overwrote the
+previous device's session, so a phone login silently signed the laptop out at
+its next refresh (A-0001). RefreshSession holds one row per device, so rotation,
+logout and reset each act on the right scope: rotate this device, revoke this
+device, revoke all devices respectively.
+Rejected: (a) keeping the single column and accepting single-session — real
+candidates plausibly use phone and laptop, and the failure is silent; (b)
+deleting rows on rotation — a deleted row cannot distinguish a replayed stolen
+token from an unknown one, and reuse detection is the main security value here.
+Reversal cost: medium — the table is the source of truth for every session.
+Revisit when: sessions need to be listed or revoked individually in the UI (the
+userAgent column is already carried for that), or the table needs a scheduled
+cleanup rather than the opportunistic per-login one.
+
+## D-0007 — Absorb refresh races with a 30s grace window instead of revoking on every reuse
+Date: 2026-08-23   Lane: Security   Status: accepted
+Rationale: Strict reuse detection revokes every session when an already-rotated
+token is presented. Two browser tabs refreshing at once produce exactly that
+signal harmlessly — they share one cookie jar, so the loser of the race is
+holding a value that was valid when it was read. Revoking on that would log real
+users out during ordinary use, which trains people to distrust the security
+control. Inside 30s the replay is rejected without cascade; outside it, every
+session is revoked.
+Rejected: (a) revoke always — spurious logouts; (b) never revoke — gives up
+theft detection, the main reason rotated rows are kept at all.
+Reversal cost: low — one constant.
+Revisit when: telemetry shows either spurious mass-revocations or a real replay
+that landed inside the window.

@@ -43,14 +43,10 @@ model User {
   externalId    String?
   emailVerified Boolean @default(false)
 
-  // The jti of the one refresh token currently valid for this user. Rotated on
-  // every successful /refresh, and cleared on logout and password reset. A
-  // presented refresh token whose jti doesn't match this value is either a
-  // stale token from before rotation (replay of a token that has already been
-  // exchanged) or one revoked by logout/password change — both are rejected,
-  // which is what makes logout and password reset actually end a session
-  // instead of only clearing the browser's cookie.
-  refreshTokenId String?
+  // Refresh sessions, one row per signed-in device. See the RefreshSession
+  // model — a single jti column here would have meant signing in on a phone
+  // silently ended the laptop's session.
+  refreshSessions RefreshSession[]
 
   // Add-on packages sold alongside the job-application packages. Each unlocks
   // its own application flow; universityAppsUsed is that flow's own counter,
@@ -802,6 +798,29 @@ model EmailTemplate {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   d_status    String   @default("active")
+}
+
+// One row per signed-in device, keyed by the refresh token's jti. This is what
+// makes logout and password reset actually end a session server-side, rather
+// than only clearing the browser's cookie.
+//
+// Rotation: /refresh marks the presented row rotated and issues a new one. The
+// old row is kept rather than deleted, because its continued existence is the
+// signal that detects theft — a rotated token being presented again means two
+// parties hold it. See auth.service.js for the grace window that keeps a
+// browser tab race from being mistaken for that.
+model RefreshSession {
+  id        String    @id // the refresh token's jti
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+  rotatedAt DateTime? // set when exchanged for a successor
+  revokedAt DateTime? // set by logout, password reset, or theft response
+  userAgent String? // for a future "your active sessions" screen
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 // ─── Add-on application flows ────────────────────────────────────────────────

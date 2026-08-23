@@ -20,13 +20,15 @@ const refreshCookieOptions = () => ({
 });
 
 const register = asyncHandler(async (req, res) => {
-  const { user, accessToken, refreshToken } = await authService.register(req.body);
+  const ctx = { userAgent: req.get("user-agent") };
+  const { user, accessToken, refreshToken } = await authService.register(req.body, ctx);
   res.cookie(REFRESH_COOKIE_NAME, refreshToken, refreshCookieOptions());
   sendSuccess(res, { statusCode: 201, message: "Account created", data: { user, accessToken } });
 });
 
 const login = asyncHandler(async (req, res) => {
-  const { user, accessToken, refreshToken } = await authService.login(req.body);
+  const ctx = { userAgent: req.get("user-agent") };
+  const { user, accessToken, refreshToken } = await authService.login(req.body, ctx);
   res.cookie(REFRESH_COOKIE_NAME, refreshToken, refreshCookieOptions());
   sendSuccess(res, { message: "Logged in", data: { user, accessToken } });
 });
@@ -68,13 +70,15 @@ const resendVerification = asyncHandler(async (req, res) => {
 });
 
 const googleLogin = asyncHandler(async (req, res) => {
-  const { user, accessToken, refreshToken } = await authService.googleLogin(req.body);
+  const ctx = { userAgent: req.get("user-agent") };
+  const { user, accessToken, refreshToken } = await authService.googleLogin(req.body, ctx);
   res.cookie(REFRESH_COOKIE_NAME, refreshToken, refreshCookieOptions());
   sendSuccess(res, { message: "Authenticated with Google", data: { user, accessToken } });
 });
 
 const microsoftLogin = asyncHandler(async (req, res) => {
-  const { user, accessToken, refreshToken } = await authService.microsoftLogin(req.body);
+  const ctx = { userAgent: req.get("user-agent") };
+  const { user, accessToken, refreshToken } = await authService.microsoftLogin(req.body, ctx);
   res.cookie(REFRESH_COOKIE_NAME, refreshToken, refreshCookieOptions());
   sendSuccess(res, { message: "Authenticated with Microsoft", data: { user, accessToken } });
 });

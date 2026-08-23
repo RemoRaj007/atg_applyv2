@@ -12,9 +12,9 @@ const requireSecret = (name) => {
   return value;
 };
 
-// The refresh token's jti is the rotation/revocation handle: the caller
-// persists it as the user's refreshTokenId, and a later /refresh is only
-// honored if the presented token's jti still matches — see auth.service.js.
+// The refresh token's jti is the rotation/revocation handle: the caller opens a
+// RefreshSession row keyed by it, and a later /refresh is only honored if that
+// row is still live — see auth.service.js.
 const issueTokenPair = (user) => {
   const accessToken = jwt.sign(
     { id: user.id, email: user.email, role: user.role, companyId: user.companyId },
