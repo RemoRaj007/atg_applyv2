@@ -113,7 +113,11 @@ const verifyIdentityToken = async (provider, token) => {
     throw ApiError.badRequest(`${provider} ID token is required`);
   }
 
-  const verifier = VERIFIERS[provider];
+  // hasOwn, not a plain lookup: `VERIFIERS["constructor"]` resolves up the
+  // prototype chain to Object, which is callable and would be invoked as a
+  // verifier. It happens to fail harmlessly a few lines down when the result has
+  // no email, but only by accident — this makes the intent the actual rule.
+  const verifier = Object.hasOwn(VERIFIERS, provider) ? VERIFIERS[provider] : null;
   if (!verifier) {
     throw ApiError.badRequest(`Unsupported sign-in provider: ${provider}`);
   }

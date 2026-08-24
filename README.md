@@ -60,6 +60,10 @@ Never commit real `.env` files:
 - [.env.example](.env.example) — Docker Compose's MariaDB provisioning
   variables (used only when deploying with `docker-compose.yml`)
 
+Google and Microsoft sign-in are implemented but ship disabled until their
+client ids are set — see [SOCIAL-SIGNIN.md](SOCIAL-SIGNIN.md) for both provider
+consoles and where each variable goes.
+
 ## Available scripts
 
 **Backend** (`atg_backend/`)
