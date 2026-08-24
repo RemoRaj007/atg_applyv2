@@ -172,7 +172,10 @@ already reflected in the schema, rather than editing the table by hand.
     `15m`), `JWT_REFRESH_EXPIRES_IN` (default `7d`).
   - `GOOGLE_CLIENT_ID` / `MICROSOFT_CLIENT_ID` — required only for the social
     sign-in providers you enable. `MICROSOFT_TENANT_ID` is optional and
-    restricts sign-in to a single organisation when set.
+    restricts sign-in to a single organisation when set. These are only half the
+    configuration — the matching `VITE_*` ids go in Cloudflare's build settings,
+    not GitHub secrets. [SOCIAL-SIGNIN.md](SOCIAL-SIGNIN.md) walks through both
+    consoles and all six variables.
   - See the env block in [SETUP.md](SETUP.md#4-manual-setup-if-you-skip-the-script-or-it-fails-partway)
     for the full list: email, SMS, social sign-in, Apify, etc. (The root
     `.env.example` covers only the legacy Docker Compose database variables.)
