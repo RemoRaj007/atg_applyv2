@@ -12,6 +12,15 @@ import { validateEmail } from '../utils/validation';
 
 const REMEMBERED_EMAIL_KEY = 'atg_remembered_email';
 
+// Demo credential buttons are only useful on a hosted/online deployment
+// (for reviewers/demos); a local offline dev build never needs them.
+const IS_OFFLINE_HOST = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+
+const DEMO_CREDENTIALS = {
+  admin: { email: 'admin@atg.com', password: 'Password123!' },
+  candidate: { email: 'test2@gmail.com', password: 'Password123!' },
+} as const;
+
 const RISING_PARTICLES = Array.from({ length: 48 }).map((_, i) => ({
   id: i,
   left: `${(i * 2.1 + (i % 9) * 3.7) % 100}%`,
@@ -30,6 +39,12 @@ export default function Login() {
   const [remember, setRemember] = useState(() => !!localStorage.getItem(REMEMBERED_EMAIL_KEY));
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const fillDemoCredentials = (kind: keyof typeof DEMO_CREDENTIALS) => {
+    setEmail(DEMO_CREDENTIALS[kind].email);
+    setPassword(DEMO_CREDENTIALS[kind].password);
+    setError(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -166,6 +181,25 @@ export default function Login() {
               <p className="text-xs text-slate-300 mt-1 font-medium">{t('auth.loginSubtitle')}</p>
             </div>
           </div>
+
+          {!IS_OFFLINE_HOST && (
+            <div className="flex items-center gap-2 mb-6">
+              <button
+                type="button"
+                onClick={() => fillDemoCredentials('admin')}
+                className="flex-1 text-xs font-bold text-amber-300 border border-amber-400/30 bg-amber-400/10 hover:bg-amber-400/20 rounded-xl px-3 py-2.5 transition-colors"
+              >
+                Fill Demo Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => fillDemoCredentials('candidate')}
+                className="flex-1 text-xs font-bold text-blue-300 border border-blue-400/30 bg-blue-400/10 hover:bg-blue-400/20 rounded-xl px-3 py-2.5 transition-colors"
+              >
+                Fill Demo User
+              </button>
+            </div>
+          )}
 
           <form noValidate onSubmit={handleSubmit} className="space-y-6">
             <div>
