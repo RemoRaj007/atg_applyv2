@@ -13,6 +13,7 @@ import {
   ChevronLeft, ChevronRight,
 } from 'lucide-react';
 import { getFileUrl } from '../../utils/fileUrl';
+import AiAssistPanel from '../../components/candidate/AiAssistPanel';
 
 // ─── Types ────────────────────────────────────────────────────────
 export interface JobWithFit extends Job {
@@ -325,6 +326,15 @@ export function JobDetailsModal({ job, scholarship, onClose, onRequestApply, app
                 </div>
               )}
             </div>
+          )}
+
+          {/* AI drafting and fit explanation — renders nothing when AI is off */}
+          {(job || scholarship) && (
+            <AiAssistPanel
+              key={isScholarship ? `s${scholarship.id}` : `j${job!.id}`}
+              targetType={isScholarship ? 'scholarship' : 'job'}
+              targetId={isScholarship ? scholarship.id : job!.id}
+            />
           )}
 
           {/* Loop Comments log / thread */}
