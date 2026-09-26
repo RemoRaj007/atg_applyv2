@@ -66,7 +66,7 @@ Reversal cost: high — answers are keyed by column id.
 Revisit when: questions need per-candidate conditional branching.
 
 ## D-0005 — Accept the Prisma CLI dev-dependency CVEs rather than force-downgrade
-Date: 2026-08-22   Lane: Risk & Debt   Status: accepted
+Date: 2026-08-22   Lane: Risk & Debt   Status: superseded by D-0015
 Rationale: prisma / @prisma/config / deepmerge-ts carry high-severity advisories
 whose only npm-offered fix is `--force` down to prisma@6.12.0 — a breaking major
 downgrade from the pinned ^7.8.0. The chain is build-time tooling with no
@@ -182,3 +182,18 @@ frontend and the monitor, so ten agent Workers would observe a file server —
 and the Cloudflare connector is unauthorized in this session, so nothing could
 be deployed regardless. The monitor now deploys through GitHub Actions
 (`.github/workflows/uptime-monitor.yml`), which needs no session access at all.
+
+## D-0015 — Fix the Prisma CLI chain with overrides instead of accepting it
+Date: 2026-09-26 · Lane: Risk & Debt · Supersedes D-0005
+The audit had grown to 11 (7 high). Five were fixable in range (multer,
+nodemailer, fast-uri, joi, qs) and are patched, with package.json minimums
+raised so a fresh resolve cannot regress. vitest moved 3 → 5 (dev-only),
+with its removed `poolOptions.forks.singleFork` migrated to `maxWorkers: 1`.
+The Prisma chain (deepmerge-ts, mysql2 via the prisma CLI) is fixed with npm
+`overrides` pinning the two patched sub-dependencies, rather than D-0005's
+acceptance or npm's offered "fix" of downgrading to Prisma 6. Every stable
+Prisma 7.x sits inside the advisory range, so upgrading Prisma cannot fix it.
+Verified: prisma validate / generate / migrate diff behave identically;
+559/559 tests in order, repeated, and shuffled; npm audit 0 (runtime and dev).
+Remove the overrides once a stable Prisma release ships the patched versions —
+an override outliving its reason silently pins a dependency forever.
