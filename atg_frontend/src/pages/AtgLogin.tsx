@@ -12,9 +12,14 @@ import { validateEmail } from '../utils/validation';
 
 const REMEMBERED_EMAIL_KEY = 'atg_remembered_email';
 
-// Demo credential buttons are only useful on a hosted/online deployment
-// (for reviewers/demos); a local offline dev build never needs them.
-const IS_OFFLINE_HOST = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+// One-click demo sign-in, for a deployment built specifically for reviewers.
+//
+// Opt-in at build time and off by default. The previous rule showed these on
+// every host that was not localhost — which included production, where it put a
+// full admin account's password one click away from anyone on the login page.
+// Never enable this on a build that talks to a database holding real candidates:
+// the demo admin can read every profile and document on it.
+const SHOW_DEMO_LOGIN = import.meta.env.VITE_ENABLE_DEMO_LOGIN === 'true';
 
 const DEMO_CREDENTIALS = {
   admin: { email: 'admin@atg.com', password: 'Password123!' },
@@ -182,7 +187,7 @@ export default function Login() {
             </div>
           </div>
 
-          {!IS_OFFLINE_HOST && (
+          {SHOW_DEMO_LOGIN && (
             <div className="flex items-center gap-2 mb-6">
               <button
                 type="button"
