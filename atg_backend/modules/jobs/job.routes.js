@@ -13,6 +13,7 @@ router.use(authenticate);
 
 router.get("/", authorize("admin", "operator", "company", "candidate", "visitor"), jobController.list);
 router.get("/recommendations", authorize("admin", "operator", "company", "candidate", "visitor"), jobController.getRecommendations);
+router.get("/feeds/status", authorize("admin", "operator"), jobController.feedStatus);
 router.get("/:id", numericParam("id"), authorize("admin", "operator", "company", "candidate", "visitor"), jobController.getById);
 router.post("/", authorize("admin", "operator", "company"), validate(createJobSchema), jobController.create);
 router.put("/:id", numericParam("id"), authorize("admin", "operator", "company"), validate(updateJobSchema), jobController.update);
@@ -26,6 +27,14 @@ router.post(
   rateLimit({ name: "jobs:import", windowMs: 60 * 60 * 1000, max: 20 }),
   validate(importJobsSchema),
   jobController.importJobs
+);
+// The daily feed sync on demand (it also runs from Vercel Cron — see
+// modules/cron). Admin only and limited for the same reasons as /import.
+router.post(
+  "/sync-feeds",
+  authorize("admin"),
+  rateLimit({ name: "jobs:sync-feeds", windowMs: 60 * 60 * 1000, max: 6 }),
+  jobController.syncFeeds
 );
 router.delete("/:id", numericParam("id"), authorize("admin", "operator"), jobController.remove);
 

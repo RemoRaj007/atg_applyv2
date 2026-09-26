@@ -114,6 +114,18 @@ the candidate for it. Add it as a case in `atg_backend/evals/ai-cases.json`
 **before** touching the prompt, and ship the fix with a before-and-after eval
 run. See [AI.md](AI.md).
 
+### No new jobs arriving from the feeds
+
+Check the latest `Job feeds synced` entry in the activity log. Its `sources`
+list gives each feed's result or error. No entry at all since the last 03:17
+UTC means the cron never reached the API: `CRON_SECRET` is missing on Vercel
+(the endpoint then refuses every caller — look for `Cron endpoint refused` in
+the security log), or the project's cron jobs are paused. A source reporting
+`HTTP 401`/`403` has a bad key. One reporting `ok` with 0 fetched usually means
+the keywords match nothing. Run `npm run jobs:check-feeds` or the *Job feeds
+check* workflow to test the live APIs without writing anything. See
+[JOB_FEEDS.md](JOB_FEEDS.md).
+
 ## Restart / rollback
 
 Both platforms roll back without a rebuild — prefer this to a forward fix during

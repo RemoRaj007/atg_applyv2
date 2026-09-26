@@ -19,7 +19,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "ai:eval": "node scripts/aiEval.js"
+    "ai:eval": "node scripts/aiEval.js",
+    "jobs:check-feeds": "node scripts/checkJobFeeds.js"
   },
   "keywords": [],
   "author": "",

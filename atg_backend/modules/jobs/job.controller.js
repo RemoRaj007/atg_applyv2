@@ -2,6 +2,7 @@ const asyncHandler = require("../../utils/asyncHandler");
 const { sendSuccess } = require("../../utils/apiResponse");
 const jobService = require("./job.service");
 const jobImportService = require("./jobImport.service");
+const jobFeedSync = require("./jobFeedSync.service");
 
 const list = asyncHandler(async (req, res) => {
   const { data, total, page, pageSize, totalPages } = await jobService.list(req.user, req.query);
@@ -47,4 +48,13 @@ const importJobs = asyncHandler(async (req, res) => {
   sendSuccess(res, { message: "Jobs imported", data: summary });
 });
 
-module.exports = { list, getById, create, update, approve, remove, getRecommendations, importJobs };
+const syncFeeds = asyncHandler(async (req, res) => {
+  const summary = await jobFeedSync.syncFeeds({ trigger: "manual", requesterId: req.user.id });
+  sendSuccess(res, { message: "Job feeds synced", data: summary });
+});
+
+const feedStatus = asyncHandler(async (req, res) => {
+  sendSuccess(res, { data: { feeds: jobFeedSync.status() } });
+});
+
+module.exports = { list, getById, create, update, approve, remove, getRecommendations, importJobs, syncFeeds, feedStatus };

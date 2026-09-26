@@ -1,0 +1,44 @@
+name: Job feeds check
+
+# Calls each configured job feed for real and checks the adapters still map its
+# responses into usable jobs. Writes nothing anywhere.
+#
+# Arbeitnow needs no key and always runs. Adzuna and Jooble run once the
+# ADZUNA_APP_ID / ADZUNA_APP_KEY / JOOBLE_API_KEY repository secrets exist.
+#
+# Runs on PRs that touch the feed code, weekly (so a provider changing its
+# response shape is noticed before the daily sync quietly imports nothing),
+# and on demand.
+
+on:
+  pull_request:
+    paths:
+      - "atg_backend/modules/jobs/feeds/**"
+      - "atg_backend/modules/jobs/jobImport.service.js"
+      - "atg_backend/utils/htmlToText.js"
+      - "atg_backend/scripts/checkJobFeeds.js"
+      - ".github/workflows/job-feeds-check.yml"
+  schedule:
+    - cron: "41 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: atg_backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: atg_backend/package-lock.json
+      - run: npm ci
+      - name: Check live feeds
+        env:
+          ADZUNA_APP_ID: ${{ secrets.ADZUNA_APP_ID }}
+          ADZUNA_APP_KEY: ${{ secrets.ADZUNA_APP_KEY }}
+          JOOBLE_API_KEY: ${{ secrets.JOOBLE_API_KEY }}
+        run: npm run jobs:check-feeds
