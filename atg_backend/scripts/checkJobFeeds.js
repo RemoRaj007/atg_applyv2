@@ -25,8 +25,12 @@ const { list } = require("../modules/jobs/feeds/common");
       const jobs = await feed.fetchPostings({ keywords, maxResults: 25 });
       const usable = jobs.filter(isImportable);
       const withUrl = usable.filter((j) => j.jobUrl);
-      const withText = usable.filter((j) => j.description && !/<[a-z][^>]*>/i.test(j.description));
-      console.log(`${usable.length ? "ok  " : "FAIL"}  ${feed.name.padEnd(10)} fetched ${jobs.length}, importable ${usable.length}, with link ${withUrl.length}, plain-text description ${withText.length}`);
+      const markup = usable.filter((j) => j.description && /<\/?[a-z][a-z0-9]*(\s[^>]*)?>/i.test(j.description));
+      const empty = usable.filter((j) => !j.description);
+      console.log(`${usable.length ? "ok  " : "FAIL"}  ${feed.name.padEnd(10)} fetched ${jobs.length}, importable ${usable.length}, with link ${withUrl.length}, description: ${usable.length - markup.length - empty.length} clean, ${empty.length} empty, ${markup.length} still containing markup`);
+      if (markup[0]) console.log(`      markup left in ${markup[0].externalId}: ${JSON.stringify(markup[0].description.slice(0, 160))}`);
+      // Markup surviving conversion means candidates would read raw tags.
+      if (markup.length) failed = true;
       if (usable[0]) {
         const { title, company, location, externalId, datePosted } = usable[0];
         console.log(`      e.g. "${title}" — ${company} — ${location ?? "no location"} — id ${externalId} — posted ${datePosted?.toISOString?.().slice(0, 10) ?? "?"}`);

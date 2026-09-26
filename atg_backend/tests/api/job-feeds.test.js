@@ -307,6 +307,16 @@ describe("htmlToText", () => {
     expect(htmlToText("A&#8211;B &euro;5 &#x41; &#7;x")).toBe("A–B €5 A x");
   });
 
+  // Found by the live feed check: a quarter of real Arbeitnow descriptions
+  // arrived entity-escaped and came out as literal <p> tags.
+  it("converts entity-escaped HTML too, not just real tags", () => {
+    expect(htmlToText("&lt;p&gt;We are hiring&lt;/p&gt;&lt;ul&gt;&lt;li&gt;Go&lt;/li&gt;&lt;/ul&gt;")).toBe("We are hiring\n• Go");
+  });
+
+  it("keeps angle brackets that are prose, not markup", () => {
+    expect(htmlToText("<p>Salary &lt; 50k and teams &gt; 5 people</p>")).toBe("Salary < 50k and teams > 5 people");
+  });
+
   it("returns null for empty or non-string input", () => {
     expect(htmlToText("")).toBeNull();
     expect(htmlToText("<p> </p>")).toBeNull();

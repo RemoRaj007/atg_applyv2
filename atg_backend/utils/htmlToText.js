@@ -20,8 +20,9 @@ const decodeEntities = (text) =>
     return NAMED[code.toLowerCase()] ?? match;
   });
 
-const htmlToText = (html) => {
-  if (typeof html !== "string" || !html.trim()) return null;
+const TAG = /<\/?[a-z][a-z0-9]*(\s[^>]*)?>/i;
+
+const convert = (html) => {
   const text = decodeEntities(
     html
       // Content that is never prose.
@@ -38,7 +39,17 @@ const htmlToText = (html) => {
     .replace(/\n{3,}/g, "\n\n")
     // A closing </li> and the next <li> both break the line; one is enough.
     .replace(/\n\n(?=• )/g, "\n")
-    .trim() || null;
+    .trim();
+};
+
+const htmlToText = (html) => {
+  if (typeof html !== "string" || !html.trim()) return null;
+  let text = convert(html);
+  // Some feeds send HTML entity-escaped (`&lt;p&gt;`), which only becomes markup
+  // once decoded. One more pass turns that into text too. Bounded at one: this
+  // undoes a single layer of escaping, it does not chase arbitrary nesting.
+  if (TAG.test(text)) text = convert(text);
+  return text || null;
 };
 
 module.exports = { htmlToText, decodeEntities };
