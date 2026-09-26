@@ -1,0 +1,71 @@
+name: AI eval
+
+# Scores the AI prompts against atg_backend/evals/ai-cases.json using the real
+# provider. Runs on PRs that touch the prompts or the model, and on demand.
+#
+# Needs the NVIDIA_API_KEY secret. Without it the run skips with a warning, so
+# forks are not blocked — and it is marked as having checked nothing.
+#
+# The eval sends only the fictional profiles in the case file, never real
+# candidate data, and each run costs roughly 12 provider calls.
+
+on:
+  pull_request:
+    paths:
+      - "atg_backend/modules/ai/**"
+      - "atg_backend/evals/**"
+      - "atg_backend/scripts/aiEval.js"
+      - ".github/workflows/ai-eval.yml"
+  workflow_dispatch:
+    inputs:
+      baseline:
+        description: "Also score the naive baseline prompts, for comparison"
+        type: boolean
+        default: false
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: atg_backend
+    steps:
+      - name: Check for provider key
+        id: key
+        working-directory: .
+        env:
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+        run: |
+          if [ -z "$NVIDIA_API_KEY" ]; then
+            echo "::warning::NVIDIA_API_KEY is not set — the AI eval did NOT run. This check verified nothing."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.key.outputs.ok == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.key.outputs.ok == 'true'
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: atg_backend/package-lock.json
+
+      - name: Install
+        if: steps.key.outputs.ok == 'true'
+        run: npm ci
+
+      - name: Baseline (naive prompts)
+        if: steps.key.outputs.ok == 'true' && inputs.baseline
+        continue-on-error: true
+        env:
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+        run: npm run ai:eval -- --baseline
+
+      - name: Eval (current prompts)
+        if: steps.key.outputs.ok == 'true'
+        env:
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+        run: npm run ai:eval

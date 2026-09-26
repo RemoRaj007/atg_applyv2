@@ -66,7 +66,7 @@ Reversal cost: high — answers are keyed by column id.
 Revisit when: questions need per-candidate conditional branching.
 
 ## D-0005 — Accept the Prisma CLI dev-dependency CVEs rather than force-downgrade
-Date: 2026-08-22   Lane: Risk & Debt   Status: accepted
+Date: 2026-08-22   Lane: Risk & Debt   Status: superseded by D-0015
 Rationale: prisma / @prisma/config / deepmerge-ts carry high-severity advisories
 whose only npm-offered fix is `--force` down to prisma@6.12.0 — a breaking major
 downgrade from the pinned ^7.8.0. The chain is build-time tooling with no
@@ -126,3 +126,74 @@ have wrapped; (b) monitoring from Vercel — dies with the thing it monitors.
 Reversal cost: low — one Worker, deployed separately from the app.
 Revisit when: services actually move onto Cloudflare (D1/KV/R2/Workers running
 real logic), which would give those agents something to talk to.
+
+## D-0009 — Demo login is opt-in at build time, off by default
+Date: 2026-09-26 · Lane: Security
+Commit 7f73763 showed one-click admin and candidate credentials on every host
+that was not localhost — production included — putting a full `admin`
+password one click from the public login page. Now shown only when the build
+sets `VITE_ENABLE_DEMO_LOGIN=true`. Verified that without the flag the
+credentials are not in the bundle at all (Vite eliminates the branch), and that
+the flag restores them.
+Rejected: deleting the feature — reviewers evidently needed it; the defect was
+the default, not the idea.
+Reversal cost: trivial. Revisit: never default it on.
+
+## D-0010 — AI provider: NVIDIA NIM, DeepSeek V4 Pro, behind an OpenAI-compatible client
+Date: 2026-09-26 · Lane: AI/LLM + Architect
+User-supplied provider. All provider-specific code is in `modules/ai/nim.client.js`;
+the request shape is OpenAI's, so switching host or model is configuration
+(`AI_BASE_URL`, `AI_MODEL`), not code. Model pinned; reasoning trace off
+(`thinking: false`) — the features draft text, they do not solve problems, and
+the trace is slow and billed.
+Reversal cost: low. Revisit: when the eval says another model does better per
+token, or when the trial key's 6-month validity ends (Jan 2027).
+
+## D-0011 — The question catalogue, not code, decides what the AI may see
+Date: 2026-09-26 · Lane: Security + Backend
+Each catalogue question already carries `externalAiPolicy` (YES/LIMITED/NO).
+The AI context builder obeys it: YES sent, LIMITED only on per-request opt-in,
+NO never. On top, as defence in depth: RESTRICTED/SENSITIVE never sent whatever
+the policy, unknown policy = NO. Mutation-tested: each rule's removal fails the
+suite.
+Rejected: a per-user "allow AI" switch — coarser than what the catalogue
+already expresses, and it would share health answers the moment it was on.
+
+## D-0012 — AI audit rows store which fields were sent, never content
+Date: 2026-09-26 · Lane: Security + Backend
+`AiRequest` records user, feature, model, prompt version, shared field codes,
+tokens, latency, status. No prompt, values or output. It doubles as the daily
+quota, since the per-IP limiter is per serverless instance.
+Rejected: storing transcripts for debugging — it would make a second copy of
+exactly the data the privacy boundary exists to limit. Cost: a bad output can
+only be reproduced if the candidate supplies it (see RUNBOOK).
+
+## D-0013 — Model output never acts
+Date: 2026-09-26 · Lane: AI/LLM + Security
+All three features return editable text to the candidate who asked. Nothing is
+saved, submitted or sent on the model's say-so. That caps the impact of a
+successful prompt injection at "a bad draft the candidate can see". Any future
+feature that lets output trigger an action needs its own threat model first.
+
+## D-0014 — Cloudflare agent swarm: still declined, and now also blocked
+Date: 2026-09-26 · Lane: Orchestrator
+Re-requested. D-0008's reasoning holds — Cloudflare still hosts only the static
+frontend and the monitor, so ten agent Workers would observe a file server —
+and the Cloudflare connector is unauthorized in this session, so nothing could
+be deployed regardless. The monitor now deploys through GitHub Actions
+(`.github/workflows/uptime-monitor.yml`), which needs no session access at all.
+
+## D-0015 — Fix the Prisma CLI chain with overrides instead of accepting it
+Date: 2026-09-26 · Lane: Risk & Debt · Supersedes D-0005
+The audit had grown to 11 (7 high). Five were fixable in range (multer,
+nodemailer, fast-uri, joi, qs) and are patched, with package.json minimums
+raised so a fresh resolve cannot regress. vitest moved 3 → 5 (dev-only),
+with its removed `poolOptions.forks.singleFork` migrated to `maxWorkers: 1`.
+The Prisma chain (deepmerge-ts, mysql2 via the prisma CLI) is fixed with npm
+`overrides` pinning the two patched sub-dependencies, rather than D-0005's
+acceptance or npm's offered "fix" of downgrading to Prisma 6. Every stable
+Prisma 7.x sits inside the advisory range, so upgrading Prisma cannot fix it.
+Verified: prisma validate / generate / migrate diff behave identically;
+559/559 tests in order, repeated, and shuffled; npm audit 0 (runtime and dev).
+Remove the overrides once a stable Prisma release ships the patched versions —
+an override outliving its reason silently pins a dependency forever.

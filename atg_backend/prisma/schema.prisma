@@ -47,6 +47,7 @@ model User {
   // model — a single jti column here would have meant signing in on a phone
   // silently ended the laptop's session.
   refreshSessions RefreshSession[]
+  aiRequests      AiRequest[]
 
   // Add-on packages sold alongside the job-application packages. Each unlocks
   // its own application flow; universityAppsUsed is that flow's own counter,
@@ -862,4 +863,28 @@ model DocumentApplication {
 
   @@index([userId, d_status])
   @@index([d_status, createdAt])
+}
+
+// One row per call to the external AI provider. It is an audit trail and the
+// source of the per-user daily quota — deliberately not a transcript: no
+// prompt, no profile answer and no generated text is stored, only which
+// fields left the platform and what the call cost.
+model AiRequest {
+  id               Int      @id @default(autoincrement())
+  userId           Int
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feature          String // application_draft | fit_explanation | answer_polish
+  model            String
+  promptVersion    String
+  // Catalogue codes whose answers were sent, so "what did you share about me,
+  // and with whom?" has an exact answer.
+  sharedCodes      String[]
+  includedLimited  Boolean  @default(false)
+  status           String // ok | provider_error | timeout | rejected
+  promptTokens     Int?
+  completionTokens Int?
+  latencyMs        Int?
+  createdAt        DateTime @default(now())
+
+  @@index([userId, createdAt])
 }

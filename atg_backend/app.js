@@ -208,6 +208,7 @@ app.use("/api/content", require("./modules/content/content.routes"));
 // called them in earnest — two features dead in production, not disabled ones.
 app.use("/api/university-applications", universityApplicationRoutes);
 app.use("/api/document-applications", documentApplicationRoutes);
+app.use("/api/ai", require("./modules/ai/ai.routes"));
 
 app.use(notFound);
 app.use(errorHandler);

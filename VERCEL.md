@@ -176,6 +176,11 @@ already reflected in the schema, rather than editing the table by hand.
     configuration — the matching `VITE_*` ids go in Cloudflare's build settings,
     not GitHub secrets. [SOCIAL-SIGNIN.md](SOCIAL-SIGNIN.md) walks through both
     consoles and all six variables.
+  - `NVIDIA_API_KEY` — enables the AI features (application drafts, fit
+    explanations, answer polish). Optional: without it the AI endpoints answer
+    `503` and the frontend hides the AI panel. `AI_MODEL`, `AI_DAILY_LIMIT`,
+    `AI_BASE_URL` and `AI_TIMEOUT_MS` are optional overrides — see
+    [AI.md](AI.md), which also covers what profile data is shared.
   - See the env block in [SETUP.md](SETUP.md#4-manual-setup-if-you-skip-the-script-or-it-fails-partway)
     for the full list: email, SMS, social sign-in, Apify, etc. (The root
     `.env.example` covers only the legacy Docker Compose database variables.)

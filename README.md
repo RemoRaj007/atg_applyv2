@@ -64,6 +64,10 @@ Google and Microsoft sign-in are implemented but ship disabled until their
 client ids are set — see [SOCIAL-SIGNIN.md](SOCIAL-SIGNIN.md) for both provider
 consoles and where each variable goes.
 
+AI features (application drafts, fit explanations, answer polish) run on NVIDIA
+NIM and switch on with one backend variable — see [AI.md](AI.md) for setup,
+what profile data is shared, and the eval.
+
 ## Available scripts
 
 **Backend** (`atg_backend/`)
