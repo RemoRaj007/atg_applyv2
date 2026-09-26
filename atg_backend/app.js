@@ -209,6 +209,7 @@ app.use("/api/content", require("./modules/content/content.routes"));
 app.use("/api/university-applications", universityApplicationRoutes);
 app.use("/api/document-applications", documentApplicationRoutes);
 app.use("/api/ai", require("./modules/ai/ai.routes"));
+app.use("/api/cron", require("./modules/cron/cron.routes"));
 
 app.use(notFound);
 app.use(errorHandler);

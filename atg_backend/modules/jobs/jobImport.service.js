@@ -181,31 +181,23 @@ const attachSkills = async (jobId, skillNames) => {
 };
 
 /**
- * Fetch from Ever Jobs and write the results into the Job table.
+ * Writes already-mapped postings into the Job table. Shared by the manual Ever
+ * Jobs import below and the scheduled feed sync (jobFeedSync.service.js), so
+ * every source gets the same guarantees.
  *
  * Re-runnable by design: a posting already imported is updated in place rather
  * than duplicated, and one that an operator has already approved or rejected
  * keeps that decision — re-importing must not quietly re-open a rejected job.
+ *
+ * A mapped posting may carry `skills` (free-text names); they are attached to
+ * the job, not written as a column.
  */
-const importJobs = async (query, requester) => {
-  const resultsWanted = Math.min(Number(query.resultsWanted) || 20, MAX_RESULTS_WANTED);
-  const payload = { ...query, resultsWanted };
+const saveMappedJobs = async (mappedPostings) => {
+  const counts = { imported: 0, updated: 0, skipped: 0 };
 
-  const result = await searchEverJobs(payload);
-  const postings = Array.isArray(result?.jobs) ? result.jobs : [];
-
-  const summary = {
-    fetched: postings.length,
-    imported: 0,
-    updated: 0,
-    skipped: 0,
-    sources: payload.siteType || [],
-  };
-
-  for (const post of postings) {
-    const mapped = mapPosting(post);
+  for (const { skills, ...mapped } of mappedPostings) {
     if (!isImportable(mapped)) {
-      summary.skipped += 1;
+      counts.skipped += 1;
       continue;
     }
 
@@ -218,15 +210,31 @@ const importJobs = async (query, requester) => {
       // outlives a re-import of the same posting.
       const { status, ...refreshable } = mapped;
       await prisma.job.update({ where: { id: existing.id }, data: refreshable });
-      summary.updated += 1;
-      if (Array.isArray(post.skills)) await attachSkills(existing.id, post.skills);
+      counts.updated += 1;
+      if (Array.isArray(skills)) await attachSkills(existing.id, skills);
       continue;
     }
 
     const created = await prisma.job.create({ data: mapped });
-    summary.imported += 1;
-    if (Array.isArray(post.skills)) await attachSkills(created.id, post.skills);
+    counts.imported += 1;
+    if (Array.isArray(skills)) await attachSkills(created.id, skills);
   }
+
+  return counts;
+};
+
+/** Fetch from Ever Jobs and write the results into the Job table. */
+const importJobs = async (query, requester) => {
+  const resultsWanted = Math.min(Number(query.resultsWanted) || 20, MAX_RESULTS_WANTED);
+  const payload = { ...query, resultsWanted };
+
+  const result = await searchEverJobs(payload);
+  const postings = Array.isArray(result?.jobs) ? result.jobs : [];
+
+  const counts = await saveMappedJobs(
+    postings.map((post) => ({ ...mapPosting(post), skills: Array.isArray(post.skills) ? post.skills : undefined }))
+  );
+  const summary = { fetched: postings.length, ...counts, sources: payload.siteType || [] };
 
   activityLogger.activity("Jobs imported from Ever Jobs", {
     ...summary,
@@ -237,4 +245,4 @@ const importJobs = async (query, requester) => {
   return summary;
 };
 
-module.exports = { importJobs, mapPosting, formatLocation, formatLocationType, isImportable };
+module.exports = { importJobs, saveMappedJobs, mapPosting, formatLocation, formatLocationType, isImportable, forLog };

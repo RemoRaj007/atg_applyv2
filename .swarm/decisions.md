@@ -197,3 +197,17 @@ Verified: prisma validate / generate / migrate diff behave identically;
 559/559 tests in order, repeated, and shuffled; npm audit 0 (runtime and dev).
 Remove the overrides once a stable Prisma release ships the patched versions —
 an override outliving its reason silently pins a dependency forever.
+
+## D-0016 — Job feeds: Arbeitnow, Adzuna, Jooble; no scraping
+Date: 2026-09-26 · Lane: Backend + Product
+Europe from Arbeitnow (keyless, visa-sponsored roles by default — the ones a
+Sri Lankan candidate can take) and Adzuna (official, 7 markets). Sri Lanka from
+Jooble, the only legitimate programmatic source found: topjobs.lk, XpressJobs
+and ikman publish no API. Rejected: scraping those boards (terms, fragility),
+EURES and the Bundesagentur (no official public API — the "APIs" online are
+third-party scrapers), Careerjet (a display API, not an import feed).
+Everything imports as pending and saves through the existing Ever Jobs write
+path, so dedupe and operator-decision preservation are one piece of code.
+Daily via Vercel Cron — once a day is also what Vercel's free plan allows.
+The cron endpoint fails closed without CRON_SECRET.
+Revisit: if a Sri Lankan board publishes an API or a partner feed.

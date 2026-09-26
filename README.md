@@ -68,6 +68,10 @@ AI features (application drafts, fit explanations, answer polish) run on NVIDIA
 NIM and switch on with one backend variable — see [AI.md](AI.md) for setup,
 what profile data is shared, and the eval.
 
+New jobs are pulled daily from Arbeitnow (Europe, visa-sponsored), Adzuna
+(Europe) and Jooble (Sri Lanka) as pending jobs for operators to approve — see
+[JOB_FEEDS.md](JOB_FEEDS.md).
+
 ## Available scripts
 
 **Backend** (`atg_backend/`)

@@ -181,6 +181,10 @@ already reflected in the schema, rather than editing the table by hand.
     `503` and the frontend hides the AI panel. `AI_MODEL`, `AI_DAILY_LIMIT`,
     `AI_BASE_URL` and `AI_TIMEOUT_MS` are optional overrides — see
     [AI.md](AI.md), which also covers what profile data is shared.
+  - `CRON_SECRET` — required for the daily job-feed sync; without it the cron
+    endpoint refuses Vercel's scheduler too. `ADZUNA_APP_ID`/`ADZUNA_APP_KEY`
+    and `JOOBLE_API_KEY` switch on those feeds; Arbeitnow needs nothing. See
+    [JOB_FEEDS.md](JOB_FEEDS.md).
   - See the env block in [SETUP.md](SETUP.md#4-manual-setup-if-you-skip-the-script-or-it-fails-partway)
     for the full list: email, SMS, social sign-in, Apify, etc. (The root
     `.env.example` covers only the legacy Docker Compose database variables.)
