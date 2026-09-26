@@ -93,6 +93,27 @@ like a broader outage than it is.
 Fix: `cd atg_backend && npm install`, commit the regenerated lock file. Verify
 with a clean `rm -rf node_modules && npm ci` before pushing.
 
+### AI panel missing, or AI endpoints answer `503`
+
+`GET /api/ai/status` says which. `enabled: false` means `NVIDIA_API_KEY` is not
+set on Vercel — expected until it is. If it is set and calls still 503, check
+the runtime log for **`AI provider rejected the API key — rotate NVIDIA_API_KEY`**:
+the key was revoked or expired (NVIDIA API keys are time-limited). Generate a new
+one at build.nvidia.com, replace the variable, redeploy.
+
+A 503 saying the service is *busy* is NVIDIA rate-limiting the key; it clears on
+its own. Repeated 504s mean the model is slower than `AI_TIMEOUT_MS` allows —
+look at `latencyMs` in the `AiRequest` table before raising it, and never raise
+it past the 60 s function limit in `vercel.json`.
+
+### AI quality complaint ("it made something up")
+
+Get the time and user, then read their `AiRequest` rows: model, prompt version
+and which fields were sent. The generated text is not stored, by design, so ask
+the candidate for it. Add it as a case in `atg_backend/evals/ai-cases.json`
+**before** touching the prompt, and ship the fix with a before-and-after eval
+run. See [AI.md](AI.md).
+
 ## Restart / rollback
 
 Both platforms roll back without a rebuild — prefer this to a forward fix during
@@ -119,6 +140,12 @@ bad release migrated the schema before assuming rollback restored the old state.
 | SMTP (`EMAIL_HOST`) | Verification and reset emails silently skipped — logged as a warning, not an error. |
 
 ## Do NOT
+
+- Do not enable `VITE_ENABLE_DEMO_LOGIN` on any build pointed at a database with
+  real candidates. It puts a working admin password one click from the login
+  page — which is exactly what production shipped from 3 to 26 September 2026.
+- Do not paste `NVIDIA_API_KEY` (or any key) into chat, tickets or commits. Treat
+  a key that has been pasted anywhere as exposed and rotate it.
 
 - **Do not point `DATABASE_URL` at port 5432 to "fix" a connection error.** The
   session pooler holds one backend per connection and serverless will exhaust it.

@@ -126,3 +126,59 @@ have wrapped; (b) monitoring from Vercel — dies with the thing it monitors.
 Reversal cost: low — one Worker, deployed separately from the app.
 Revisit when: services actually move onto Cloudflare (D1/KV/R2/Workers running
 real logic), which would give those agents something to talk to.
+
+## D-0009 — Demo login is opt-in at build time, off by default
+Date: 2026-09-26 · Lane: Security
+Commit 7f73763 showed one-click admin and candidate credentials on every host
+that was not localhost — production included — putting a full `admin`
+password one click from the public login page. Now shown only when the build
+sets `VITE_ENABLE_DEMO_LOGIN=true`. Verified that without the flag the
+credentials are not in the bundle at all (Vite eliminates the branch), and that
+the flag restores them.
+Rejected: deleting the feature — reviewers evidently needed it; the defect was
+the default, not the idea.
+Reversal cost: trivial. Revisit: never default it on.
+
+## D-0010 — AI provider: NVIDIA NIM, DeepSeek V4 Pro, behind an OpenAI-compatible client
+Date: 2026-09-26 · Lane: AI/LLM + Architect
+User-supplied provider. All provider-specific code is in `modules/ai/nim.client.js`;
+the request shape is OpenAI's, so switching host or model is configuration
+(`AI_BASE_URL`, `AI_MODEL`), not code. Model pinned; reasoning trace off
+(`thinking: false`) — the features draft text, they do not solve problems, and
+the trace is slow and billed.
+Reversal cost: low. Revisit: when the eval says another model does better per
+token, or when the trial key's 6-month validity ends (Jan 2027).
+
+## D-0011 — The question catalogue, not code, decides what the AI may see
+Date: 2026-09-26 · Lane: Security + Backend
+Each catalogue question already carries `externalAiPolicy` (YES/LIMITED/NO).
+The AI context builder obeys it: YES sent, LIMITED only on per-request opt-in,
+NO never. On top, as defence in depth: RESTRICTED/SENSITIVE never sent whatever
+the policy, unknown policy = NO. Mutation-tested: each rule's removal fails the
+suite.
+Rejected: a per-user "allow AI" switch — coarser than what the catalogue
+already expresses, and it would share health answers the moment it was on.
+
+## D-0012 — AI audit rows store which fields were sent, never content
+Date: 2026-09-26 · Lane: Security + Backend
+`AiRequest` records user, feature, model, prompt version, shared field codes,
+tokens, latency, status. No prompt, values or output. It doubles as the daily
+quota, since the per-IP limiter is per serverless instance.
+Rejected: storing transcripts for debugging — it would make a second copy of
+exactly the data the privacy boundary exists to limit. Cost: a bad output can
+only be reproduced if the candidate supplies it (see RUNBOOK).
+
+## D-0013 — Model output never acts
+Date: 2026-09-26 · Lane: AI/LLM + Security
+All three features return editable text to the candidate who asked. Nothing is
+saved, submitted or sent on the model's say-so. That caps the impact of a
+successful prompt injection at "a bad draft the candidate can see". Any future
+feature that lets output trigger an action needs its own threat model first.
+
+## D-0014 — Cloudflare agent swarm: still declined, and now also blocked
+Date: 2026-09-26 · Lane: Orchestrator
+Re-requested. D-0008's reasoning holds — Cloudflare still hosts only the static
+frontend and the monitor, so ten agent Workers would observe a file server —
+and the Cloudflare connector is unauthorized in this session, so nothing could
+be deployed regardless. The monitor now deploys through GitHub Actions
+(`.github/workflows/uptime-monitor.yml`), which needs no session access at all.
