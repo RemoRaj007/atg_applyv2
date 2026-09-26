@@ -94,7 +94,11 @@ const json = (body, status = 200) => ({
 });
 
 let fetchMock;
-const callsTo = (host) => fetchMock.mock.calls.filter(([url]) => String(url).includes(host));
+// Exact hostnames, never substrings: "arbeitnow.com" is also a substring of
+// "arbeitnow.com.evil.net", and CodeQL rightly flags that pattern anywhere.
+const HOSTS = { arbeitnow: "www.arbeitnow.com", adzuna: "api.adzuna.com", jooble: "jooble.org" };
+const hostOf = (url) => new URL(String(url)).hostname;
+const callsTo = (feed) => fetchMock.mock.calls.filter(([url]) => hostOf(url) === HOSTS[feed]);
 const createdJobs = () => prisma.job.create.mock.calls.map(([arg]) => arg.data);
 
 const FEED_ENV = ["ADZUNA_APP_ID", "ADZUNA_APP_KEY", "ADZUNA_COUNTRIES", "JOOBLE_API_KEY", "JOOBLE_LOCATIONS", "ARBEITNOW_ENABLED", "ARBEITNOW_VISA_ONLY", "JOB_SYNC_KEYWORDS", "JOB_SYNC_EXPIRE_DAYS", "CRON_SECRET"];
@@ -104,11 +108,11 @@ beforeEach(() => {
   rateLimit.reset();
   for (const k of FEED_ENV) delete process.env[k];
   fetchMock = vi.fn(async (url) => {
-    const u = String(url);
-    if (u.includes("arbeitnow.com")) return json(ARBEITNOW_PAGE);
-    if (u.includes("api.adzuna.com")) return json(ADZUNA_PAGE);
-    if (u.includes("jooble.org")) return json(JOOBLE_PAGE);
-    throw new Error(`unexpected fetch ${u}`);
+    const host = hostOf(url);
+    if (host === HOSTS.arbeitnow) return json(ARBEITNOW_PAGE);
+    if (host === HOSTS.adzuna) return json(ADZUNA_PAGE);
+    if (host === HOSTS.jooble) return json(JOOBLE_PAGE);
+    throw new Error(`unexpected fetch ${url}`);
   });
   vi.stubGlobal("fetch", fetchMock);
   prisma.job.create.mockImplementation(async ({ data }) => ({ id: Math.floor(Math.random() * 1e6), ...data }));
@@ -126,7 +130,7 @@ describe("with no keys configured", () => {
     const res = await sync();
 
     expect(res.status).toBe(200);
-    expect(callsTo("arbeitnow.com")).toHaveLength(1);
+    expect(callsTo("arbeitnow")).toHaveLength(1);
     expect(callsTo("adzuna")).toHaveLength(0);
     expect(callsTo("jooble")).toHaveLength(0);
     expect(res.body.data.skippedUnconfigured.sort()).toEqual(["adzuna", "jooble"]);
@@ -134,7 +138,7 @@ describe("with no keys configured", () => {
 
   it("asks Arbeitnow only for visa-sponsored roles by default", async () => {
     await sync();
-    expect(callsTo("arbeitnow.com")[0][0]).toContain("visa_sponsorship=true");
+    expect(callsTo("arbeitnow")[0][0]).toContain("visa_sponsorship=true");
   });
 });
 
@@ -179,7 +183,7 @@ describe("mapping and safety", () => {
   it("searches Jooble for Sri Lanka by default, with the key only in the path", async () => {
     process.env.JOOBLE_API_KEY = "jooble-secret";
     await sync();
-    const [url, init] = callsTo("jooble.org")[0];
+    const [url, init] = callsTo("jooble")[0];
     expect(url).toBe("https://jooble.org/api/jooble-secret");
     expect(JSON.parse(init.body).location).toBe("Sri Lanka");
     const job = createdJobs().find((j) => j.externalSource === "jooble");
@@ -221,7 +225,7 @@ describe("failure isolation", () => {
   it("keeps syncing the other sources when one fails, and reports which", async () => {
     process.env.JOOBLE_API_KEY = "k";
     fetchMock.mockImplementation(async (url) => {
-      if (String(url).includes("arbeitnow.com")) return json({ message: "down" }, 503);
+      if (hostOf(url) === HOSTS.arbeitnow) return json({ message: "down" }, 503);
       return json(JOOBLE_PAGE);
     });
 
